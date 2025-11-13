@@ -1,7 +1,11 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:smr_app/NewPage.dart';
+import 'package:smr_app/home_Screen.dart';
 
 import 'TaskDetailsPage.dart';
+import 'Splash_Screen.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,7 +48,7 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: Taskdetailspage(),
+      home:  Splash_Screen(),
     );
   }
 }
