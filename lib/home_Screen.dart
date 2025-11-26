@@ -12,6 +12,8 @@ import 'package:smr_app/TaskDetailsPage.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
+import 'contact_asign.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -336,6 +338,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
                 SizedBox(width: width / 40),
                 const Text("Hi, Nihal", style: TextStyle(fontWeight: FontWeight.bold)),
+                Spacer(),
+                TextButton(
+                    onPressed: () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) => ContactAsign(),)
+                      );
+                    },
+                    child: Text("Add",
+                      style: TextStyle(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 22,
+                          color: Colors.black
+                      ),
+                    )
+                )
               ],
             ),
           ),

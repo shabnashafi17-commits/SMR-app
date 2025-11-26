@@ -32,6 +32,7 @@ class Reminder {
     };
   }
 
+
   static Reminder fromMap(Map<String, dynamic> map) {
     return Reminder(
       id: map['id'],
@@ -44,7 +45,6 @@ class Reminder {
     );
   }
 }
-
 class MainProvider extends ChangeNotifier {
   List<Reminder> reminders = [];
 
@@ -114,6 +114,19 @@ class MainProvider extends ChangeNotifier {
       "createdAt": DateTime.now().toIso8601String(),
     });
        notifyListeners();
-  }
 
+// Nihal
+    Future<void> saveData() async {
+      await FirebaseFirestore.instance.collection("contacts").add({
+        "name": usernameControler.text.trim(),
+        "number": contactnumberControler.text.trim(),
+      });
+    }
+
+  }
 }
+//Controllers
+
+TextEditingController usernameControler = TextEditingController();
+TextEditingController contactnumberControler = TextEditingController();
+//hucfehbhuub
