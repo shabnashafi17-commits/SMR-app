@@ -79,10 +79,10 @@ class _BottomNavigationState extends State<BottomNavigation> {
                     });
                   } else {
                     // mic
-                    showModalBottomSheet(
-                      context: context,
-                      builder: (context) => const TokenBottomSheet(),
-                    );
+                    // showModalBottomSheet(
+                    //   context: context,
+                    //   builder: (context) => const TokenBottomSheet(),
+                    // );
                   }
                 },
                 icon: Icon(
@@ -105,7 +105,14 @@ class _BottomNavigationState extends State<BottomNavigation> {
 }
 
 class TokenBottomSheet extends StatefulWidget {
-  const TokenBottomSheet({super.key});
+  final Future<void> Function() startRecording;
+  final Future<void> Function() stopRecording;
+
+  const TokenBottomSheet({
+    super.key,
+    required this.startRecording,
+    required this.stopRecording,
+  });
 
   @override
   State<TokenBottomSheet> createState() => _TokenBottomSheetState();
@@ -120,11 +127,21 @@ class _TokenBottomSheetState extends State<TokenBottomSheet>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 1),
-    );
+        vsync: this, duration: const Duration(seconds: 1));
 
+    _startProcess();
+  }
+
+  Future<void> _startProcess() async {
+    await widget.startRecording();
+    setState(() => isListening = true);
+    _controller.repeat(reverse: true);
+  }
+
+  void _stopProcess() async {
     _controller.stop();
+    await widget.stopRecording();
+    Navigator.pop(context);
   }
 
   @override
@@ -133,96 +150,66 @@ class _TokenBottomSheetState extends State<TokenBottomSheet>
     super.dispose();
   }
 
-  void _toggleListening() {
-    if (isListening) {
-      _controller.stop();
-      Navigator.of(context).pop();
-    } else {
-      setState(() {
-        isListening = true;
-      });
-      _controller.repeat(reverse: true);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
+    final h = MediaQuery.of(context).size.height;
+    final w = MediaQuery.of(context).size.width;
 
     return Container(
-      height: screenHeight * 0.3,
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical:screenHeight*1/932),
+      height: h * 0.30,
       decoration: const BoxDecoration(
         color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
+      padding: EdgeInsets.symmetric(vertical: h * 0.01),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          //  Animated bar
           SizedBox(
-            width:screenWidth*350/430,
-            height:screenHeight*70/932,
-            child:isListening
+            width: w * 0.9,
+            height: h * 0.08,
+            child: isListening
                 ? Transform.scale(
               scale: 2.5,
               child: Lottie.asset(
                 'assets/audio_wave.json',
                 repeat: true,
                 animate: true,
-                fit: BoxFit.contain,
               ),
             )
-                : Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
+                : const SizedBox.shrink(),
           ),
 
-          SizedBox(height:screenHeight* 30/932),
+          SizedBox(height: h * 0.03),
 
-          // Mic Icon Button
           Container(
-            height:screenHeight* 70/932,
-            width:screenWidth* 70/430,
+            height: h * 0.075,
+            width: w * 0.18,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: isListening
-                  ? null
-                  : Border.all(
-                color: Colors.grey,
-                width: 1,
-              ),
+              border: isListening ? null : Border.all(color: Colors.grey),
             ),
             child: IconButton(
               icon: Icon(
                 isListening
                     ? CupertinoIcons.pause_circle_fill
                     : CupertinoIcons.mic_circle_fill,
+                size: 48,
                 color: const Color(0xFF1C5F98),
-                size: 49,
-
               ),
-              onPressed: _toggleListening,
+              onPressed: _stopProcess,
             ),
           ),
 
-          SizedBox(height:screenHeight*35/932),
+          SizedBox(height: h * 0.03),
 
-          //  Text label
           Text(
-            isListening ? 'You are Speaking' : 'Speak Your Task',
-            style: GoogleFonts.roboto(
-              fontSize: 16,
-              fontWeight: FontWeight.w400,
-              color: Colors.black,
-            ),
+            isListening ? "Recording..." : "Speak your task",
+            style: GoogleFonts.roboto(fontSize: 16),
           ),
         ],
       ),
     );
   }
 }
+
+

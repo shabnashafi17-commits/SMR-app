@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:smr_app/NewPage.dart';
+import 'package:provider/provider.dart';
+import 'package:smr_app/MainProvider.dart';
 import 'package:smr_app/home_Screen.dart';
 
 import 'TaskDetailsPage.dart';
@@ -9,17 +10,16 @@ import 'Splash_Screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: FirebaseOptions(
-        apiKey: "AIzaSyBvfkH0e17ck9UoFeK-ZPF9sQsOmPaSeEc",
-        appId: "fire-base-demo-babf0",
-        messagingSenderId: "415439831167",
-        projectId: "1:415439831167:android:73adbffc92afba74ba7f4a"
-    )
+  await Firebase.initializeApp(); // only once
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => MainProvider()..fetchReminders(),
+      child: const MyApp(),
+    ),
   );
 
-  runApp(const MyApp());
 }
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -48,7 +48,7 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home:  Splash_Screen(),
+      home:  HomeScreen(),
     );
   }
 }

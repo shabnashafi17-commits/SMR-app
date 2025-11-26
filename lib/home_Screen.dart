@@ -1,176 +1,526 @@
+import 'dart:io';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_sound/flutter_sound.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
+import 'package:smr_app/HistoryPage.dart';
+import 'package:smr_app/MainProvider.dart';
+import 'package:smr_app/TaskDetailsPage.dart';
+import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import 'package:smr_app/TaskDetailsPage.dart'; // your page
+
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(); // make sure firebase is initialized
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => MainProvider()..fetchReminders(), // fetch on start
+      child: const MyApp(),
+    ),
+  );
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return const MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: HomeScreen(),
+    );
+  }
+}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
-
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+  // Controllers / focus
   final TextEditingController _controller = TextEditingController();
-  bool isEditing = false;
+  final FocusNode _focusNode = FocusNode();
 
-  List<String> items = [
-    "Task 1",
-    "Task 2",
-    "Task 3",
-    "Task 4",
-    "Task 5",
-    "Task 6",
-  ];
-
-  List<Map<String, dynamic>> contactList = [
+  // Example contact & lists (kept from your original)
+  List<bool> isCheckedList = [];
+  List<Map<String, dynamic>> Contactlist = [
     {"name": "Nihal", "number": 6534546},
     {"name": "Ameen", "number": 9876543},
-    {"name": "Salman", "number": 7654321},
+    {"name": "Nihal", "number": 6534546},
+    {"name": "Ameen", "number": 9876543},
+    {"name": "Nihal", "number": 6534546},
+    {"name": "Ameen", "number": 9876543},
   ];
+
+  // Audio - recorder & player
+  final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
+  final FlutterSoundPlayer _player = FlutterSoundPlayer();
+
+  bool _isRecording = false;
+  String? _currentAudio; // which audio path is currently playing
+  String? _filePath; // last recorded file path
+
+  List<Map<String, String?>> reminders = [];
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() => _initAudio());
+  }
+
+
+  Future<void> _initAudio() async {
+    // Request permissions (best-effort)
+    await Permission.microphone.request();
+    await Permission.storage.request();
+
+    await _recorder.openRecorder();
+    await _player.openPlayer();
+    // optional: subscription duration (not required here)
+    await _player.setSubscriptionDuration(const Duration(milliseconds: 100));
+  }
+
+  Future<void> _startRecording() async {
+    if (_recorder.isRecording) return;      // FIX
+    final dir = await getApplicationDocumentsDirectory();
+    _filePath =
+    '${dir.path}/reminder_record_${DateTime.now().millisecondsSinceEpoch}.aac';
+
+    await _recorder.startRecorder(
+      toFile: _filePath,
+      codec: Codec.aacADTS,
+    );
+
+    setState(() => _isRecording = true);
+  }
+
+
+  Future<void> _stopRecording(MainProvider provider) async {
+    if (!_recorder.isRecording) return;
+    await _recorder.stopRecorder();
+    setState(() => _isRecording = false);
+
+    if (_filePath != null) {
+      await provider.addVoiceReminder(_filePath!);
+    }
+  }
+
+
+
+  Future<void> _playAudio(String filePath) async {
+    if (!File(filePath).existsSync()) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Audio file not found!')));
+      return;
+    }
+
+
+    if (_currentAudio == filePath) {
+      await _player.stopPlayer();
+      setState(() => _currentAudio = null);
+      return;
+    }
+    if (_currentAudio != null) {
+      await _player.stopPlayer();
+    }
+
+    await _player.startPlayer(
+      fromURI: filePath,
+      codec: Codec.aacADTS,
+      whenFinished: () {
+        setState(() => _currentAudio = null);
+      },
+    );
+
+    setState(() => _currentAudio = filePath);
+  }
+
+  void _saveReminder(MainProvider provider) async {
+    final text = _controller.text.trim();
+    if (text.isEmpty) return;
+    await provider.addTextReminder(text);
+    _controller.clear();
+  }
+
+  @override
+  void dispose() {
+    _recorder.closeRecorder();
+    _player.closePlayer();
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+
+
+  Widget _buildBottomInputBar(double height, double width,MainProvider provider) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 15,
+              offset: Offset(0, 6),
+            ),
+          ],
+        ),
+        height: height * 100 / 932,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _controller,
+                      focusNode: _focusNode,
+                      decoration: InputDecoration(
+                        hintText: "Enter Your Task",
+                        hintStyle: const TextStyle(color: Colors.grey, fontSize: 16),
+                        contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(color: Colors.black12, width: 1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(color: Colors.black12, width: 1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 60),
+                ],
+              ),
+            ),
+
+            Positioned(
+              right: 0,
+              bottom: 5,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: _focusNode.hasFocus ? Colors.green : const Color(0xff074899),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: Icon(_focusNode.hasFocus ? Icons.add : Icons.mic, color: Colors.white),
+                  onPressed: () async {
+                    if (_focusNode.hasFocus) {
+                      _saveReminder(provider);
+                      _focusNode.unfocus();
+                    } else {
+                      showModalBottomSheet(
+                        context: context,
+                        builder: (context) {
+                          return StatefulBuilder(
+                            builder: (context, setStateSheet) {
+                              return TokenBottomSheet(
+                                startRecording: () async {
+                                  await _startRecording();
+                                  setState(() {});
+                                  setStateSheet(() {});
+                                },
+                                stopRecording: () async {
+                                  if (_isRecording) {
+                                    await _stopRecording(provider);
+                                  }
+                                  setState(() {});
+                                  setStateSheet(() {});
+                                },
+                                isRecording: _isRecording,
+                              );
+                            },
+                          );
+
+                        },
+                      );
+                    }
+                  },
+
+
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatCard(double width, double height,
+      {required color, required int count, required String label, required String assetPath}) {
+    return Container(
+      width: width / 2.3,
+      padding: const EdgeInsets.all(12.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 1, offset: Offset(0, 1)),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: width / 9,
+                height: height / 18,
+                decoration: BoxDecoration(borderRadius: BorderRadius.circular(10.0)),
+                child: Padding(
+                  padding: const EdgeInsets.all(2.0),
+                  child: Image.asset(assetPath, fit: BoxFit.contain),
+                ),
+              ),
+              const Spacer(),
+              Padding(
+                padding: const EdgeInsets.only(right: 10),
+                child: Text(
+                  count.toString(),
+                  style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.black87),
+                ),
+              ),
+            ],
+          ),
+          Text(label, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: color)),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<MainProvider>(context, listen: true); // listen to changes
+    final reminders = provider.reminders;
+    List<int> voiceNumbers = [];
+    int count = 0;
+    for (var r in reminders) {
+      if (r.taskVoice!= null) {
+        count++;
+        voiceNumbers.add(count);
+      } else {
+        voiceNumbers.add(0);
+      }
+    }
+
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: const Color(0xffF2F2F2),
-
-      // ✅ Bottom Navigation Voice/Text Bar
-      bottomNavigationBar: _buildBottomInputBar(context, height, width),
-
       body: Column(
         children: [
           SizedBox(height: height / 13),
-
-          // 🔹 Greeting
           Padding(
             padding: EdgeInsets.only(left: width / 30),
             child: Row(
               children: [
-                const CircleAvatar(
+                CircleAvatar(
                   backgroundColor: Colors.white,
-                  child: Icon(Icons.person),
+                  radius: 20,
+                  child: Image.asset("assets/Frame6.png", width: 20, height: 20, fit: BoxFit.contain),
                 ),
                 SizedBox(width: width / 40),
-                const Text("Hi, Nihal",
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text("Hi, Nihal", style: TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
           ),
           SizedBox(height: height / 22),
 
-          // 🔹 Stats Cards
+          // Stats cards
           Padding(
             padding: EdgeInsets.symmetric(horizontal: width / 24),
             child: Row(
               children: [
-                _buildStatCard(
-                  width,
-                  height,
-                  color: const Color(0xFFFF894D),
-                  count: items.length,
-                  label: 'Today',
-                ),
+                _buildStatCard(width, height, count: reminders.length, label: 'Today', assetPath: "assets/Frame3.png", color: const Color(0xffFF6B2C)),
                 SizedBox(width: width / 25),
-                _buildStatCard(
-                  width,
-                  height,
-                  color: const Color(0xFF4AC4DF),
-                  count: items.length,
-                  label: 'Total',
-                ),
+                _buildStatCard(width, height, count: 5, label: 'Total', assetPath: "assets/Frame5.png", color: const Color(0xff00B9D6)),
               ],
             ),
           ),
+
           SizedBox(height: height / 28),
 
-          // 🔹 Tasks Header
+          // Tasks Header
           Padding(
             padding: EdgeInsets.symmetric(horizontal: width / 19),
             child: Row(
               children: [
-                const Text("Tasks",
-                    style:
-                    TextStyle(fontWeight: FontWeight.bold, fontSize: 28)),
+                const Text("Tasks", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 28)),
                 const Spacer(),
-                Container(
-                  height: width / 10,
-                  width: width / 3,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(30),
-                    color: Colors.black12,
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const HistoryScreen()));
+                  },
+                  child: Container(
+                    height: width / 8,
+                    width: width / 3.5,
+                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(30), color: const Color(0xffEDEDED)),
+                    child: const Center(child: Text("History", style: TextStyle(fontWeight: FontWeight.w500, color: Colors.black, fontSize: 18))),
                   ),
-                  child: const Center(
-                    child: Text(
-                      "History",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ),
-                ),
+                )
               ],
             ),
           ),
+
           SizedBox(height: height / 25),
 
-          // 🔹 Task List
+          // Reminder list
           Expanded(
             child: ListView.builder(
               padding: EdgeInsets.symmetric(horizontal: width / 19),
-              itemCount: items.length,
+              itemCount: reminders.length,
               itemBuilder: (context, index) {
+                final reminder = reminders[index];
+                int voiceCount = voiceNumbers[index];
+
                 return InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const Taskdetailspage()),
-                    );
-                  },
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const Taskdetailspage())),
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 12),
                     padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
                     child: Row(
                       children: [
                         Container(
                           width: width / 10,
                           height: height / 20,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFE7DD),
-                            borderRadius: BorderRadius.circular(12),
+                          decoration: BoxDecoration(color: const Color(0xFFFFE7DD), borderRadius: BorderRadius.circular(12)),
+                          child: Icon(
+                            reminder.taskVoice != null ? Icons.mic_none_outlined : Icons.checklist,
+                            size: 24,
+                            color: const Color(0xFFFE6B2C),
                           ),
-                          child: const Icon(Icons.mic_none_outlined,
-                              color: Color(0xFFFF894D)),
                         ),
                         SizedBox(width: width / 30),
                         Expanded(
-                          child: Text(
-                            items[index],
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
+                          child: reminder.taskVoice!= null
+                              ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Text("Voice - $voiceCount", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.grey)),
+                          ])
+                              : Text(reminder.taskText?? "", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.grey)),
                         ),
-                        Container(
-                          width: width / 10,
-                          height: height / 20,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            color: Colors.blue,
+
+                        // Play button for voice reminders
+                        if (reminder.taskVoice != null)
+                          IconButton(
+                            icon: Icon(_currentAudio == reminder.taskVoice ? Icons.stop : Icons.play_arrow, color: Colors.blueAccent),
+                            onPressed: () => _playAudio(reminder.taskVoice!),
                           ),
-                          child: const Icon(
-                            Icons.group_add_outlined,
-                            color: Colors.white,
+
+                        // Group add button (left as original)
+                        InkWell(
+                          onTap: () {
+                            if (isCheckedList.length != Contactlist.length) {
+                              isCheckedList = List.generate(Contactlist.length, (_) => false);
+                            }
+                            showModalBottomSheet(
+                              context: context,
+                              backgroundColor: const Color(0xffF2F2F2),
+                              builder: (BuildContext context) {
+                                final double halfScreenHeight = MediaQuery.of(context).size.height / 2;
+                                return Container(
+                                  padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      Padding(
+                                        padding: EdgeInsets.only(top: height / 22, left: width / 30, bottom: height / 35),
+                                        child: Row(
+                                          children: [
+                                            const Text("Contact List", style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+                                            const Spacer(),
+                                            Padding(
+                                              padding: const EdgeInsets.only(right: 10),
+                                              child: SizedBox(
+                                                height: height / 25,
+                                                width: width / 6,
+                                                child: ElevatedButton(
+                                                  onPressed: () {},
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor: Colors.blue,
+                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                                                    elevation: 2,
+                                                    padding: EdgeInsets.zero,
+                                                  ),
+                                                  child: const Center(child: Text("Add", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        height: halfScreenHeight - 60,
+                                        child: ListView.builder(
+                                          itemCount: Contactlist.length,
+                                          itemBuilder: (context, cIndex) {
+                                            final item = Contactlist[cIndex];
+                                            return Container(
+                                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: Colors.white),
+                                              margin: const EdgeInsets.all(8),
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(12.0),
+                                                child: Row(
+                                                  children: [
+                                                     Image.asset("assets/Frame6.png",scale: 3,),
+                                                    const SizedBox(width: 16),
+                                                    Column(
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      children: [
+                                                        Text(item["name"], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                                        const SizedBox(height: 4),
+                                                        Text("${item["number"]}"),
+
+                                                      ],
+                                                    ),
+                                                    const Spacer(),
+                                                    StatefulBuilder(builder: (context, setState) {
+                                                      return InkWell(
+                                                        onTap: () {
+                                                          setState(() {
+                                                            isCheckedList[cIndex] = !isCheckedList[cIndex];
+                                                          });
+                                                        },
+                                                        child: Icon(
+                                                          isCheckedList[cIndex] ? Icons.check_box_outlined : Icons.check_box_outline_blank,
+                                                          color: Colors.black,
+                                                        ),
+                                                      );
+                                                    }),
+                                                  ],
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                          child: Container(
+                            width: width / 10,
+                            height: height / 20,
+                            decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: Colors.blue),
+                            child: const Icon(Icons.group_add_outlined, color: Colors.white),
                           ),
                         ),
                       ],
@@ -182,254 +532,88 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+
+      // Bottom input bar
+      bottomNavigationBar: _buildBottomInputBar(height, width,provider),
     );
   }
+}
 
-  // 🔹 Bottom Input Bar
-  Widget _buildBottomInputBar(BuildContext context, double height, double width) {
-    return Container(
-      height: height * 100 / 932,
-      color: Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Row(
+
+
+
+
+class TokenBottomSheet extends StatelessWidget {
+  final Future<void> Function() startRecording;
+  final Future<void> Function() stopRecording;
+  final bool isRecording;
+
+  const TokenBottomSheet({
+    super.key,
+    required this.startRecording,
+    required this.stopRecording,
+    required this.isRecording,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final h = MediaQuery.of(context).size.height;
+
+    return SingleChildScrollView(
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.only(
+          top: 20,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+          left: 20,
+          right: 20,
+        ),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Padding(
-              padding: EdgeInsets.only(
-                top: height * 8 / 932,
-                bottom: height * 8 / 932,
-                left: width * 8 / 430,
-              ),
-              child: Container(
-                height: height * 55 / 932,
-                width: width * 344 / 430,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: Colors.grey.shade300),
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                padding: EdgeInsets.symmetric(horizontal: width * 12 / 430),
-                child: Center(
-                  child: TextField(
-                    controller: _controller,
-                    readOnly: !isEditing,
-                    onTap: () {
-                      if (!isEditing) {
-                        setState(() {
-                          isEditing = true;
-                          _controller.clear();
-                        });
-                      }
-                    },
-                    decoration: InputDecoration(
-                      hintText: isEditing
-                          ? 'Tomorrow Meeting with Client'
-                          : 'Enter your task',
-                      hintStyle: GoogleFonts.roboto(color: Colors.grey),
-                      border: InputBorder.none,
-                    ),
+            SizedBox(
+              width: double.infinity,
+              height: h * 0.12,
+              child: isRecording
+                  ? Transform.scale(scale: 2.5, child: Lottie.asset('assets/audio_wave.json'))
+                  : const SizedBox.shrink(),
+            ),
+            const SizedBox(height: 20),
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                onTap: () async {
+                  if (isRecording) {
+                    await stopRecording();
+                    if (context.mounted) Navigator.pop(context);
+                  } else {
+                    await startRecording();
+                  }
+                },
+                child: SizedBox(
+                  height: 80,
+                  width: 80,
+                  child: Image.asset(
+                    isRecording ? 'assets/Frame8.png' : 'assets/Frame7.png',
+                    fit: BoxFit.contain,
                   ),
                 ),
               ),
             ),
-            IconButton(
-              onPressed: () {
-                if (isEditing) {
-                  final text = _controller.text.trim();
-                  if (text.isNotEmpty) {
-                    setState(() {
-                      items.add(text);
-                    });
-                  }
-                  setState(() {
-                    isEditing = false;
-                    _controller.clear();
-                  });
-                } else {
-                  showModalBottomSheet(
-                    context: context,
-                    builder: (context) => const TokenBottomSheet(),
-                  );
-                }
-              },
-              icon: Icon(
-                isEditing
-                    ? CupertinoIcons.add_circled_solid
-                    : CupertinoIcons.mic_circle_fill,
-                color: isEditing ? Colors.green : const Color(0xFF1C5F98),
-                size: 49,
-              ),
+            const SizedBox(height: 20),
+            Text(
+              isRecording ? "Recording..." : "Speak your task",
+              style: const TextStyle(fontSize: 16),
             ),
           ],
         ),
       ),
     );
   }
-
-  // 🔹 Helper for Stat Cards
-  Widget _buildStatCard(
-      double width,
-      double height, {
-        required Color color,
-        required int count,
-        required String label,
-      }) {
-    return Container(
-      width: width / 2.3,
-      height: height / 7,
-      padding: const EdgeInsets.all(12.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: width / 9,
-                height: height / 20,
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-                child: const Icon(
-                  Icons.calendar_today_outlined,
-                  color: Colors.white,
-                  size: 22,
-                ),
-              ),
-              const Spacer(),
-              Text(
-                count.toString(),
-                style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-            ],
-          ),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: color,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
-
-// 🔹 Token Bottom Sheet for Mic Recording
-class TokenBottomSheet extends StatefulWidget {
-  const TokenBottomSheet({super.key});
-
-  @override
-  State<TokenBottomSheet> createState() => _TokenBottomSheetState();
-}
-
-class _TokenBottomSheetState extends State<TokenBottomSheet>
-    with SingleTickerProviderStateMixin {
-  bool isListening = false;
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller =
-        AnimationController(vsync: this, duration: const Duration(seconds: 1));
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _toggleListening() {
-    setState(() {
-      isListening = !isListening;
-    });
-    if (isListening) {
-      _controller.repeat(reverse: true);
-    } else {
-      _controller.stop();
-      Navigator.of(context).pop();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    return Container(
-      height: screenHeight * 0.3,
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: screenHeight * 1 / 932),
-      decoration: const BoxDecoration(color: Colors.white),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // 🔊 Animated bar
-          SizedBox(
-            width: screenWidth * 350 / 430,
-            height: screenHeight * 70 / 932,
-            child: isListening
-                ? Transform.scale(
-              scale: 2.5,
-              child: Lottie.asset(
-                'assets/audio_wave.json',
-                repeat: true,
-                animate: true,
-                fit: BoxFit.contain,
-              ),
-            )
-                : Container(),
-          ),
-          SizedBox(height: screenHeight * 30 / 932),
-
-          // 🎤 Mic Icon Button
-          Container(
-            height: screenHeight * 70 / 932,
-            width: screenWidth * 70 / 430,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border:
-              isListening ? null : Border.all(color: Colors.grey, width: 1),
-            ),
-            child: IconButton(
-              icon: Icon(
-                isListening
-                    ? CupertinoIcons.pause_circle_fill
-                    : CupertinoIcons.mic_circle_fill,
-                color: const Color(0xFF1C5F98),
-                size: 49,
-              ),
-              onPressed: _toggleListening,
-            ),
-          ),
-          SizedBox(height: screenHeight * 35 / 932),
-
-          // 🗣️ Text label
-          Text(
-            isListening ? 'You are Speaking' : 'Speak Your Task',
-            style: GoogleFonts.roboto(
-              fontSize: 16,
-              fontWeight: FontWeight.w400,
-              color: Colors.black,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-

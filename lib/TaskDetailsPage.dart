@@ -1,430 +1,474 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:table_calendar/table_calendar.dart';
 
-class Taskdetailspage extends StatefulWidget {
+class Taskdetailspage extends StatelessWidget {
   const Taskdetailspage({super.key});
 
   @override
-  State<Taskdetailspage> createState() => _TaskdetailspageState();
-}
-
-class _TaskdetailspageState extends State<Taskdetailspage> {
-  final TextEditingController _dateController = TextEditingController();
-  final TextEditingController _timeController = TextEditingController();
-
-  @override
-  void dispose() {
-    _dateController.dispose();
-    _timeController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white70,
-        title: Row(
-          children: [
-            const Text(
-              "Task Details",
+      backgroundColor: const Color(0xffF2F2F2),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(70.0),
+        child: Padding(
+          padding: const EdgeInsets.only(top: 20),
+          child: AppBar(
+            title: Text(
+              'Task Details',
               style: TextStyle(
-                color: Colors.black,
-                fontSize: 25,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-          ],
-        ),
-        elevation: 2,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 15),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(25),
-            onTap: () {
-              Navigator.pop(context);
-
-    },
-
-            child: const CircleAvatar(
-              backgroundColor: Colors.white,
-              radius: 20,
-              child: Icon(
-                Icons.arrow_back_ios,
-                size: 15,
-                color: Colors.black,
-              ),
-            ),
-          ),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 15),
-            child: ElevatedButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Green button pressed!')),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor:  const Color(0xFF038D1F),
-                foregroundColor: Colors.white,
-                padding:
-                const EdgeInsets.symmetric(horizontal: 22, ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                elevation: 0,
-              ),
-              child: const Text(
-                'Done',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 90),
-            const Text(
-              "Schedule",
-              style: TextStyle(
-                color: Color(0xFFBBBBBB),
-                fontSize: 20,
+                fontSize: 24,
                 fontWeight: FontWeight.w600,
+                color: Color(0XFF1F2937),
               ),
             ),
-            const SizedBox(height: 15),
-            Row(
-              children: [
-                // ---------------- DATE FIELD ----------------
-                Expanded(
-                  child: TextFormField(
-                    controller: _dateController,
-                    readOnly: true,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white,
-                      labelText: " Date",
-                      labelStyle: const TextStyle(
-                        color: Colors.black54,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      suffixIcon: const Icon(
-                        CupertinoIcons.calendar_today,
-                        color: Colors.black54,
-                      ),
-                      border: InputBorder.none,
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide.none,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide.none,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
-                      ),
+            // <-- FIX: wrap InkWell in a Builder so Navigator.pop uses the correct context
+            leading: Padding(
+              padding: const EdgeInsets.only(left: 15),
+              child: Builder(
+                builder: (context) => InkWell(
+                  borderRadius: BorderRadius.circular(25),
+                  onTap: () {
+                    if (Navigator.canPop(context)) {
+                      Navigator.pop(context);
+                    }
+                  },
+                  child: const CircleAvatar(
+                    backgroundColor: Colors.white,
+                    radius: 20,
+                    child: Icon(
+                      Icons.arrow_back_ios,
+                      size: 15,
+                      color: Colors.black,
                     ),
-                    onTap: () async {
-                      FocusScope.of(context).unfocus();
-
-                      // Default selected date: October 15 if none selected
-                      DateTime initialDate = DateTime.now();
-                      if (_dateController.text.isNotEmpty) {
-                        try {
-                          final parts = _dateController.text.split('/');
-                          if (parts.length == 3) {
-                            initialDate = DateTime(
-                              int.parse(parts[2]),
-                              int.parse(parts[1]),
-                              int.parse(parts[0]),
-                            );
-                          }
-                        } catch (_) {}
-                      } else {
-                        initialDate =
-                            DateTime(DateTime.now().year, 10, 15); // Oct 15
-                      }
-
-                      // Show Cupertino (iOS-style) date picker
-                      DateTime? pickedDate =
-                      await showModalBottomSheet<DateTime>(
-                        context: context,
-                        builder: (BuildContext builder) {
-                          DateTime tempPickedDate = initialDate;
-
-                          return Container(
-                            height: 250,
-                            color: Color(0xFFFFFFFF),
-                            child: Column(
-                              children: [
-                                // Done button
-                                Container(
-                                  alignment: Alignment.centerRight,
-                                  child: TextButton(
-                                    child: const Text(
-                                      'Done',
-                                      style: TextStyle(
-                                        color: Colors.blue,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    onPressed: () {
-                                      Navigator.pop(context, tempPickedDate);
-                                    },
-                                  ),
-                                ),
-
-                                // Cupertino Date Picker
-                                Expanded(
-                                  child: CupertinoDatePicker(
-                                    mode: CupertinoDatePickerMode.date,
-                                    initialDateTime: initialDate,
-                                    minimumDate: DateTime(2000),
-                                    maximumDate: DateTime(2101),
-                                    onDateTimeChanged: (DateTime newDate) {
-                                      tempPickedDate = newDate;
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      );
-
-                      // Update field
-                      if (pickedDate != null) {
-                        setState(() {
-                          _dateController.text =
-                          "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
-                        });
-                      }
-                    },
                   ),
                 ),
-
-                const SizedBox(width: 10),
-
-                // ---------------- TIME FIELD ----------------
-                Expanded(
-                  child: TextFormField(
-                    controller: _timeController,
-                    readOnly: true,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Color(0xFFFFFFFF),
-                      labelText: " Time",
-                      labelStyle: const TextStyle(
-                        color: Colors.black54,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      suffixIcon: const Icon(
-                        Icons.access_time,
-                        color: Colors.black54,
-                      ),
-                      border: InputBorder.none,
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide.none,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide.none,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
-                      ),
-                    ),
-                    onTap: () async {
-                      TimeOfDay? pickedTime = await showTimePicker(
-                        context: context,
-                        initialTime: TimeOfDay.now(),
-                        builder: (context, child) {
-                          return Theme(
-                            data: Theme.of(context).copyWith(
-                              colorScheme: const ColorScheme.light(
-                                primary: Colors.blue,
-                                onSurface: Colors.black,
+              ),
+            ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 20),
+                child: TextButton(
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (ctx) => Dialog(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
+                        child: Container(
+                          width: screenWidth ,
+                          height: screenHeight * 176 / 932,
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(21),
+                              color: Colors.white),
+                          padding: EdgeInsets.all(16),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                CupertinoIcons.checkmark_alt_circle_fill,
+                                size: 39,
+                                color: Color(0xFF00BA25),
                               ),
-                            ),
-                            child: child!,
-                          );
-                        },
-                      );
-
-                      if (pickedTime != null) {
-                        setState(() {
-                          _timeController.text = pickedTime.format(context);
-                        });
-                      }
-                    },
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 15),
-
-            // ---------------- REMINDER ----------------
-            Container(
-              height: 60,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Color(0xFFFFFFFF),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.only(left: 10, top: 5, right: 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: const [
-                    Text(
-                      "Reminder",
-                      style: TextStyle(
-                        color: Colors.black54,
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        Text(
-                          "1hr Before",
-                          style: TextStyle(
-                            color: Colors.black54,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w200,
+                              SizedBox(height: screenHeight * 16 / 932),
+                              Text(
+                                'Task Completed',
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w400,
+                                    color: Color(0xFF1F2937),
+                                    fontFamily: 'Intel'),
+                              ),
+                            ],
                           ),
                         ),
-                        Icon(
-                          Icons.keyboard_arrow_down,
-                          color: Colors.black38,
-                          size: 30,
-                        ),
-                      ],
+                      ),
+                    );
+                  },
+                  style: TextButton.styleFrom(
+                    backgroundColor: Color(0xFF038D1F),
+                    minimumSize: Size(68, 31),
+                  ),
+                  child: Text(
+                    'Done',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(
+                height: screenHeight * 103 / 932,
+                width: screenWidth * 361 / 430,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color(0x15000000),
+                      blurRadius: 2,
+                      offset: Offset(0, 2),
                     ),
                   ],
                 ),
-              ),
-            ),
-
-            const SizedBox(height: 15),
-
-            // ---------------- SUBTASKS ----------------
-            const Text(
-              "Subtask",
-              style: TextStyle(
-                color: Colors.black54,
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 15),
-            _buildSubtaskRow("Tomorrow Meeting With Client"),
-            const SizedBox(height: 15),
-            _buildSubtaskRow("Take Meeting Notes"),
-            const SizedBox(height: 15),
-            _buildSubtaskRow("Prepare Presentation Slides"),
-            const SizedBox(height: 15),
-            Center(
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.blue),
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        height: 35,
-                        width: 40,
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8, right: 5, left: 5),
+                      child: Container(
+                        height: screenHeight * 60 / 932,
+                        width: screenWidth * 350 / 430,
                         decoration: BoxDecoration(
-                          color: Color(0xFFFFFFFF),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.blue, width: 1),
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Color(0x15000000),
+                              blurRadius: 4,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
                         ),
-                        child: IconButton(
-                          icon: const Icon(Icons.add),
-                          color: Colors.blue,
-                          iconSize: 20,
-                          onPressed: () {
-                            // Add subtask
-                          },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // Leading icon
+                            Container(
+                              height: 35,
+                              width: 36,
+                              margin: EdgeInsets.only(left: 10),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                color: Color(0xFFFFE7DD),
+                              ),
+                              child: Icon(
+                                Icons.checklist,
+                                size: 24,
+                                color: Color(0xFFFE6B2C),
+                              ),
+                            ),
+
+                            // Title text
+                            Expanded(
+                              child: Padding(
+                                padding:
+                                const EdgeInsets.symmetric(horizontal: 15),
+                                child: Text(
+                                  'Tomorrow Meeting With Client',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            // Trailing Blue Circle
+                            Container(
+                                height: 44,
+                                width: 44,
+                                margin: EdgeInsets.only(right: 10),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Color(0xFF0376FA),
+                                ),
+                                child: IconButton(
+                                  onPressed: () {},
+                                  icon: Icon(
+                                    Icons.group_add_outlined,
+                                    size: 24,
+                                    color: Colors.white,
+                                  ),
+                                ))
+                          ],
                         ),
                       ),
-                      const SizedBox(width: 10),
-                      const Text(
-                        "Add",
-                        style: TextStyle(
-                          color: Colors.blue,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                    ),
+
+                    SizedBox(height: screenHeight * 10 / 932),
+
+                    Padding(
+                      padding: const EdgeInsets.only(right: 14),
+                      child: Align(
+                        alignment: Alignment.bottomRight,
+                        child: Text(
+                          '15/10/2025, 10:00 AM',
+                          style: TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF4B5563)),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: SizedBox(
+                  height: screenHeight * 180 / 932,
+                  width: screenWidth * 350 / 430,
+                  child: Column(
+                    children: [
+                      Align(
+                        alignment: Alignment.topLeft,
+                        child: Text(
+                          'Schedule',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xEA373636),
+                          ),
+                        ),
+                      ),
+
+                      SizedBox(height: screenHeight * 15 / 932),
+
+                      Row(
+                        children: [
+                          Expanded(child: DatePickerContainer()),
+                          SizedBox(width: 12), // spacing
+                          Expanded(child: TimePickerContainer()),
+                        ],
+                      ),
+
+                      SizedBox(height: screenHeight * 15 / 932),
+
+                      //reminder
+                      Container(
+                        // height:screenHeight* 60/932,
+                        width: screenWidth * 400 / 430,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Color(0x15000000),
+                              blurRadius: 2,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 15, vertical: 10),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Reminder',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    '1hr Before',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w400,
+                                      color: Color(0xFF4B5563),
+                                    ),
+                                  ),
+                                  SizedBox(width: 6),
+                                  SizedBox(
+                                      height: 24,
+                                      width: 24,
+                                      child: IconButton(
+                                        onPressed: () {},
+                                        icon: Icon(
+                                          CupertinoIcons.chevron_down,
+                                          size: 14,
+                                          color: Colors.black,
+                                        ),
+                                      )),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
-            ),
-          ],
+              SubtaskListContainer()
+            ],
+          ),
         ),
       ),
     );
   }
+}
 
-  // ---------------- HELPER WIDGET ----------------
-  Widget _buildSubtaskRow(String text) {
-    return Container(
-      height: 60,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Color(0xFFFFFFFF),
-        border: Border.all(color: Colors.black38),
-        borderRadius: BorderRadius.circular(5),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.only(left: 15),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                text,
-                style: const TextStyle(
-                  color: Colors.black54,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                ),
+class DatePickerContainer extends StatefulWidget {
+  @override
+  _DatePickerContainerState createState() => _DatePickerContainerState();
+}
+
+class _DatePickerContainerState extends State<DatePickerContainer> {
+  DateTime? _selectedDate;
+  DateTime _focusedDay = DateTime.now();
+
+  void _pickDate() async {
+    DateTime initialDate = _selectedDate ?? DateTime.now();
+
+    DateTime? picked = await showDialog<DateTime>(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          padding: EdgeInsets.all(0),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: SizedBox(
+            height: 400,
+            width: 350,
+            child: TableCalendar(
+              firstDay: DateTime.utc(2020, 1, 1),
+              lastDay: DateTime.utc(2030, 12, 31),
+              focusedDay: _focusedDay,
+              selectedDayPredicate: (day) => isSameDay(_selectedDate, day),
+              onDaySelected: (selectedDay, focusedDay) {
+                setState(() {
+                  _selectedDate = selectedDay;
+                  _focusedDay = focusedDay;
+                });
+                Navigator.of(context).pop(selectedDay);
+              },
+              calendarFormat: CalendarFormat.month,
+              headerVisible: true,
+              headerStyle: HeaderStyle(
+                titleCentered: false,
+                formatButtonVisible: false,
+                leftChevronVisible: false,
+                rightChevronVisible: false,
+              ),
+              calendarBuilders: CalendarBuilders(
+                headerTitleBuilder: (context, day) {
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(left: 10),
+                        child: Text(
+                          "${_monthName(day.month)} ${day.year}",
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.chevron_left, color: Colors.blue),
+                            onPressed: () {
+                              setState(() {
+                                _focusedDay = DateTime(_focusedDay.year,
+                                    _focusedDay.month - 1, _focusedDay.day);
+                              });
+                            },
+                          ),
+                          IconButton(
+                            icon:
+                            Icon(Icons.chevron_right, color: Colors.blue),
+                            onPressed: () {
+                              setState(() {
+                                _focusedDay = DateTime(_focusedDay.year,
+                                    _focusedDay.month + 1, _focusedDay.day);
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  );
+                },
+              ),
+              calendarStyle: CalendarStyle(
+                isTodayHighlighted: false,
+                outsideDaysVisible: false,
+                selectedDecoration:
+                BoxDecoration(color: Colors.blueAccent, shape: BoxShape.circle),
+                selectedTextStyle: TextStyle(color: Colors.white),
               ),
             ),
-            Container(
-              height: 50,
-              width: 50,
-              decoration: BoxDecoration(
-                color: Color(0xFFFFFFFF),
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.blue, width: 1),
-              ),
-              child: Center(
-                child: IconButton(
-                  icon: const Icon(Icons.person_add_alt_1_outlined),
-                  color: Colors.blue,
-                  iconSize: 25,
-                  onPressed: () {},
-                ),
-              ),
+          ),
+        ),
+      ),
+    );
+
+    if (picked != null) setState(() => _selectedDate = picked);
+  }
+
+  String _monthName(int month) {
+    const months = [
+      '',
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December'
+    ];
+    return months[month];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 60,
+      width: 172.5,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(color: Color(0x15000000), blurRadius: 2, offset: Offset(0, 2))
+        ],
+      ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              _selectedDate != null
+                  ? "${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}"
+                  : 'Date',
+              style: TextStyle(
+                  fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black),
+            ),
+            IconButton(
+              icon: Icon(Icons.calendar_month_outlined, color: Colors.black),
+              onPressed: _pickDate,
             ),
           ],
         ),
@@ -433,12 +477,247 @@ class _TaskdetailspageState extends State<Taskdetailspage> {
   }
 }
 
+class TimePickerContainer extends StatefulWidget {
+  @override
+  _TimePickerContainerState createState() => _TimePickerContainerState();
+}
 
+class _TimePickerContainerState extends State<TimePickerContainer> {
+  Duration? _selectedTime;
 
+  void _showTimePicker(BuildContext context) {
+    Duration initialTime = _selectedTime ?? Duration(hours: 15, minutes: 0);
 
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return Dialog(
+          shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Container(
+            width: 300,
+            padding: EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  height: 150,
+                  child: CupertinoTimerPicker(
+                    initialTimerDuration: initialTime,
+                    mode: CupertinoTimerPickerMode.hm,
+                    onTimerDurationChanged: (Duration newTime) {
+                      setState(() {
+                        _selectedTime = newTime;
+                      });
+                    },
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.bottomRight,
+                  child: Padding(
+                    padding: EdgeInsets.only(top: 16),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
 
+                        shape: StadiumBorder(),
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: () => Navigator.of(ctx).pop(),
+                      child: Text('OK'),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
+  @override
+  Widget build(BuildContext context) {
+    String twoDigits(int n) => n.toString().padLeft(2, "0");
 
+    final displayText = _selectedTime != null
+        ? "${twoDigits(_selectedTime!.inHours)}:${twoDigits(_selectedTime!.inMinutes.remainder(60))}"
+        : "Time";
 
+    return GestureDetector(
+      onTap: () => _showTimePicker(context),
+      child: Container(
+        height: 60,
+        width: 172.5,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Color(0x15000000),
+              blurRadius: 2,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                displayText,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black,
+                ),
+              ),
+              Icon(
+                CupertinoIcons.time,
+                size: 22,
+                color: Colors.black,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 
+class SubtaskListContainer extends StatefulWidget {
+  @override
+  _SubtaskListContainerState createState() => _SubtaskListContainerState();
+}
+
+class _SubtaskListContainerState extends State<SubtaskListContainer> {
+  List<String> subtasks = [
+    "Tomorrow Meeting With client",
+    "Take Meeting Notes",
+    "Take Meeting Notes",
+  ];
+
+  void _addSubtask() {
+    setState(() {
+      subtasks.add("");
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 400,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        children: [
+          Align(
+            alignment: Alignment.topLeft,
+            child: Text(
+              'Subtask',
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF4B5563),
+              ),
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: subtasks.length,
+              // physics: const NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  child: Container(
+                    height: 66.531,
+                    width: 361,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 2,
+                          offset: Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: TextField(
+                          decoration: InputDecoration(
+                            hintText:
+                            subtasks[index].isNotEmpty ? subtasks[index] : " ",
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide.none,
+                            ),
+                            contentPadding: EdgeInsets.symmetric(
+                                vertical: 14, horizontal: 12),
+                            suffixIcon: Container(
+                              height: 34.531,
+                              width: 34.531,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white,
+                                border:
+                                Border.all(color: Color(0xFF0376FA), width: 1),
+                              ),
+                              child: IconButton(
+                                  onPressed: () {},
+                                  icon: Icon(
+                                    Icons.group_add_outlined,
+                                    size: 20,
+                                    color: Color(0xFF0376FA),
+                                  )),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          SizedBox(height: 12),
+          Align(
+            alignment: Alignment.center,
+            child: OutlinedButton.icon(
+              onPressed: _addSubtask,
+              icon: Icon(
+                CupertinoIcons.add_circled,
+                size: 24,
+                color: Colors.blue, // icon color
+              ),
+              label: Text(
+                "Add",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  fontFamily: 'Inter',
+                  color: Colors.blue, // text color
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: Colors.blue, width: 1), // blue border
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+            ),
+          ),
+
+        ],
+      ),
+    );
+  }
+}
 

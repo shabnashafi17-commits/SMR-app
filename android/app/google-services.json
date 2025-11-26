@@ -1,32 +1,13 @@
 {
   "project_info": {
-    "project_number": "415439831167",
-    "project_id": "fire-base-demo-babf0",
-    "storage_bucket": "fire-base-demo-babf0.firebasestorage.app"
+    "project_number": "184687971104",
+    "project_id": "smr-app-49af9",
+    "storage_bucket": "smr-app-49af9.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:415439831167:android:73adbffc92afba74ba7f4a",
-        "android_client_info": {
-          "package_name": "com.example.reminderapp"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyBvfkH0e17ck9UoFeK-ZPF9sQsOmPaSeEc"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:415439831167:android:991e65cb23b7b509ba7f4a",
+        "mobilesdk_app_id": "1:184687971104:android:ed061f66e7988616b0a545",
         "android_client_info": {
           "package_name": "com.example.smr_app"
         }
@@ -34,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBvfkH0e17ck9UoFeK-ZPF9sQsOmPaSeEc"
+          "current_key": "AIzaSyBj0eGTzEdyIQIVqv_DQLPGE25Koro4Hg4"
         }
       ],
       "services": {
