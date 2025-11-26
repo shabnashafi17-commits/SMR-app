@@ -50,7 +50,7 @@ class ContactAsign extends StatelessWidget {
                     ],
                   ),
                   child: TextField(
-                    controller: provider.,   // ✅ USE PROVIDER HERE
+                    controller: provider.usernameControler,   // ✅ USE PROVIDER HERE
                     decoration: InputDecoration(
                       hintText: "User Name",
                       hintStyle: TextStyle(
@@ -71,37 +71,42 @@ class ContactAsign extends StatelessWidget {
           ),
 
           SizedBox(height: height / 30),
-          Padding(
-            padding: EdgeInsets.only(left: width / 20, right: width / 20),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Color(0xffF2F2F2),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
-                    blurRadius: 15,
-                    offset: Offset(0, 5),
+          Consumer<MainProvider>(
+            builder: (context,provider,child) {
+              return Padding(
+                padding: EdgeInsets.only(left: width / 20, right: width / 20),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Color(0xffF2F2F2),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 15,
+                        offset: Offset(0, 5),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: "Contact Number",
-                  hintStyle: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 14,
+                  child: TextField(
+                    controller: provider.contactnumberControler,
+                    decoration: InputDecoration(
+                      hintText: "Contact Number",
+                      hintStyle: TextStyle(
+                        color: Colors.grey.shade600,
+                        fontSize: 14,
+                      ),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 18),
+                      border: InputBorder.none, // important for clean UI inside container
+                    ),
+                    keyboardType: TextInputType.phone,
+                    inputFormatters: [
+                      LengthLimitingTextInputFormatter(10)
+                    ],
                   ),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 18),
-                  border: InputBorder.none, // important for clean UI inside container
-                ),
-                keyboardType: TextInputType.phone,
-                inputFormatters: [
-                  LengthLimitingTextInputFormatter(10)
-                ],
-              ),
-            )
+                )
 
+              );
+            }
           ),
           SizedBox(height: height / 30),
           Padding(

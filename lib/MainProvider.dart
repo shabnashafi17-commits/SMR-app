@@ -124,9 +124,9 @@ class MainProvider extends ChangeNotifier {
     }
 
   }
+  TextEditingController usernameControler = TextEditingController();
+  TextEditingController contactnumberControler = TextEditingController();
 }
 //Controllers
 
-TextEditingController usernameControler = TextEditingController();
-TextEditingController contactnumberControler = TextEditingController();
 //hucfehbhuub
