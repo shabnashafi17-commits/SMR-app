@@ -221,7 +221,7 @@ class ContactAsign extends StatelessWidget {
                                   .start,
                               children: [
                                 Text(
-                                  item["name"],
+                                  item.username,
                                   style: const TextStyle(
                                     fontWeight:
                                     FontWeight.bold,
@@ -230,7 +230,7 @@ class ContactAsign extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  "Phone: ${item["number"]}",
+                                  "Phone: ${item.userContactNumber}",
                                 ),
                               ],
                             ),
