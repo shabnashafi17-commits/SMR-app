@@ -111,26 +111,70 @@ class ContactAsign extends StatelessWidget {
           SizedBox(height: height / 30),
           Padding(
             padding: EdgeInsets.only(left: width / 30, right: width / 30),
-            child: TextButton(
-              onPressed: () {},
-              child: Container(
-                height: height / 16,
-                width: width / 1,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  color: Colors.blue,
-                ),
-                child: Center(
-                  child: Text(
-                    "Add",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 16
+            child: Consumer<MainProvider>(
+              builder: (context,provider,child) {
+                return TextButton(
+                  onPressed: () async {
+                    if (provider.usernameControler.text.trim().isEmpty ||
+                        provider.contactnumberControler.text.trim().isEmpty) {
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text("Please fill all fields!"),
+                          backgroundColor: Colors.red,
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                      return;
+                    }
+                    bool result = await provider.addcontact();
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        Future.delayed(Duration(seconds: 2), () {
+                          Navigator.of(context).pop();
+                        });
+
+                        return AlertDialog(
+                          content: Padding(
+                            padding: EdgeInsets.only(left: width / 8),
+                            child: Text(
+                              result ? "Contact Added Successfully ✅"
+                                  : "Failed! ❌ Try Again ",
+                              style: TextStyle(
+                                color: result ? Colors.green : Colors.red,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 22,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+
+
+
+                  child: Container(
+                    height: height / 16,
+                    width: width / 1,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      color: Colors.blue,
+                    ),
+                    child: Center(
+                      child: Text(
+                        "Add",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 16
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
+                );
+              }
             ),
           ),
           Divider(),
@@ -147,52 +191,56 @@ class ContactAsign extends StatelessWidget {
           Expanded(
 
             // Subtract an estimated height for the heading/padding (~60)
-            child: ListView.builder(
-              itemCount: Contactlist.length,
-              itemBuilder: (context, index) {
-                final item = Contactlist[index];
-                return Container(
-                  decoration: BoxDecoration(
-                      borderRadius:
-                      BorderRadius.circular(12),
-                      color: Colors.white
-                  ),
-                  margin: const EdgeInsets.all(8),
-                  child: Padding(
-                    padding: const EdgeInsets.all(
-                      12.0,
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons
-                              .person_outline,
+            child: Consumer<MainProvider>(
+              builder: (context,provier,child) {
+                return ListView.builder(
+                  itemCount: provier.contactList.length,
+                  itemBuilder: (context, index) {
+                    final item = provier.contactList[index];
+                    return Container(
+                      decoration: BoxDecoration(
+                          borderRadius:
+                          BorderRadius.circular(12),
+                          color: Colors.white
+                      ),
+                      margin: const EdgeInsets.all(8),
+                      child: Padding(
+                        padding: const EdgeInsets.all(
+                          12.0,
                         ),
-                        SizedBox(width: 16),
-                        Column(
-                          crossAxisAlignment:
-                          CrossAxisAlignment
-                              .start,
+                        child: Row(
                           children: [
-                            Text(
-                              item["name"],
-                              style: const TextStyle(
-                                fontWeight:
-                                FontWeight.bold,
-                                fontSize: 16,
-                              ),
+                            Icon(
+                              Icons
+                                  .person_outline,
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              "Phone: ${item["number"]}",
+                            SizedBox(width: 16),
+                            Column(
+                              crossAxisAlignment:
+                              CrossAxisAlignment
+                                  .start,
+                              children: [
+                                Text(
+                                  item["name"],
+                                  style: const TextStyle(
+                                    fontWeight:
+                                    FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  "Phone: ${item["number"]}",
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ],
-                    ),
-                  ),
+                      ),
+                    );
+                  },
                 );
-              },
+              }
             ),
           ),
         ],

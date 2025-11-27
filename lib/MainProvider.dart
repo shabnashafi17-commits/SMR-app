@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:smr_app/user_class.dart';
 
 class Reminder {
   String id;
@@ -114,18 +115,57 @@ class MainProvider extends ChangeNotifier {
       "createdAt": DateTime.now().toIso8601String(),
     });
        notifyListeners();
+  }
 
-// Nihal
-    Future<void> saveData() async {
+  // Nihal
+
+  TextEditingController usernameControler = TextEditingController();
+  TextEditingController contactnumberControler = TextEditingController();
+  Future<bool> addcontact() async {
+    try {
       await FirebaseFirestore.instance.collection("contacts").add({
         "name": usernameControler.text.trim(),
         "number": contactnumberControler.text.trim(),
       });
-    }
 
+      // Clear controllers
+      usernameControler.clear();
+      contactnumberControler.clear();
+
+      return true; // success
+    } catch (e) {
+      print("Error adding contact: $e");
+      return false; // failed
+    }
   }
-  TextEditingController usernameControler = TextEditingController();
-  TextEditingController contactnumberControler = TextEditingController();
+  //fetch Function for
+
+  List<Contact> contactList = [];
+
+  Future<void> fetchContacts() async {
+    try {
+      contactList.clear();
+
+      var snapshot = await FirebaseFirestore.instance.collection("contacts").get();
+
+      for (var doc in snapshot.docs) {
+        contactList.add(
+          Contact(
+            id: doc.id,
+            username: doc['name'] ?? '',
+            userContactNumber: doc['number'] ?? '',
+          ),
+        );
+      }
+
+      notifyListeners();
+    } catch (e) {
+      print("Error fetching contacts: $e");
+    }
+  }
+
+
+
 }
 //Controllers
 
