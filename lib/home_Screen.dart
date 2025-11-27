@@ -9,31 +9,8 @@ import 'package:provider/provider.dart';
 import 'package:smr_app/HistoryPage.dart';
 import 'package:smr_app/MainProvider.dart';
 import 'package:smr_app/TaskDetailsPage.dart';
-import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
-
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(); // make sure firebase is initialized
-  runApp(
-    ChangeNotifierProvider(
-      create: (_) => MainProvider()..fetchReminders(), // fetch on start
-      child: const MyApp(),
-    ),
-  );
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: HomeScreen(),
-    );
-  }
-}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -64,8 +41,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   bool _isRecording = false;
   String? _currentAudio; // which audio path is currently playing
   String? _filePath; // last recorded file path
-
-  List<Map<String, String?>> reminders = [];
 
   @override
   void initState() {
@@ -262,10 +237,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       {required color, required int count, required String label, required String assetPath}) {
     return Container(
       width: width / 2.3,
+      height: height/ 7.5,
       padding: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(35),
         boxShadow: const [
           BoxShadow(color: Colors.black12, blurRadius: 1, offset: Offset(0, 1)),
         ],
@@ -295,7 +271,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
             ],
           ),
-          Text(label, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: color)),
+          Text(label, style: TextStyle(fontSize: 25, fontWeight: FontWeight.w800, color: color)),
         ],
       ),
     );
@@ -305,6 +281,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     final provider = Provider.of<MainProvider>(context, listen: true); // listen to changes
     final reminders = provider.reminders;
+
+
+    final todayCount = reminders.where((r) {
+      final now = DateTime.now();
+      final c = r.createdAt;
+      return c.year == now.year && c.month == now.month && c.day == now.day;
+    }).length;
+
     List<int> voiceNumbers = [];
     int count = 0;
     for (var r in reminders) {
@@ -346,14 +330,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             padding: EdgeInsets.symmetric(horizontal: width / 24),
             child: Row(
               children: [
-                _buildStatCard(width, height, count: reminders.length, label: 'Today', assetPath: "assets/Frame3.png", color: const Color(0xffFF6B2C)),
+                _buildStatCard(
+                  width,
+                  height,
+                  count: todayCount,
+                  label: 'Today',
+                  assetPath: "assets/Frame3.png",
+                  color: const Color(0xffFF6B2C),
+                ),
+
                 SizedBox(width: width / 25),
-                _buildStatCard(width, height, count: 5, label: 'Total', assetPath: "assets/Frame5.png", color: const Color(0xff00B9D6)),
+                _buildStatCard(width, height, count: reminders.length, label: 'Total', assetPath: "assets/Frame5.png", color: const Color(0xff00B9D6)),
               ],
             ),
           ),
 
-          SizedBox(height: height / 28),
+          SizedBox(height: height / 35),
 
           // Tasks Header
           Padding(
@@ -377,22 +369,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
           ),
 
-          SizedBox(height: height / 25),
+          SizedBox(height: height / 40),
 
           // Reminder list
           Expanded(
-            child: ListView.builder(
-              padding: EdgeInsets.symmetric(horizontal: width / 19),
-              itemCount: reminders.length,
-              itemBuilder: (context, index) {
-                final reminder = reminders[index];
-                int voiceCount = voiceNumbers[index];
+              child: reminders.isEmpty
+                  ? const Center(child: Text("No tasks found"))
+                  : ListView.builder(
+                padding: EdgeInsets.symmetric(horizontal: width / 19),
+                itemCount: reminders.length,
+                itemBuilder: (context, index) {
+                  final reminder = reminders[index];
+                  int voiceCount = voiceNumbers[index]; // ✅ This is correct
 
-                return InkWell(
+                  return InkWell(
                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const Taskdetailspage())),
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
                     child: Row(
                       children: [
@@ -406,7 +400,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             color: const Color(0xFFFE6B2C),
                           ),
                         ),
-                        SizedBox(width: width / 30),
+                        SizedBox(width: width / 25),
                         Expanded(
                           child: reminder.taskVoice!= null
                               ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -418,6 +412,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         // Play button for voice reminders
                         if (reminder.taskVoice != null)
                           IconButton(
+                            iconSize: 32,
                             icon: Icon(_currentAudio == reminder.taskVoice ? Icons.stop : Icons.play_arrow, color: Colors.blueAccent),
                             onPressed: () => _playAudio(reminder.taskVoice!),
                           ),
@@ -478,7 +473,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                 padding: const EdgeInsets.all(12.0),
                                                 child: Row(
                                                   children: [
-                                                     Image.asset("assets/Frame6.png",scale: 3,),
+                                                    Image.asset("assets/Frame6.png",scale: 3,),
                                                     const SizedBox(width: 16),
                                                     Column(
                                                       crossAxisAlignment: CrossAxisAlignment.start,

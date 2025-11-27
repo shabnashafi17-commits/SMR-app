@@ -26,19 +26,30 @@ class Reminder {
       'taskText': taskText,
       'taskVoice': taskVoice,
       'taskType': taskType,
-      'createdAt': createdAt.toIso8601String(),
+      'createdAt': Timestamp.fromDate(createdAt),
       'createdBy': createdBy,
       'createdById': createdById,
     };
   }
 
   static Reminder fromMap(Map<String, dynamic> map) {
+    final createdAtData = map['createdAt'];
+    DateTime createdAt;
+
+    if (createdAtData is Timestamp) {
+      createdAt = createdAtData.toDate();
+    } else if (createdAtData is String) {
+      createdAt = DateTime.parse(createdAtData);
+    } else {
+      createdAt = DateTime.now(); // fallback
+    }
+
     return Reminder(
       id: map['id'],
       taskText: map['taskText'],
       taskVoice: map['taskVoice'],
       taskType: map['taskType'],
-      createdAt: DateTime.parse(map['createdAt']),
+      createdAt: createdAt,
       createdBy: map['createdBy'],
       createdById: map['createdById'],
     );
@@ -48,20 +59,28 @@ class Reminder {
 class MainProvider extends ChangeNotifier {
   List<Reminder> reminders = [];
 
+  MainProvider() {
+    fetchReminders();
+  }
+
   final CollectionReference ref =
   FirebaseFirestore.instance.collection("Tasks");
 
   Future<void> fetchReminders() async {
     final snap = await ref.orderBy("createdAt", descending: true).get();
 
-    reminders = snap.docs
-        .map((e) => Reminder.fromMap(e.data() as Map<String, dynamic>))
-        .toList();
+    reminders = snap.docs.map((e) {
+      final data = e.data() as Map<String, dynamic>;
+      data["id"] = e.id; // 🔥 IMPORTANT
+      return Reminder.fromMap(data);
+    }).toList();
 
     notifyListeners();
+    print("Snap docs: ${snap.docs.map((e) => e.data())}");
   }
+
   Future<void> addTextReminder(String text) async {
-    final id = ref.doc().id;
+    final id = DateTime.now().millisecondsSinceEpoch.toString();
 
     final newReminder = Reminder(
       id: id,
@@ -74,14 +93,12 @@ class MainProvider extends ChangeNotifier {
     );
 
     await ref.doc(id).set(newReminder.toMap());
-
-    // Add new reminder at the top of the local list
     reminders.insert(0, newReminder);
-    notifyListeners(); // triggers UI update immediately
+    notifyListeners();
   }
 
   Future<void> addVoiceReminder(String audioPath) async {
-    final id = ref.doc().id;
+    final id = DateTime.now().millisecondsSinceEpoch.toString();
 
     final newReminder = Reminder(
       id: id,
@@ -94,26 +111,7 @@ class MainProvider extends ChangeNotifier {
     );
 
     await ref.doc(id).set(newReminder.toMap());
-
-    // Add new reminder at the top of the local list
     reminders.insert(0, newReminder);
-    notifyListeners(); // triggers UI update immediately
+    notifyListeners();
   }
-
-  Future<void> createDummyUser() async {
-    final CollectionReference usersRef =
-    FirebaseFirestore.instance.collection("USERS");
-
-    final id = usersRef.doc().id; // auto-id
-
-    await usersRef.doc(id).set({
-      "id": id,
-      "name": "John Doe",
-      "email": "john@example.com",
-      "age": 25,
-      "createdAt": DateTime.now().toIso8601String(),
-    });
-       notifyListeners();
-  }
-
 }
