@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:smr_app/LoginPage.dart';
 import 'package:smr_app/MainProvider.dart';
 import 'package:smr_app/home_Screen.dart';
 
@@ -48,7 +49,7 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home:  Splash_Screen(),
+      home: Splash_Screen(),
     );
   }
 }

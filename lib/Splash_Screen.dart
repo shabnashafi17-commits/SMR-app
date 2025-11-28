@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:smr_app/LoginPage.dart';
 
 import 'home_Screen.dart';
 
@@ -18,7 +19,7 @@ class _Splash_ScreenState extends State<Splash_Screen> {
     Timer(const Duration(seconds: 1), () {
       Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) =>HomeScreen()
+          MaterialPageRoute(builder: (context) =>Loginpage()
           )
       );
     });

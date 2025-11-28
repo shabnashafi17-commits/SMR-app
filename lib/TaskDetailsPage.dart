@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class Taskdetailspage extends StatelessWidget {
-  const Taskdetailspage({super.key});
+  final String? taskText; // text of the task
+  final String? taskVoice; // voice file path if any
+  const Taskdetailspage({super.key,this.taskText, this.taskVoice});
 
   @override
   Widget build(BuildContext context) {
@@ -182,21 +184,23 @@ class Taskdetailspage extends StatelessWidget {
 
                             // Trailing Blue Circle
                             Container(
-                                height: 40,
-                                width: 40,
-                                margin: EdgeInsets.only(right: 10),
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Color(0xFF0376FA),
+                              height: 40,
+                              width: 40,
+                              margin: EdgeInsets.only(right: 10),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Color(0xFF0376FA),
+                              ),
+                              child: IconButton(
+                                onPressed: () {},
+                                icon: Icon(
+                                  Icons.group_add_outlined,
+                                  size: 24,
+                                  color: Colors.white,
                                 ),
-                                child: IconButton(
-                                  onPressed: () {},
-                                  icon: Icon(
-                                    Icons.group_add_outlined,
-                                    size: 24,
-                                    color: Colors.white,
-                                  ),
-                                ))
+                              ),
+
+                            )
                           ],
                         ),
                       ),
@@ -221,6 +225,8 @@ class Taskdetailspage extends StatelessWidget {
                   ],
                 ),
               ),
+
+
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 20),
                 child: SizedBox(
@@ -520,7 +526,7 @@ class _TimePickerContainerState extends State<TimePickerContainer> {
                       style: ElevatedButton.styleFrom(
 
                         shape: StadiumBorder(),
-                        backgroundColor: Colors.blue,
+                        backgroundColor: Color(0xff0376FA),
                         foregroundColor: Colors.white,
                       ),
                       onPressed: () => Navigator.of(ctx).pop(),
@@ -694,7 +700,7 @@ class _SubtaskListContainerState extends State<SubtaskListContainer> {
               icon: Icon(
                 CupertinoIcons.add_circled,
                 size: 24,
-                color: Colors.blue, // icon color
+                color:Color(0xff0376FA), // icon color
               ),
               label: Text(
                 "Add",
@@ -702,11 +708,11 @@ class _SubtaskListContainerState extends State<SubtaskListContainer> {
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                   fontFamily: 'Inter',
-                  color: Colors.blue, // text color
+                  color: Color(0xff0376FA), // text color
                 ),
               ),
               style: OutlinedButton.styleFrom(
-                side: BorderSide(color: Colors.blue, width: 1), // blue border
+                side: BorderSide(color: Color(0xff0376FA), width: 1), // blue border
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),

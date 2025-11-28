@@ -324,20 +324,50 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 SizedBox(width: width / 40),
                 const Text("Hi, Nihal", style: TextStyle(fontWeight: FontWeight.bold)),
                 Spacer(),
-                TextButton(
-                    onPressed: () {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) => ContactAsign(),)
-                      );
-                    },
-                    child: Text("Add",
-                      style: TextStyle(
-                          fontWeight: FontWeight.w900,
-                          fontSize: 22,
-                          color: Colors.black
+                Padding(
+                  padding: const EdgeInsets.only(right: 15),
+                  child: SizedBox(
+                    width: 100, // set width
+                    height: 50, // set height
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => ContactAsign()),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white, // button color
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12), // rounded corners
+                        ),
+                        elevation: 1, // shadow depth
                       ),
-                    )
-                )
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Add",
+                            style: TextStyle(
+                              fontWeight: FontWeight.normal,
+                              fontSize: 16,
+                              color: Colors.black,
+                            ),
+                          ),
+                          Text(
+                            "Contacts",
+                            style: TextStyle(
+                              fontWeight: FontWeight.normal,
+                              fontSize: 12,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
               ],
             ),
           ),
@@ -401,7 +431,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   int voiceCount = voiceNumbers[index]; // ✅ This is correct
 
                   return InkWell(
-                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const Taskdetailspage())),
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) =>  Taskdetailspage( taskText: reminder.taskText,   // make sure task["text"] is a String?
+                    taskVoice: reminder.taskVoice,))),
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 12),
                     padding: const EdgeInsets.all(12),
@@ -431,7 +462,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         if (reminder.taskVoice != null)
                           IconButton(
                             iconSize: 32,
-                            icon: Icon(_currentAudio == reminder.taskVoice ? Icons.stop : Icons.play_arrow, color: Colors.blueAccent),
+                            icon: Icon(_currentAudio == reminder.taskVoice ? Icons.stop : Icons.play_arrow, color: Color(0xff0376FA),),
                             onPressed: () => _playAudio(reminder.taskVoice!),
                           ),
 
@@ -466,7 +497,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                 child: ElevatedButton(
                                                   onPressed: () {},
                                                   style: ElevatedButton.styleFrom(
-                                                    backgroundColor: Colors.blue,
+                                                    backgroundColor: Color(0xff0376FA),
                                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
                                                     elevation: 2,
                                                     padding: EdgeInsets.zero,
@@ -532,7 +563,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           child: Container(
                             width: width / 10,
                             height: height / 20,
-                            decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: Colors.blue),
+                            decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: Color(0xff0376FA),),
                             child: const Icon(Icons.group_add_outlined, color: Colors.white),
                           ),
                         ),
