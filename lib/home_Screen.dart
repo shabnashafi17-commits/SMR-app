@@ -291,16 +291,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       return c.year == now.year && c.month == now.month && c.day == now.day;
     }).length;
 
-    List<int> voiceNumbers = [];
-    int count = 0;
-    for (var r in reminders) {
-      if (r.taskVoice!= null) {
-        count++;
-        voiceNumbers.add(count);
-      } else {
-        voiceNumbers.add(0);
+    // Count all voice reminders in the current list
+    int totalVoiceCount = reminders.where((r) => r.taskVoice != null).length;
+
+// Map each reminder to its voice number, if applicable
+    List<int> voiceNumbers = reminders.map((r) {
+      if (r.taskVoice != null) {
+        return totalVoiceCount--;
       }
-    }
+      return 0;
+    }).toList();
+
 
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;

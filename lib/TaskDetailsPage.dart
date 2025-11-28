@@ -182,8 +182,8 @@ class Taskdetailspage extends StatelessWidget {
 
                             // Trailing Blue Circle
                             Container(
-                                height: 44,
-                                width: 44,
+                                height: 40,
+                                width: 40,
                                 margin: EdgeInsets.only(right: 10),
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
@@ -673,7 +673,7 @@ class _SubtaskListContainerState extends State<SubtaskListContainer> {
                                   onPressed: () {},
                                   icon: Icon(
                                     Icons.group_add_outlined,
-                                    size: 20,
+                                    size: 25,
                                     color: Color(0xFF0376FA),
                                   )),
                             ),
