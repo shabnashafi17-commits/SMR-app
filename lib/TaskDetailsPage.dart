@@ -1,14 +1,18 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:smr_app/MainProvider.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class Taskdetailspage extends StatelessWidget {
-  final String? taskText; // text of the task
-  final String? taskVoice; // voice file path if any
-  const Taskdetailspage({super.key,this.taskText, this.taskVoice});
+  final String? taskText;
+  final String? taskVoice;
+    const Taskdetailspage({super.key,this.taskText,this.taskVoice,});
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<MainProvider>(context, listen: true); // listen to changes
+    final reminders = provider.reminders;
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
 
@@ -150,7 +154,8 @@ class Taskdetailspage extends StatelessWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            // Leading icon
+
+                            // Icon
                             Container(
                               height: 35,
                               width: 36,
@@ -160,29 +165,45 @@ class Taskdetailspage extends StatelessWidget {
                                 color: Color(0xFFFFE7DD),
                               ),
                               child: Icon(
-                                Icons.checklist,
+                                taskVoice != null ? Icons.mic_none_outlined : Icons.checklist,
                                 size: 24,
                                 color: Color(0xFFFE6B2C),
                               ),
+
                             ),
 
-                            // Title text
+                            // ---- MAIN CONTENT (TEXT OR VOICE) ----
                             Expanded(
                               child: Padding(
-                                padding:
-                                const EdgeInsets.symmetric(horizontal: 15),
-                                child: Text(
-                                  'Tomorrow Meeting With Client',
+                                padding: EdgeInsets.symmetric(horizontal: 15),
+                                child: taskVoice != null
+                                    ? Row(
+                                  children: [
+                                    SizedBox(width: 8),
+                                    Text(
+                                      "Voice ",style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+
+                                  ],
+                                )
+                                    : Text(
+                                  taskText ?? "",
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
-                                    color: Colors.black,
+                                      color: Colors.grey
                                   ),
                                 ),
                               ),
                             ),
 
-                            // Trailing Blue Circle
+                            // Blue Circle Add Group Icon
                             Container(
                               height: 40,
                               width: 40,
@@ -199,8 +220,7 @@ class Taskdetailspage extends StatelessWidget {
                                   color: Colors.white,
                                 ),
                               ),
-
-                            )
+                            ),
                           ],
                         ),
                       ),
@@ -208,24 +228,25 @@ class Taskdetailspage extends StatelessWidget {
 
                     SizedBox(height: screenHeight * 10 / 932),
 
+                    // ---- DATE / TIME HERE ----
                     Padding(
                       padding: const EdgeInsets.only(right: 14),
                       child: Align(
                         alignment: Alignment.bottomRight,
                         child: Text(
-                          '15/10/2025, 10:00 AM',
+                          "Your Date & Time",   // ← Replace with real dynamic value
                           style: TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Color(0xFF4B5563)),
+                            fontFamily: 'Inter',
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF4B5563),
+                          ),
                         ),
                       ),
                     )
                   ],
                 ),
               ),
-
 
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 20),
