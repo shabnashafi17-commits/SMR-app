@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:smr_app/home_Screen.dart';
 
 class Loginpage extends StatefulWidget {
@@ -82,51 +83,75 @@ class _LoginpageState extends State<Loginpage> {
                 SizedBox(height: 10),
 
                 // PHONE NUMBER FIELD
+                // PHONE NUMBER FIELD
                 SizedBox(
                   width: 320,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Color(0xffF2F2F2),
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.08),
-                          blurRadius: 15,
-                          offset: Offset(0, 5),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Color(0xffF2F2F2),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.08),
+                              blurRadius: 15,
+                              offset: Offset(0, 5),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: TextFormField(
-                      controller: phoneController,
-                      keyboardType: TextInputType.phone,
-                      decoration: InputDecoration(
-                        hintText: "Enter phone number",
-                        hintStyle: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontSize: 16,
-                        ),
-                        prefixText: "+91 ",
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(
-                          vertical: 15,
-                          horizontal: 15,
+
+                        child: TextFormField(
+                          controller: phoneController,
+                          keyboardType: TextInputType.phone,
+
+                          // 🔥 10-Digit Limit + Numbers Only
+                          maxLength: 10,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+
+                          onChanged: (value) {
+                            setState(() {
+                              if (value.length != 10) {
+                                phoneError = "Enter valid 10-digit number";
+                              } else {
+                                phoneError = null;
+                              }
+                            });
+                          },
+
+                          decoration: InputDecoration(
+                            hintText: "Enter phone number",
+                            hintStyle: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 16,
+                            ),
+                            prefixText: "+91 ",
+                            counterText: "",
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.symmetric(
+                              vertical: 15,
+                              horizontal: 15,
+                            ),
+                          ),
                         ),
                       ),
 
-                      // 🔥 Phone Validation Here
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return "Please enter phone number";
-                        }
-                        if (!RegExp(r'^[0-9]{10}$').hasMatch(value)) {
-                          return "Enter valid 10-digit number";
-                        }
-                        return null;
-                      },
-                    ),
-
+                      // 🔥 SHOW PHONE VALIDATION ERROR BELOW FIELD
+                      if (phoneError != null)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 5, top: 5),
+                          child: Text(
+                            phoneError!,
+                            style: TextStyle(color: Colors.red, fontSize: 13),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
+
 
                 SizedBox(height: 20),
 
