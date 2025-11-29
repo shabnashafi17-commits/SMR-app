@@ -116,8 +116,8 @@ class Taskdetailspage extends StatelessWidget {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
+      body:
+         Padding(
           padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -309,8 +309,7 @@ class Taskdetailspage extends StatelessWidget {
 
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 20),
-                child: SizedBox(
-                  height: screenHeight * 180 / 932,
+                child: Container(
                   width: screenWidth * 350 / 430,
                   child: Column(
                     children: [
@@ -326,24 +325,24 @@ class Taskdetailspage extends StatelessWidget {
                         ),
                       ),
 
-                      SizedBox(height: screenHeight * 15 / 932),
+                      SizedBox(height: 15),
 
                       Row(
                         children: [
                           Expanded(child: DatePickerContainer()),
-                          SizedBox(width: 12), // spacing
+                          SizedBox(width: 12),
                           Expanded(child: TimePickerContainer()),
                         ],
                       ),
 
-                      SizedBox(height: screenHeight * 15 / 932),
+                      SizedBox(height: 15),
 
-                      //reminder
+                      // Reminder container
                       Container(
-                        // height:screenHeight* 60/932,
-                        width: screenWidth * 400 / 430,
+                        height: 60,
                         decoration: BoxDecoration(
                           color: Colors.white,
+                          borderRadius: BorderRadius.circular(15),
                           boxShadow: [
                             BoxShadow(
                               color: Color(0x15000000),
@@ -351,91 +350,56 @@ class Taskdetailspage extends StatelessWidget {
                               offset: Offset(0, 2),
                             ),
                           ],
-                          borderRadius: BorderRadius.circular(15),
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 15, vertical: 10),
+                          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                'Reminder',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.black,
-                                ),
-                              ),
+                              Text("Reminder", style: TextStyle(fontSize: 16)),
                               Row(
                                 children: [
-                                  Text(
-                                    '1hr Before',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w400,
-                                      color: Color(0xFF4B5563),
-                                    ),
-                                  ),
-                                  SizedBox(width: 6),
-                                  SizedBox(
-                                      height: 24,
-                                      width: 24,
-                                      child: IconButton(
-                                        onPressed: () {},
-                                        icon: Icon(
-                                          CupertinoIcons.chevron_down,
-                                          size: 14,
-                                          color: Colors.black,
-                                        ),
-                                      )),
+                                  Text('1hr Before'),
+                                  Icon(CupertinoIcons.chevron_down, size: 14),
                                 ],
-                              ),
+                              )
                             ],
                           ),
                         ),
                       ),
-                      SizedBox(height: 20,),
 
-                      Padding(
-                        padding: const EdgeInsets.only(left: 240),
+                      SizedBox(height: 10),
+
+                      Align(
+                        alignment: Alignment.centerRight,
                         child: ElevatedButton(
-                          onPressed: () {
-                            // your action
-                          },
+                          onPressed: () {},
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white, // button background
-                            side: BorderSide(color: Color(0xff0376FA), width: 1), // blue border
-                            foregroundColor: Color(0xff0376FA), // text color
+                            backgroundColor: Colors.white,
+                            foregroundColor: Color(0xff0376FA),
+                            side: BorderSide(color: Color(0xff0376FA)),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20), // rounded corners
-                            ),
-                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          ),
-                          child: Text(
-                            "Save",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              color: Color(0xff0376FA), // ensure text is blue
+                              borderRadius: BorderRadius.circular(20),
                             ),
                           ),
+                          child: Text("Save"),
                         ),
                       ),
-                      SizedBox(height: 20,),
 
+                      SizedBox(height: 10),
                     ],
                   ),
                 ),
               ),
 
-              SizedBox(height: 40,),
+
               SubtaskListContainer()
-            ],
-          ),
-        ),
-      ),
-    );
+    ]
+    )
+    )
+      );
+
+
   }
 }
 
@@ -724,7 +688,7 @@ class _SubtaskListContainerState extends State<SubtaskListContainer> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 400,
+      height: 290,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
       ),
@@ -742,11 +706,11 @@ class _SubtaskListContainerState extends State<SubtaskListContainer> {
               ),
             ),
           ),
+          SizedBox(height: 10),
           Expanded(
             child: ListView.builder(
               itemCount: subtasks.length,
-              // physics: const NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
+                            shrinkWrap: true,
               itemBuilder: (context, index) {
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 6),
@@ -804,7 +768,7 @@ class _SubtaskListContainerState extends State<SubtaskListContainer> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.only(top: 10,),
             child: SizedBox(
               height: 40, // match ElevatedButton height
               child: FloatingActionButton.extended(
