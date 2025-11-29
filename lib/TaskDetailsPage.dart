@@ -123,135 +123,189 @@ class Taskdetailspage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Container(
-                height: screenHeight * 103 / 932,
-                width: screenWidth * 361 / 430,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(18),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Color(0x15000000),
-                      blurRadius: 2,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8, right: 5, left: 5),
-                      child: Container(
-                        height: screenHeight * 60 / 932,
-                        width: screenWidth * 350 / 430,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(18),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Color(0x15000000),
-                              blurRadius: 4,
-                              offset: Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
 
-                            // Icon
-                            Container(
-                              height: 35,
-                              width: 36,
-                              margin: EdgeInsets.only(left: 10),
+              Column(
+                children: [
+                  // --------- LARGER TEXT TASK CONTAINER ---------
+                  if (taskVoice == null)
+                    Container(
+                      height: screenHeight * 103 / 932,
+                      width: screenWidth * 361 / 430,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(18),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Color(0x15000000),
+                            blurRadius: 2,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8, right: 5, left: 5),
+                            child: Container(
+                              height: screenHeight * 60 / 932,
+                              width: screenWidth * 350 / 430,
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                color: Color(0xFFFFE7DD),
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(18),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Color(0x15000000),
+                                    blurRadius: 4,
+                                    offset: Offset(0, 4),
+                                  ),
+                                ],
                               ),
-                              child: Icon(
-                                taskVoice != null ? Icons.mic_none_outlined : Icons.checklist,
-                                size: 24,
-                                color: Color(0xFFFE6B2C),
-                              ),
-
-                            ),
-
-                            // ---- MAIN CONTENT (TEXT OR VOICE) ----
-                            Expanded(
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 15),
-                                child: taskVoice != null
-                                    ? Row(
-                                  children: [
-                                    SizedBox(width: 8),
-                                    Text(
-                                      "Voice - $voiceCount",
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        color: Color(0xFF4B5563),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Container(
+                                    height: 35,
+                                    width: 36,
+                                    margin: EdgeInsets.only(left: 10),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
+                                      color: Color(0xFFFFE7DD),
+                                    ),
+                                    child: Icon(
+                                      Icons.checklist,
+                                      size: 24,
+                                      color: Color(0xFFFE6B2C),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Padding(
+                                      padding: EdgeInsets.symmetric(horizontal: 15),
+                                      child: Text(
+                                        taskText ?? "",
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          color: Color(0xFF4B5563),
+                                        ),
                                       ),
                                     ),
-
-                                  ],
-                                )
-                                    : Text(
-                                  taskText ?? "",
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF4B5563),
                                   ),
+                                  Container(
+                                    height: 40,
+                                    width: 40,
+                                    margin: EdgeInsets.only(right: 10),
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Color(0xFF0376FA),
+                                    ),
+                                    child: IconButton(
+                                      onPressed: () {},
+                                      icon: Icon(
+                                        Icons.group_add_outlined,
+                                        size: 24,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: screenHeight * 10 / 932),
+                          // DATE / TIME for text task
+                          Padding(
+                            padding: const EdgeInsets.only(right: 14),
+                            child: Align(
+                              alignment: Alignment.bottomRight,
+                              child: Text(
+                                "Your Date & Time",
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF4B5563),
                                 ),
                               ),
                             ),
-
-                            // Blue Circle Add Group Icon
-                            Container(
-                              height: 40,
-                              width: 40,
-                              margin: EdgeInsets.only(right: 10),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Color(0xFF0376FA),
-                              ),
-                              child: IconButton(
-                                onPressed: () {},
-                                icon: Icon(
-                                  Icons.group_add_outlined,
-                                  size: 24,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
 
-                    SizedBox(height: screenHeight * 10 / 932),
-
-                    // ---- DATE / TIME HERE ----
-                    Padding(
-                      padding: const EdgeInsets.only(right: 14),
-                      child: Align(
-                        alignment: Alignment.bottomRight,
-                        child: Text(
-                          "Your Date & Time",   // ← Replace with real dynamic value
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: Color(0xFF4B5563),
+                  // --------- SMALL VOICE TASK CONTAINER ---------
+                  if (taskVoice != null)
+                    Container(
+                      height: 60,
+                      width: screenWidth * 361 / 430,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(18),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Color(0x15000000),
+                            blurRadius: 2,
+                            offset: Offset(0, 2),
                           ),
-                        ),
+                        ],
                       ),
-                    )
-                  ],
-                ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Mic Icon
+                          Container(
+                            height: 35,
+                            width: 36,
+                            margin: EdgeInsets.only(left: 10),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              color: Color(0xFFFFE7DD),
+                            ),
+                            child: Icon(
+                              Icons.mic_none_outlined,
+                              size: 24,
+                              color: Color(0xFFFE6B2C),
+                            ),
+                          ),
+                          // Voice Label
+                          Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 15),
+                              child: Text(
+                                "Voice - $voiceCount",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF4B5563),
+                                ),
+                              ),
+                            ),
+                          ),
+                          // Blue Circle Icon
+                          Container(
+                            height: 40,
+                            width: 40,
+                            margin: EdgeInsets.only(right: 10),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Color(0xFF0376FA),
+                            ),
+                            child: IconButton(
+                              onPressed: () {},
+                              icon: Icon(
+                                Icons.group_add_outlined,
+                                size: 24,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
               ),
+
 
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 20),
@@ -341,10 +395,41 @@ class Taskdetailspage extends StatelessWidget {
                           ),
                         ),
                       ),
+                      SizedBox(height: 20,),
+
+                      Padding(
+                        padding: const EdgeInsets.only(left: 240),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            // your action
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white, // button background
+                            side: BorderSide(color: Color(0xff0376FA), width: 1), // blue border
+                            foregroundColor: Color(0xff0376FA), // text color
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20), // rounded corners
+                            ),
+                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          ),
+                          child: Text(
+                            "Save",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xff0376FA), // ensure text is blue
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 20,),
+
                     ],
                   ),
                 ),
               ),
+
+              SizedBox(height: 40,),
               SubtaskListContainer()
             ],
           ),
@@ -718,30 +803,28 @@ class _SubtaskListContainerState extends State<SubtaskListContainer> {
               },
             ),
           ),
-          SizedBox(height: 12),
-          Align(
-            alignment: Alignment.center,
-            child: OutlinedButton.icon(
-              onPressed: _addSubtask,
-              icon: Icon(
-                CupertinoIcons.add_circled,
-                size: 24,
-                color:Color(0xff0376FA), // icon color
-              ),
-              label: Text(
-                "Add",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  fontFamily: 'Inter',
-                  color: Color(0xff0376FA), // text color
-                ),
-              ),
-              style: OutlinedButton.styleFrom(
-                side: BorderSide(color: Color(0xff0376FA), width: 1), // blue border
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: SizedBox(
+              height: 40, // match ElevatedButton height
+              child: FloatingActionButton.extended(
+                onPressed: _addSubtask,
+                backgroundColor: Colors.white,
+                foregroundColor: Color(0xff0376FA),
+                elevation: 0, // same as ElevatedButton
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(20), // same as ElevatedButton
+                  side: BorderSide(color: Color(0xff0376FA), width: 1),
+                ),
+                icon: Icon(CupertinoIcons.add_circled, size: 24),
+                label: Text(
+                  "Add",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    fontFamily: 'Inter',
+                    color: Color(0xff0376FA),
+                  ),
                 ),
               ),
             ),
