@@ -121,10 +121,22 @@ class MainProvider extends ChangeNotifier {
   TextEditingController contactnumberControler = TextEditingController();
   Future<bool> addcontact() async {
     try {
-      await FirebaseFirestore.instance.collection("contacts").add({
+      // Save to Firebase
+      var docRef = await FirebaseFirestore.instance.collection("contacts").add({
         "name": usernameControler.text.trim(),
         "number": contactnumberControler.text.trim(),
       });
+
+      // Add to local list instantly (UI updates immediately)
+      contactList.add(
+        Contact(
+          id: docRef.id,
+          username: usernameControler.text.trim(),
+          userContactNumber: contactnumberControler.text.trim(),
+        ),
+      );
+
+      notifyListeners();  // 🔥 refresh ListView immediately
 
       // Clear controllers
       usernameControler.clear();
@@ -135,9 +147,17 @@ class MainProvider extends ChangeNotifier {
       print("Error adding contact: $e");
       return false; // failed
     }
+  }  //fetch Function for
+  int tempCheckedList=-1;
+  void chnageAddContact(int index){
+    if (index==tempCheckedList){
+      tempCheckedList=-1;
+    }
+    else {
+      tempCheckedList = index;
+    }
+    notifyListeners();
   }
-  //fetch Function for
-
   List<Contact> contactList = [];
 
   Future<void> fetchContacts() async {
@@ -155,6 +175,7 @@ class MainProvider extends ChangeNotifier {
           ),
         );
       }
+      print(contactList.length.toString()+"jghjgh");
 
       notifyListeners();
     } catch (e) {

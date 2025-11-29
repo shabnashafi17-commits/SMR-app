@@ -7,9 +7,12 @@ import 'MainProvider.dart';
 import 'home_Screen.dart';
 
 class ContactAsign extends StatelessWidget {
-  const ContactAsign({super.key});
+  ContactAsign({super.key});
+  final _formKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
+
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     List<Map<String, dynamic>> Contactlist = [
@@ -19,7 +22,9 @@ class ContactAsign extends StatelessWidget {
       {"name": "Ameen", "number": 9876543},
       {"name": "Nihal", "number": 6534546},
       {"name": "Ameen", "number": 9876543},
+      {"name": "Ameen", "number": 9876543},
     ];
+    // final _formKey = GlobalKey<FormState>();
     return Scaffold(
       backgroundColor: Color(0xffF2F2F2),
       appBar: AppBar(backgroundColor: Color(0xffF2F2F2),
@@ -29,152 +34,170 @@ class ContactAsign extends StatelessWidget {
                   MaterialPageRoute(builder:(context) => HomeScreen(),));
             },
             child: Icon(Icons.arrow_back_ios)),),
-
       body: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Consumer<MainProvider>(
-            builder: (context, provider, child) {
-              return Padding(
-                padding: EdgeInsets.only(left: width / 20, right: width / 20),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Color(0xffF2F2F2),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.08),
-                        blurRadius: 15,
-                        offset: Offset(0, 5),
+          Form(
+            key:_formKey ,
+            child: Column(
+              children: [
+                //User name Textfield
+                Consumer<MainProvider>(
+                  builder: (context, provider, child) {
+
+
+                    return Padding(
+                      padding: EdgeInsets.only(left: width / 20, right: width / 20),
+                      child: Container(
+                          decoration: BoxDecoration(
+                            color: Color(0xffF2F2F2),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.08),
+                                blurRadius: 15,
+                                offset: Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child:TextFormField(
+                            controller: provider.usernameControler,
+                            decoration: InputDecoration(
+                              hintText: "User Name",
+                              hintStyle: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: 14,
+                              ),
+                              contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 18),
+                              border: InputBorder.none,
+                            ),
+
+                            // ⭐ VALIDATOR HERE ⭐
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return "PLEASE FILL USER NAME";
+                              }
+                              return null;
+                            },
+                          )
+
                       ),
-                    ],
-                  ),
-                  child: TextField(
-                    controller: provider.usernameControler,   // ✅ USE PROVIDER HERE
-                    decoration: InputDecoration(
-                      hintText: "User Name",
-                      hintStyle: TextStyle(
-                        color: Colors.grey.shade600,
-                        fontSize: 14,
-                      ),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 18),
-                      border: InputBorder.none,
-                    ),
-                    keyboardType: TextInputType.name,
-                    inputFormatters: [
-                      OnlyLettersFirstCapitalFormatter(),
-                    ],
-                  ),
+                    );
+                  },
                 ),
-              );
-            },
-          ),
+                SizedBox(height: height / 30),
+                //User name contact Textfield
+                Consumer<MainProvider>(
+                    builder: (context,provider,child) {
+                      return Padding(
+                          padding: EdgeInsets.only(left: width / 20, right: width / 20),
+                          child: Container(
+                              decoration: BoxDecoration(
+                                color: Color(0xffF2F2F2),
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.08),
+                                    blurRadius: 15,
+                                    offset: Offset(0, 5),
+                                  ),
+                                ],
+                              ),
+                              child:TextFormField(
+                                controller: provider.contactnumberControler,
+                                decoration: InputDecoration(
+                                  hintText: "Contact Number",
+                                  hintStyle: TextStyle(
+                                    color: Colors.grey.shade600,
+                                    fontSize: 14,
+                                  ),
+                                  contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 18),
+                                  border: InputBorder.none,
+                                ),
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [
+                                  LengthLimitingTextInputFormatter(10),
+                                ],
 
-          SizedBox(height: height / 30),
-          Consumer<MainProvider>(
-              builder: (context,provider,child) {
-                return Padding(
-                    padding: EdgeInsets.only(left: width / 20, right: width / 20),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Color(0xffF2F2F2),
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.08),
-                            blurRadius: 15,
-                            offset: Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      child: TextField(
-                        controller: provider.contactnumberControler,
-                        decoration: InputDecoration(
-                          hintText: "Contact Number",
-                          hintStyle: TextStyle(
-                            color: Colors.grey.shade600,
-                            fontSize: 14,
-                          ),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 18),
-                          border: InputBorder.none, // important for clean UI inside container
-                        ),
-                        keyboardType: TextInputType.phone,
-                        inputFormatters: [
-                          LengthLimitingTextInputFormatter(10)
-                        ],
-                      ),
-                    )
+                                validator: (value) {
+                                  if (value == null || value.trim().isEmpty) {
+                                    return "PLEASE FILL CONTACT NUMBER";
+                                  }
+                                  if (value.length < 10) {
+                                    return "NUMBER MUST BE 10 DIGITS";
+                                  }
+                                  return null;
+                                },
+                              )
 
-                );
-              }
-          ),
-          SizedBox(height: height / 30),
-          Padding(
-            padding: EdgeInsets.only(left: width / 30, right: width / 30),
-            child: Consumer<MainProvider>(
-                builder: (context,provider,child) {
-                  return TextButton(
-                    onPressed: () async {
-                      if (provider.usernameControler.text.trim().isEmpty ||
-                          provider.contactnumberControler.text.trim().isEmpty) {
 
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text("Please fill all fields!"),
-                            backgroundColor: Colors.red,
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
-                        return;
-                      }
-                      bool result = await provider.addcontact();
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          Future.delayed(Duration(seconds: 2), () {
-                            Navigator.of(context).pop();
-                          });
+                          )
 
-                          return AlertDialog(
-                            content: Padding(
-                              padding: EdgeInsets.only(left: width / 8),
+                      );
+                    }
+                ),
+
+                SizedBox(height: height / 30),
+                Padding(
+                  padding: EdgeInsets.only(left: width / 30, right: width / 30),
+                  child: Consumer<MainProvider>(
+                      builder: (context,provider,child) {
+                        return TextButton(
+                          onPressed: () async {
+                            if (!_formKey.currentState!.validate()) {
+                              return; // ❌ Stop if validation fails
+                            }
+
+                            bool result = await provider.addcontact();
+
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                Future.delayed(Duration(seconds: 2), () {
+                                  Navigator.of(context).pop();
+                                });
+
+                                return AlertDialog(
+                                  content: Padding(
+                                    padding: EdgeInsets.only(left: width / 8),
+                                    child: Text(
+                                      result ? "Contact Added Successfully ✅"
+                                          : "Failed! ❌ Try Again",
+                                      style: TextStyle(
+                                        color: result ? Colors.green : Colors.red,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 22,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+
+                          child: Container(
+                            height: height / 16,
+                            width: width / 1,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                              color: Colors.blue,
+                            ),
+                            child: Center(
                               child: Text(
-                                result ? "Contact Added Successfully ✅"
-                                    : "Failed! ❌ Try Again ",
+                                "Add",
                                 style: TextStyle(
-                                  color: result ? Colors.green : Colors.red,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 22,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 16
                                 ),
                               ),
                             ),
-                          );
-                        },
-                      );
-                    },
-
-
-
-                    child: Container(
-                      height: height / 16,
-                      width: width / 1,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        color: Color(0xff0376FA),
-                      ),
-                      child: Center(
-                        child: Text(
-                          "Add",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 16
                           ),
-                        ),
-                      ),
-                    ),
-                  );
-                }
+                        );
+                      }
+                  ),
+                )
+              ],
             ),
           ),
           Divider(),
@@ -187,16 +210,14 @@ class ContactAsign extends StatelessWidget {
               ),
             ),
           ),
-
           Expanded(
-
             // Subtract an estimated height for the heading/padding (~60)
             child: Consumer<MainProvider>(
                 builder: (context,provier,child) {
                   return ListView.builder(
                     itemCount: provier.contactList.length,
                     itemBuilder: (context, index) {
-                      final item = provier.contactList[index];
+                      final contact = provier.contactList[index];
                       return Container(
                         decoration: BoxDecoration(
                             borderRadius:
@@ -220,8 +241,7 @@ class ContactAsign extends StatelessWidget {
                                 CrossAxisAlignment
                                     .start,
                                 children: [
-                                  Text(
-                                    item.username,
+                                  Text("Name: ${contact.username}",
                                     style: const TextStyle(
                                       fontWeight:
                                       FontWeight.bold,
@@ -230,7 +250,7 @@ class ContactAsign extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    "Phone: ${item.userContactNumber}",
+                                    ("Phone: ${contact.userContactNumber}"),
                                   ),
                                 ],
                               ),
