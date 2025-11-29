@@ -9,6 +9,12 @@ class Loginpage extends StatefulWidget {
 }
 
 class _LoginpageState extends State<Loginpage> {
+  final _formKey = GlobalKey<FormState>();
+  String? otpError;
+  String? phoneError;
+
+
+
   final phoneController = TextEditingController();
   final otpController = TextEditingController();
 
@@ -37,9 +43,11 @@ class _LoginpageState extends State<Loginpage> {
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(20),
+            key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+
                 SizedBox(height: 20),
 
                 Text(
@@ -88,13 +96,13 @@ class _LoginpageState extends State<Loginpage> {
                         ),
                       ],
                     ),
-                    child: TextField(
+                    child: TextFormField(
                       controller: phoneController,
                       keyboardType: TextInputType.phone,
                       decoration: InputDecoration(
                         hintText: "Enter phone number",
                         hintStyle: TextStyle(
-                          color: Colors.grey.shade600, // <-- Hint text color
+                          color: Colors.grey.shade600,
                           fontSize: 16,
                         ),
                         prefixText: "+91 ",
@@ -104,7 +112,19 @@ class _LoginpageState extends State<Loginpage> {
                           horizontal: 15,
                         ),
                       ),
+
+                      // 🔥 Phone Validation Here
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "Please enter phone number";
+                        }
+                        if (!RegExp(r'^[0-9]{10}$').hasMatch(value)) {
+                          return "Enter valid 10-digit number";
+                        }
+                        return null;
+                      },
                     ),
+
                   ),
                 ),
 
@@ -117,11 +137,20 @@ class _LoginpageState extends State<Loginpage> {
                     height: 50,
                     child: ElevatedButton(
                       onPressed: () {
-                        if (phoneController.text.trim().length == 10) {
+                        String phone = phoneController.text.trim();
+
+                        if (phone.length != 10) {
                           setState(() {
-                            showOtpField = true;
+                            phoneError = "Enter a valid 10-digit phone number";
                           });
+                          return; // Stop here, don't show OTP field
                         }
+
+                        // Phone is valid → show OTP input
+                        setState(() {
+                          phoneError = null;
+                          showOtpField = true;
+                        });
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xff074899),
@@ -155,47 +184,83 @@ class _LoginpageState extends State<Loginpage> {
                   // OTP FIELD (MATCHING PHONE FIELD STYLE)
                   SizedBox(
                     width: 320,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Color(0xffF2F2F2),
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.08),
-                            blurRadius: 15,
-                            offset: Offset(0, 5),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Color(0xffF2F2F2),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.08),
+                                blurRadius: 15,
+                                offset: Offset(0, 5),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      child: TextField(
-                        controller: otpController,
-                        keyboardType: TextInputType.number,
-                        maxLength: 6,
-                        decoration: InputDecoration(
-                          hintText: "6-digit OTP",
-                          hintStyle: TextStyle(
-                            color: Colors.grey.shade600, // <-- Hint text color
-                            fontSize: 16,
-                          ),
-                          counterText: "",
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(
-                            vertical: 15,
-                            horizontal: 15,
+                          child: TextField(
+                            controller: otpController,
+                            keyboardType: TextInputType.number,
+                            maxLength: 6,
+
+                            onChanged: (value) {
+                              setState(() {
+                                if (value.length < 6) {
+                                  otpError = "Please enter a valid 6-digit OTP";
+                                } else {
+                                  otpError = null;
+                                }
+                              });
+                            },
+
+                            decoration: InputDecoration(
+                              hintText: "6-digit OTP",
+                              hintStyle: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: 16,
+                              ),
+                              counterText: "",
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(
+                                vertical: 15,
+                                horizontal: 15,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+
+                        // 🔥 ERROR TEXT DISPLAY
+                        if (otpError != null)
+                          Padding(
+                            padding: const EdgeInsets.only(left: 5, top: 5),
+                            child: Text(
+                              otpError!,
+                              style: TextStyle(color: Colors.red, fontSize: 13),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
 
-                  SizedBox(height: 25),
+                  SizedBox(
+                    height: 20,
+                  ),
 
-                  // VERIFY OTP BUTTON
+
                   SizedBox(
                     width: 320,
                     height: 50,
                     child: ElevatedButton(
                       onPressed: () {
+                        if (otpController.text.trim().length != 6) {
+                          setState(() {
+                            otpError = "Please enter a valid 6-digit OTP";
+                          });
+                          return; // stop here
+                        }
+
+                        // OTP correct -> navigate
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => HomeScreen()),
@@ -210,6 +275,7 @@ class _LoginpageState extends State<Loginpage> {
                       ),
                     ),
                   ),
+
                 ],
               ],
             ),

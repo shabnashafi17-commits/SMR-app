@@ -454,9 +454,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         Expanded(
                           child: reminder.taskVoice!= null
                               ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                            Text("Voice - $voiceCount", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.grey)),
+                            Text("Voice - $voiceCount", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF4B5563),)),
                           ])
-                              : Text(reminder.taskText?? "", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.grey)),
+                              : Text(reminder.taskText?? "", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF4B5563),)),
                         ),
 
                         // Play button for voice reminders

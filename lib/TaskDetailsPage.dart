@@ -13,6 +13,10 @@ class Taskdetailspage extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = Provider.of<MainProvider>(context, listen: true); // listen to changes
     final reminders = provider.reminders;
+    int voiceCount = reminders.where(
+            (r) => r.taskVoice != null && r.taskVoice!.isNotEmpty).length;
+
+
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
 
@@ -181,10 +185,11 @@ class Taskdetailspage extends StatelessWidget {
                                   children: [
                                     SizedBox(width: 8),
                                     Text(
-                                      "Voice ",style: TextStyle(
+                                      "Voice - $voiceCount",
+                                      style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
-                                        color: Colors.grey,
+                                        color: Color(0xFF4B5563),
                                       ),
                                     ),
 
@@ -197,7 +202,7 @@ class Taskdetailspage extends StatelessWidget {
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
-                                      color: Colors.grey
+                                    color: Color(0xFF4B5563),
                                   ),
                                 ),
                               ),
