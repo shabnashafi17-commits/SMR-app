@@ -12,6 +12,7 @@ class ContactAsign extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print("nihal pushedddd");
 
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
@@ -23,6 +24,7 @@ class ContactAsign extends StatelessWidget {
       {"name": "Nihal", "number": 6534546},
       {"name": "Ameen", "number": 9876543},
       {"name": "Ameen", "number": 9876543},
+
     ];
     // final _formKey = GlobalKey<FormState>();
     return Scaffold(
