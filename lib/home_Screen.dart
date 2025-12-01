@@ -535,7 +535,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                       padding: const EdgeInsets.all(12.0),
                                                       child: Row(
                                                         children: [
-                                                          Icon(Icons.person_outline),
+                                                          SizedBox(
+                                                            width:width/15,
+                                                              height: height/15,
+                                                              child: Image(image: AssetImage("assets/Frame6.png"))),
                                                           SizedBox(width: 16),
 
                                                           Expanded(
@@ -543,7 +546,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                               crossAxisAlignment: CrossAxisAlignment.start,
                                                               children: [
                                                                 Text(
-                                                                  "Name: ${contact.username}",
+                                                                 contact.username,
                                                                   style: TextStyle(
                                                                     fontWeight: FontWeight.bold,
                                                                     fontSize: 16,
@@ -552,7 +555,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                 ),
                                                                 SizedBox(height: 4),
                                                                 Text(
-                                                                  "Phone: ${contact.userContactNumber}",
+                                                                  contact.userContactNumber,
                                                                   overflow: TextOverflow.ellipsis,
                                                                 ),
                                                               ],

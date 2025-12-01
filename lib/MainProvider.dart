@@ -56,7 +56,6 @@ class Reminder {
     );
   }
 }
-
 class MainProvider extends ChangeNotifier {
   List<Reminder> reminders = [];
 
@@ -128,13 +127,15 @@ class MainProvider extends ChangeNotifier {
       });
 
       // Add to local list instantly (UI updates immediately)
-      contactList.add(
+      contactList.insert(
+        0, // index 0 → first element
         Contact(
           id: docRef.id,
           username: usernameControler.text.trim(),
           userContactNumber: contactnumberControler.text.trim(),
         ),
       );
+
 
       notifyListeners();  // 🔥 refresh ListView immediately
 

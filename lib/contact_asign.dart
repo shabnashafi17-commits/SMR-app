@@ -59,6 +59,7 @@ class ContactAsign extends StatelessWidget {
                                 offset: Offset(0, 5),
                               ),
                             ],
+
                           ),
                           child:TextFormField(
                             textCapitalization: TextCapitalization.sentences,
