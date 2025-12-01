@@ -201,7 +201,117 @@ class Taskdetailspage extends StatelessWidget {
                                       color: Color(0xFF0376FA),
                                     ),
                                     child: IconButton(
-                                      onPressed: () {},
+                                      onPressed: ()async {
+                                        print("dfkjhjvjhd");
+                                        await provider.fetchContacts();
+                                        // if (isCheckedList.length != Contactlist.length) {
+                                        //   isCheckedList = List.generate(Contactlist.length, (_) => false);
+                                        // }
+                                        showModalBottomSheet(
+                                          context: context,
+                                          backgroundColor: const Color(0xffF2F2F2),
+                                          builder: (BuildContext context) {
+                                            final double halfScreenHeight = MediaQuery.of(context).size.height / 2;
+                                            return Container(
+                                              padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: <Widget>[
+                                                  Padding(
+                                                    padding: EdgeInsets.only(top: screenHeight / 22, left: screenWidth / 30, bottom: screenHeight / 35),
+                                                    child: Row(
+                                                      children: [
+                                                        const Text("Contact List", style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+                                                        const Spacer(),
+                                                        Padding(
+                                                          padding: const EdgeInsets.only(right: 10),
+                                                          child: SizedBox(
+                                                            height: screenHeight / 25,
+                                                            width: screenWidth / 6,
+                                                            child: ElevatedButton(
+                                                              onPressed: () {},
+                                                              style: ElevatedButton.styleFrom(
+                                                                backgroundColor: Color(0xff0376FA),
+                                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                                                                elevation: 2,
+                                                                padding: EdgeInsets.zero,
+                                                              ),
+                                                              child: const Center(child: Text("Add", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  SizedBox(
+                                                    height: halfScreenHeight - 50,
+                                                    child: Consumer<MainProvider>(
+                                                        builder: (context,provider,child) {
+                                                          return ListView.builder(
+                                                            itemCount: provider.contactList.length,
+                                                            itemBuilder: (context, index) {
+                                                              final contact = provider.contactList[index];
+
+                                                              return Container(
+                                                                decoration: BoxDecoration(
+                                                                  borderRadius: BorderRadius.circular(12),
+                                                                  color: Colors.white,
+                                                                ),
+                                                                margin: const EdgeInsets.all(8),
+                                                                child: Padding(
+                                                                  padding: const EdgeInsets.all(12.0),
+                                                                  child: Row(
+                                                                    children: [
+                                                                      Icon(Icons.person_outline),
+                                                                      SizedBox(width: 16),
+
+                                                                      Expanded(
+                                                                        child: Column(
+                                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                                          children: [
+                                                                            Text(
+                                                                              "Name: ${contact.username}",
+                                                                              style: TextStyle(
+                                                                                fontWeight: FontWeight.bold,
+                                                                                fontSize: 16,
+                                                                              ),
+                                                                              overflow: TextOverflow.ellipsis,
+                                                                            ),
+                                                                            SizedBox(height: 4),
+                                                                            Text(
+                                                                              "Phone: ${contact.userContactNumber}",
+                                                                              overflow: TextOverflow.ellipsis,
+                                                                            ),
+                                                                          ],
+                                                                        ),
+                                                                      ),
+
+                                                                      InkWell(
+                                                                        onTap: () => provider.chnageAddContact(index),
+                                                                        child: Icon(
+                                                                          provider.tempCheckedList == index
+                                                                              ? Icons.check_box_outlined
+                                                                              : Icons.check_box_outline_blank,
+                                                                          color: Colors.black,
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                              );
+                                                            },
+                                                          );
+
+                                                        }
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          },
+                                        );
+                                      },
                                       icon: Icon(
                                         Icons.group_add_outlined,
                                         size: 24,
