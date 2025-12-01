@@ -175,6 +175,7 @@ class MainProvider extends ChangeNotifier {
           ),
         );
       }
+      contactList=contactList.reversed.toList();
       print(contactList.length.toString()+"jghjgh");
 
       notifyListeners();
@@ -182,4 +183,5 @@ class MainProvider extends ChangeNotifier {
       print("Error fetching contacts: $e");
     }
   }
+
 }

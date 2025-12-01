@@ -474,8 +474,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
                         // Group add button (left as original)
                         InkWell(
-                          onTap: () {
-                            provider.fetchContacts();
+                          onTap: () async{
+                            await provider.fetchContacts();
                             // if (isCheckedList.length != Contactlist.length) {
                             //   isCheckedList = List.generate(Contactlist.length, (_) => false);
                             // }
@@ -517,51 +517,64 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                         ),
                                       ),
                                       SizedBox(
-                                        height: halfScreenHeight - 60,
+                                        height: halfScreenHeight - 50,
                                         child: Consumer<MainProvider>(
                                             builder: (context,provider,child) {
                                               return ListView.builder(
                                                 itemCount: provider.contactList.length,
-                                                itemBuilder: (context, Index) {
-                                                  final contact = provider.contactList[Index];
+                                                itemBuilder: (context, index) {
+                                                  final contact = provider.contactList[index];
+
                                                   return Container(
-                                                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: Colors.white),
+                                                    decoration: BoxDecoration(
+                                                      borderRadius: BorderRadius.circular(12),
+                                                      color: Colors.white,
+                                                    ),
                                                     margin: const EdgeInsets.all(8),
                                                     child: Padding(
                                                       padding: const EdgeInsets.all(12.0),
                                                       child: Row(
                                                         children: [
-                                                          Image.asset("assets/Frame6.png",scale: 3,),
-                                                          const SizedBox(width: 16),
-                                                          Column(
-                                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                                            children: [
-                                                              Text(contact.username, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                                                              const SizedBox(height: 4),
-                                                              Text("${contact.userContactNumber}"),
+                                                          Icon(Icons.person_outline),
+                                                          SizedBox(width: 16),
 
-                                                            ],
+                                                          Expanded(
+                                                            child: Column(
+                                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                                              children: [
+                                                                Text(
+                                                                  "Name: ${contact.username}",
+                                                                  style: TextStyle(
+                                                                    fontWeight: FontWeight.bold,
+                                                                    fontSize: 16,
+                                                                  ),
+                                                                  overflow: TextOverflow.ellipsis,
+                                                                ),
+                                                                SizedBox(height: 4),
+                                                                Text(
+                                                                  "Phone: ${contact.userContactNumber}",
+                                                                  overflow: TextOverflow.ellipsis,
+                                                                ),
+                                                              ],
+                                                            ),
                                                           ),
-                                                          const Spacer(),
-                                                          StatefulBuilder(builder: (context, setState) {
-                                                            return InkWell(
-                                                              onTap: () {
-                                                                setState(() {
-                                                                  isCheckedList[Index] = !isCheckedList[Index];
-                                                                });
-                                                              },
-                                                              child: Icon(
-                                                                isCheckedList[Index] ? Icons.check_box_outlined : Icons.check_box_outline_blank,
-                                                                color: Colors.black,
-                                                              ),
-                                                            );
-                                                          }),
+
+                                                          InkWell(
+                                                            onTap: () => provider.chnageAddContact(index),
+                                                            child: Icon(
+                                                              provider.tempCheckedList == index
+                                                                  ? Icons.check_box_outlined
+                                                                  : Icons.check_box_outline_blank,
+                                                              color: Colors.black,
+                                                            ),
+                                                          ),
                                                         ],
                                                       ),
                                                     ),
                                                   );
                                                 },
                                               );
+
                                             }
                                         ),
                                       ),
@@ -588,11 +601,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ],
       ),
 
+
       // Bottom input bar
       bottomNavigationBar: _buildBottomInputBar(height, width,provider),
     );
   }
 }
+
 
 
 

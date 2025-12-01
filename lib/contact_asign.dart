@@ -46,8 +46,6 @@ class ContactAsign extends StatelessWidget {
                 //User name Textfield
                 Consumer<MainProvider>(
                   builder: (context, provider, child) {
-
-
                     return Padding(
                       padding: EdgeInsets.only(left: width / 20, right: width / 20),
                       child: Container(
@@ -63,6 +61,7 @@ class ContactAsign extends StatelessWidget {
                             ],
                           ),
                           child:TextFormField(
+                            textCapitalization: TextCapitalization.sentences,
                             controller: provider.usernameControler,
                             decoration: InputDecoration(
                               hintText: "User Name",
@@ -74,14 +73,17 @@ class ContactAsign extends StatelessWidget {
                               border: InputBorder.none,
                             ),
 
-                            // ⭐ VALIDATOR HERE ⭐
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
                                 return "PLEASE FILL USER NAME";
                               }
                               return null;
                             },
+                            inputFormatters: [
+                              OnlyLettersFirstCapitalFormatter(),
+                            ],
                           )
+
 
                       ),
                     );
@@ -149,13 +151,12 @@ class ContactAsign extends StatelessWidget {
                             if (!_formKey.currentState!.validate()) {
                               return; // ❌ Stop if validation fails
                             }
-
                             bool result = await provider.addcontact();
 
                             showDialog(
                               context: context,
                               builder: (context) {
-                                Future.delayed(Duration(seconds: 2), () {
+                                Future.delayed(Duration(seconds: 1), () {
                                   Navigator.of(context).pop();
                                 });
 
@@ -212,7 +213,7 @@ class ContactAsign extends StatelessWidget {
               ),
             ),
           ),
-          Expanded(
+          Expanded (
             // Subtract an estimated height for the heading/padding (~60)
             child: Consumer<MainProvider>(
                 builder: (context,provier,child) {
