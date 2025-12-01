@@ -673,130 +673,147 @@ class SubtaskListContainer extends StatefulWidget {
 }
 
 class _SubtaskListContainerState extends State<SubtaskListContainer> {
-  List<String> subtasks = [
-    "Tomorrow Meeting With client",
-    "Take Meeting Notes",
-    "Take Meeting Notes",
-  ];
+  TextEditingController subtaskController = TextEditingController();
 
-  void _addSubtask() {
-    setState(() {
-      subtasks.add("");
-    });
+  List<String> subtasks = [];
+  bool isTyping = false; // controls textfield visibility
+
+  void onAddButtonPressed() {
+    if (!isTyping) {
+      // FIRST CLICK → SHOW TEXT FIELD
+      setState(() {
+        isTyping = true;
+      });
+    } else {
+      // SECOND CLICK → SAVE SUBTASK
+      String text = subtaskController.text.trim();
+      if (text.isEmpty) return;
+
+      setState(() {
+        subtasks.add(text); // save
+        subtaskController.clear();
+        isTyping = false;   // hide textfield
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 290,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-      ),
+      height: 300,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Align(
-            alignment: Alignment.topLeft,
-            child: Text(
-              'Subtask',
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF4B5563),
+          Text("Subtask",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+
+          SizedBox(height: 10),
+
+          // SHOW TEXTFIELD ONLY WHEN isTyping = true
+          if (isTyping)
+            Container(
+              height: 66,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 2,
+                    offset: Offset(0, 1),
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: TextFormField(
+                  controller: subtaskController,
+                  decoration: InputDecoration(
+                    hintText: "Enter Subtask...",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+
+          SizedBox(height: 10),
+
+          // SHOW SAVED SUBTASKS
+          Expanded(
+            child: ListView.builder(
+              itemCount: subtasks.length,
+              itemBuilder: (_, i) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Container(
+                  height: 66,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 2,
+                        offset: Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 18),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            subtasks[i],
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ),
+
+                        // Optional delete icon
+                        IconButton(
+                          icon: Icon(Icons.delete_outline, color: Colors.redAccent),
+                          onPressed: () {
+                            setState(() {
+                              subtasks.removeAt(i);
+                            });
+                          },
+                        )
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
           SizedBox(height: 10),
-          Expanded(
-            child: ListView.builder(
-              itemCount: subtasks.length,
-                            shrinkWrap: true,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6),
-                  child: Container(
-                    height: 66.531,
-                    width: 361,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 2,
-                          offset: Offset(0, 1),
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: TextField(
-                          decoration: InputDecoration(
-                            hintText:
-                            subtasks[index].isNotEmpty ? subtasks[index] : " ",
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide.none,
-                            ),
-                            contentPadding: EdgeInsets.symmetric(
-                                vertical: 14, horizontal: 12),
-                            suffixIcon: Container(
-                              height: 34.531,
-                              width: 34.531,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.white,
-                                border:
-                                Border.all(color: Color(0xFF0376FA), width: 1),
-                              ),
-                              child: IconButton(
-                                  onPressed: () {},
-                                  icon: Icon(
-                                    Icons.group_add_outlined,
-                                    size: 25,
-                                    color: Color(0xFF0376FA),
-                                  )),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 10,),
-            child: SizedBox(
-              height: 40, // match ElevatedButton height
-              child: FloatingActionButton.extended(
-                onPressed: _addSubtask,
-                backgroundColor: Colors.white,
-                foregroundColor: Color(0xff0376FA),
-                elevation: 0, // same as ElevatedButton
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20), // same as ElevatedButton
-                  side: BorderSide(color: Color(0xff0376FA), width: 1),
-                ),
-                icon: Icon(CupertinoIcons.add_circled, size: 24),
-                label: Text(
-                  "Add",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    fontFamily: 'Inter',
-                    color: Color(0xff0376FA),
-                  ),
-                ),
-              ),
-            ),
-          ),
 
+          // SINGLE ADD BUTTON
+          Center(child: SizedBox(
+            height: 40,   // ↓ decrease height
+            width: 80,   // ↓ decrease width (optional)
+            child: FloatingActionButton.extended(
+              onPressed: onAddButtonPressed,
+              backgroundColor: Colors.white,
+              foregroundColor: Color(0xff0376FA),
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+                side: BorderSide(color: Color(0xff0376FA), width: 1),
+              ),
+              icon: Icon(CupertinoIcons.add_circled),
+              label: Text(isTyping ? "Save" : "Add"),
+            ),
+          ),
+          )
         ],
       ),
     );
   }
 }
-
