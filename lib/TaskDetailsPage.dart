@@ -5,9 +5,10 @@ import 'package:smr_app/MainProvider.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class Taskdetailspage extends StatelessWidget {
+  final Reminder reminder; // <-- Add this
   final String? taskText;
   final String? taskVoice;
-    const Taskdetailspage({super.key,this.taskText,this.taskVoice,});
+    const Taskdetailspage({super.key,this.taskText,this.taskVoice,required this.reminder});
 
   @override
   Widget build(BuildContext context) {
@@ -116,8 +117,10 @@ class Taskdetailspage extends StatelessWidget {
           ),
         ),
       ),
-      body:
-         Padding(
+        body: SafeArea(
+        child: SingleChildScrollView(
+        reverse: true,
+         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -467,12 +470,23 @@ class Taskdetailspage extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text("Reminder", style: TextStyle(fontSize: 16)),
-                              Row(
-                                children: [
-                                  Text('1hr Before'),
-                                  Icon(CupertinoIcons.chevron_down, size: 14),
-                                ],
-                              )
+                              GestureDetector(
+                                onTap: () async {
+                                  final picked = await _showReminderPicker(context);  // Call picker
+                                  if (picked != null) {
+                                    // You can store the selected reminder here using provider if you want
+                                  }
+                                },
+                                child: Row(
+                                  children: [
+                                    Text('1hr Before'),
+                                    SizedBox(width: 5),
+                                    Icon(CupertinoIcons.chevron_down, size: 14),
+                                  ],
+                                ),
+                              ),
+
+
                             ],
                           ),
                         ),
@@ -503,10 +517,13 @@ class Taskdetailspage extends StatelessWidget {
               ),
 
 
-              SubtaskListContainer()
-    ]
+              SubtaskListContainer(reminderId: reminder.id), // ✅ pass the reminder ID
+
+            ]
     )
     )
+    )
+        )
       );
 
 
@@ -777,52 +794,114 @@ class _TimePickerContainerState extends State<TimePickerContainer> {
   }
 }
 
+
+Future<String?> _showReminderPicker(BuildContext context) async {
+
+  final List<String> reminderOptions = [
+    "No Reminder",
+    "5 min Before",
+    "10 min Before",
+    "30 min Before",
+    "1 hr Before",
+    "2 hrs Before",
+    "1 day Before",
+  ];
+
+  int selectedIndex = 3;
+
+  return await showModalBottomSheet<String>(
+    context: context,
+    backgroundColor: Colors.white,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (_) {
+      return StatefulBuilder(
+        builder: (context, setStateSB) {
+          return Container(
+            height: 250,
+            child: Column(
+              children: [
+                SizedBox(height: 10),
+                Text(
+                  "Reminder Time",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                Expanded(
+                  child: CupertinoPicker(
+                    itemExtent: 35,
+                    scrollController:
+                    FixedExtentScrollController(initialItem: selectedIndex),
+                    onSelectedItemChanged: (int index) {
+                      setStateSB(() {
+                        selectedIndex = index;
+                      });
+                    },
+                    children: reminderOptions
+                        .map((item) => Center(child: Text(item)))
+                        .toList(),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(
+                        context, reminderOptions[selectedIndex]); // RETURN VALUE
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xff0376FA),
+                    shape: StadiumBorder(),
+                  ),
+                  child: Text("OK", style: TextStyle(color: Colors.white)),
+                ),
+                SizedBox(height: 10),
+              ],
+            ),
+          );
+        },
+      );
+    },
+  );
+}
+
+
+
 class SubtaskListContainer extends StatefulWidget {
+  final String reminderId;
+  const SubtaskListContainer({required this.reminderId, Key? key})
+      : super(key: key);
+
   @override
   _SubtaskListContainerState createState() => _SubtaskListContainerState();
 }
 
 class _SubtaskListContainerState extends State<SubtaskListContainer> {
   TextEditingController subtaskController = TextEditingController();
-
-  List<String> subtasks = [];
-  bool isTyping = false; // controls textfield visibility
-
-  void onAddButtonPressed() {
-    if (!isTyping) {
-      // FIRST CLICK → SHOW TEXT FIELD
-      setState(() {
-        isTyping = true;
-      });
-    } else {
-      // SECOND CLICK → SAVE SUBTASK
-      String text = subtaskController.text.trim();
-      if (text.isEmpty) return;
-
-      setState(() {
-        subtasks.add(text); // save
-        subtaskController.clear();
-        isTyping = false;   // hide textfield
-      });
-    }
-  }
+  bool isTyping = false;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 300,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text("Subtask",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+    final provider = Provider.of<MainProvider>(context);
 
-          SizedBox(height: 10),
+    // Get the reminder by ID
+    final reminder = provider.reminders
+        .firstWhere((r) => r.id == widget.reminderId);
 
-          // SHOW TEXTFIELD ONLY WHEN isTyping = true
-          if (isTyping)
-            Container(
-              height: 66,
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("Subtasks", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+        SizedBox(height: 10),
+
+        // List all subtasks
+        // List all subtasks with same container design
+        if (reminder.subtasks.isNotEmpty)
+          ...reminder.subtasks.map(
+                (task) => Container(
+                  width: double.infinity,
+              margin: EdgeInsets.only(bottom: 8),
+              height: 56,
+
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(15),
@@ -835,95 +914,89 @@ class _SubtaskListContainerState extends State<SubtaskListContainer> {
                 ],
               ),
               child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: TextFormField(
-                  controller: subtaskController,
-                  decoration: InputDecoration(
-                    hintText: "Enter Subtask...",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                child: Text(
+                  task,
+                  style: TextStyle(fontSize: 16, color: Colors.black87),
                 ),
               ),
             ),
+          ),
 
-
-          SizedBox(height: 10),
-
-          // SHOW SAVED SUBTASKS
-          Expanded(
-            child: ListView.builder(
-              itemCount: subtasks.length,
-              itemBuilder: (_, i) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                child: Container(
-                  height: 66,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
+        // Input field
+        if (isTyping)
+          Row(
+            children: [
+              Expanded(
+   child:  Container(
+    height: 56,
+     width: double.infinity,
+    decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(15),
+    boxShadow: [
+    BoxShadow(
+    color: Colors.black12,
+    blurRadius: 2,
+    offset: Offset(0, 1),
+    ),
+    ],
+    ),
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: TextFormField(
+                controller: subtaskController,
+                decoration: InputDecoration(
+                  hintText: "Enter Subtask...",
+                  border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black12,
-                        blurRadius: 2,
-                        offset: Offset(0, 1),
-                      ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 18),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            subtasks[i],
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black87,
-                            ),
-                          ),
-                        ),
-
-                        // Optional delete icon
-                        IconButton(
-                          icon: Icon(Icons.delete_outline, color: Colors.redAccent),
-                          onPressed: () {
-                            setState(() {
-                              subtasks.removeAt(i);
-                            });
-                          },
-                        )
-                      ],
-                    ),
+                    borderSide: BorderSide.none,
                   ),
                 ),
               ),
             ),
-          ),
-          SizedBox(height: 10),
-
-          // SINGLE ADD BUTTON
-          Center(child: SizedBox(
-            height: 40,   // ↓ decrease height
-            width: 80,   // ↓ decrease width (optional)
-            child: FloatingActionButton.extended(
-              onPressed: onAddButtonPressed,
-              backgroundColor: Colors.white,
-              foregroundColor: Color(0xff0376FA),
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
-                side: BorderSide(color: Color(0xff0376FA), width: 1),
+   )
               ),
-              icon: Icon(CupertinoIcons.add_circled),
-              label: Text(isTyping ? "Save" : "Add"),
-            ),
+              SizedBox(width: 10,),
+            ],
           ),
-          )
-        ],
-      ),
+            SizedBox(
+              height: 10,
+            ),
+
+            Center(child: SizedBox(
+            height: 40,   // ↓ decrease height
+            width: 80,
+             child:  FloatingActionButton.extended(
+                onPressed: () async {
+                  if (isTyping) {
+                    final text = subtaskController.text.trim();
+                    if (text.isEmpty) return;
+
+                    await provider.addSubtaskToReminder(widget.reminderId, text);
+
+                    subtaskController.clear();
+                    setState(() {
+                      isTyping = false;
+                    });
+                  } else {
+                    setState(() {
+                      isTyping = true;
+                    });
+                  }
+                },
+                backgroundColor: Colors.white,
+                foregroundColor: Color(0xff0376FA),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                label: Text(isTyping ? "Save" : "Add"),
+              ),
+        ),
+
+            )
+      ],
     );
   }
 }

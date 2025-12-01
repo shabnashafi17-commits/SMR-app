@@ -437,7 +437,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
                   return InkWell(
                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) =>  Taskdetailspage( taskText: reminder.taskText,   // make sure task["text"] is a String?
-                    taskVoice: reminder.taskVoice,
+                    taskVoice: reminder.taskVoice,reminder: reminder
                   ))),
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 12),

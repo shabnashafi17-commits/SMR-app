@@ -10,6 +10,7 @@ class Reminder {
   DateTime createdAt;
   String createdBy;
   String createdById;
+  List<String> subtasks; // ✅ Add this
 
   Reminder({
     required this.id,
@@ -19,6 +20,7 @@ class Reminder {
     required this.createdAt,
     required this.createdBy,
     required this.createdById,
+    this.subtasks = const [], // default empty
   });
 
   Map<String, dynamic> toMap() {
@@ -30,6 +32,7 @@ class Reminder {
       'createdAt': Timestamp.fromDate(createdAt),
       'createdBy': createdBy,
       'createdById': createdById,
+      'subtasks': subtasks, // ✅ Save subtasks in Firebase
     };
   }
 
@@ -42,7 +45,7 @@ class Reminder {
     } else if (createdAtData is String) {
       createdAt = DateTime.parse(createdAtData);
     } else {
-      createdAt = DateTime.now(); // fallback
+      createdAt = DateTime.now();
     }
 
     return Reminder(
@@ -53,34 +56,31 @@ class Reminder {
       createdAt: createdAt,
       createdBy: map['createdBy'],
       createdById: map['createdById'],
+      subtasks: List<String>.from(map['subtasks'] ?? []), // ✅ load subtasks
     );
   }
 }
+
 class MainProvider extends ChangeNotifier {
   List<Reminder> reminders = [];
+  final CollectionReference ref = FirebaseFirestore.instance.collection("Tasks");
 
   MainProvider() {
     fetchReminders();
   }
 
-  final CollectionReference ref =
-  FirebaseFirestore.instance.collection("Tasks");
-
   Future<void> fetchReminders() async {
     final snap = await ref.orderBy("createdAt", descending: true).get();
-
     reminders = snap.docs.map((e) {
       final data = e.data() as Map<String, dynamic>;
-      data["id"] = e.id; // 🔥 IMPORTANT
+      data["id"] = e.id;
       return Reminder.fromMap(data);
     }).toList();
-
     notifyListeners();
-    print("Snap docs: ${snap.docs.map((e) => e.data())}");
   }
+
   Future<void> addTextReminder(String text) async {
     final id = DateTime.now().millisecondsSinceEpoch.toString();
-
     final newReminder = Reminder(
       id: id,
       taskText: text,
@@ -90,7 +90,6 @@ class MainProvider extends ChangeNotifier {
       createdBy: "Admin",
       createdById: "USER_001",
     );
-
     await ref.doc(id).set(newReminder.toMap());
     reminders.insert(0, newReminder);
     notifyListeners();
@@ -98,7 +97,6 @@ class MainProvider extends ChangeNotifier {
 
   Future<void> addVoiceReminder(String audioPath) async {
     final id = DateTime.now().millisecondsSinceEpoch.toString();
-
     final newReminder = Reminder(
       id: id,
       taskText: null,
@@ -108,11 +106,32 @@ class MainProvider extends ChangeNotifier {
       createdBy: "Admin",
       createdById: "USER_001",
     );
-
     await ref.doc(id).set(newReminder.toMap());
     reminders.insert(0, newReminder);
     notifyListeners();
   }
+
+  /// ✅ Add a subtask to a reminder
+  Future<void> addSubtaskToReminder(String reminderId, String text) async {
+    if (text.trim().isEmpty) return;
+
+    final index = reminders.indexWhere((r) => r.id == reminderId);
+    if (index == -1) return;
+
+    reminders[index].subtasks.add(text.trim());
+    notifyListeners();
+
+    try {
+      await ref.doc(reminderId).update({
+        'subtasks': reminders[index].subtasks,
+      });
+    } catch (e) {
+      print("Error updating subtask: $e");
+    }
+  }
+
+
+
 
   // Nihal
 
