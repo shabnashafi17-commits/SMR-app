@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:smr_app/user_class.dart';
+import 'user_class.dart'; // your Contact class
 
 class Reminder {
   String id;
@@ -10,7 +10,10 @@ class Reminder {
   DateTime createdAt;
   String createdBy;
   String createdById;
-  List<String> subtasks; // ✅ Add this
+  List<String> subtasks;
+  DateTime? date;         // selected date
+  Duration? time;         // selected time
+  String reminderOption;  // e.g. "5 min Before"
 
   Reminder({
     required this.id,
@@ -20,7 +23,10 @@ class Reminder {
     required this.createdAt,
     required this.createdBy,
     required this.createdById,
-    this.subtasks = const [], // default empty
+    this.subtasks = const [],
+    this.date,
+    this.time,
+    this.reminderOption = "No Reminder",
   });
 
   Map<String, dynamic> toMap() {
@@ -32,7 +38,10 @@ class Reminder {
       'createdAt': Timestamp.fromDate(createdAt),
       'createdBy': createdBy,
       'createdById': createdById,
-      'subtasks': subtasks, // ✅ Save subtasks in Firebase
+      'subtasks': subtasks,
+      'date': date != null ? Timestamp.fromDate(date!) : null,
+      'time': time != null ? time!.inSeconds : null,
+      'reminderOption': reminderOption,
     };
   }
 
@@ -48,6 +57,16 @@ class Reminder {
       createdAt = DateTime.now();
     }
 
+    DateTime? date;
+    if (map['date'] != null) {
+      date = (map['date'] as Timestamp).toDate();
+    }
+
+    Duration? time;
+    if (map['time'] != null) {
+      time = Duration(seconds: map['time']);
+    }
+
     return Reminder(
       id: map['id'],
       taskText: map['taskText'],
@@ -56,7 +75,10 @@ class Reminder {
       createdAt: createdAt,
       createdBy: map['createdBy'],
       createdById: map['createdById'],
-      subtasks: List<String>.from(map['subtasks'] ?? []), // ✅ load subtasks
+      subtasks: List<String>.from(map['subtasks'] ?? []),
+      date: date,
+      time: time,
+      reminderOption: map['reminderOption'] ?? "No Reminder",
     );
   }
 }
@@ -68,6 +90,8 @@ class MainProvider extends ChangeNotifier {
   MainProvider() {
     fetchReminders();
   }
+
+  // ------------------ REMINDERS ------------------
 
   Future<void> fetchReminders() async {
     final snap = await ref.orderBy("createdAt", descending: true).get();
@@ -111,10 +135,8 @@ class MainProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// ✅ Add a subtask to a reminder
   Future<void> addSubtaskToReminder(String reminderId, String text) async {
     if (text.trim().isEmpty) return;
-
     final index = reminders.indexWhere((r) => r.id == reminderId);
     if (index == -1) return;
 
@@ -128,6 +150,38 @@ class MainProvider extends ChangeNotifier {
     } catch (e) {
       print("Error updating subtask: $e");
     }
+  }
+
+  // ------------------ DATE / TIME / REMINDER OPTION ------------------
+  String selectedReminder = "30 min Before";
+
+  void setSelectedReminder(String value) {
+    selectedReminder = value;
+    notifyListeners();
+  }
+
+  Future<void> updateReminderDate(String id, DateTime date) async {
+    final reminder = reminders.firstWhere((r) => r.id == id);
+    reminder.date = date;
+    notifyListeners();
+
+    await ref.doc(id).update({'date': Timestamp.fromDate(date)});
+  }
+
+  Future<void> updateReminderTime(String id, Duration time) async {
+    final reminder = reminders.firstWhere((r) => r.id == id);
+    reminder.time = time;
+    notifyListeners();
+
+    await ref.doc(id).update({'time': time.inSeconds});
+  }
+
+  Future<void> updateReminderOption(String id, String option) async {
+    final reminder = reminders.firstWhere((r) => r.id == id);
+    reminder.reminderOption = option;
+    notifyListeners();
+
+    await ref.doc(id).update({'reminderOption': option});
   }
 
 

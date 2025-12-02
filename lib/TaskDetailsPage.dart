@@ -442,11 +442,12 @@ class Taskdetailspage extends StatelessWidget {
 
                       Row(
                         children: [
-                          Expanded(child: DatePickerContainer()),
+                          Expanded(child: DatePickerContainer(reminderId: reminder.id)),
                           SizedBox(width: 12),
-                          Expanded(child: TimePickerContainer()),
+                          Expanded(child: TimePickerContainer(reminderId: reminder.id)),
                         ],
                       ),
+
 
                       SizedBox(height: 15),
 
@@ -472,15 +473,22 @@ class Taskdetailspage extends StatelessWidget {
                               Text("Reminder", style: TextStyle(fontSize: 16)),
                               GestureDetector(
                                 onTap: () async {
-                                  final picked = await _showReminderPicker(context);  // Call picker
+                                  final picked = await showReminderDialog(
+                                    context,
+                                    provider.selectedReminder, // ← ALWAYS use provider value
+                                  );
+
                                   if (picked != null) {
-                                    // You can store the selected reminder here using provider if you want
+                                    provider.setSelectedReminder(picked);
                                   }
                                 },
+
+
+
                                 child: Row(
-                                  children: [
-                                    Text('1hr Before'),
-                                    SizedBox(width: 5),
+                                  children: [Text(provider.selectedReminder),
+
+                                    SizedBox(width: 7),
                                     Icon(CupertinoIcons.chevron_down, size: 14),
                                   ],
                                 ),
@@ -494,23 +502,34 @@ class Taskdetailspage extends StatelessWidget {
 
                       SizedBox(height: 10),
 
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: Color(0xff0376FA),
-                            side: BorderSide(color: Color(0xff0376FA)),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          ),
-                          child: Text("Save"),
-                        ),
-                      ),
+    Align(
+    alignment: Alignment.centerRight,
+    child: ElevatedButton(
+    onPressed: () async {
+    final provider = Provider.of<MainProvider>(context, listen: false);
 
-                      SizedBox(height: 10),
+    // SAVE ONLY REMINDER OPTION
+    await provider.updateReminderOption(
+    reminder.id,
+    provider.selectedReminder, // <-- this is the selected value
+    );
+
+    Navigator.pop(context);
+    },
+    style: ElevatedButton.styleFrom(
+    backgroundColor: Colors.white,
+    foregroundColor: Color(0xff0376FA),
+    side: BorderSide(color: Color(0xff0376FA)),
+    shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(20),
+    ),
+    ),
+    child: Text("Save"),
+    ),
+    ),
+
+
+    SizedBox(height: 10),
                     ],
                   ),
                 ),
@@ -531,6 +550,9 @@ class Taskdetailspage extends StatelessWidget {
 }
 
 class DatePickerContainer extends StatefulWidget {
+  final String reminderId;
+  const DatePickerContainer({required this.reminderId, Key? key}) : super(key: key);
+
   @override
   _DatePickerContainerState createState() => _DatePickerContainerState();
 }
@@ -663,7 +685,7 @@ class _DatePickerContainerState extends State<DatePickerContainer> {
         ],
       ),
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 12),
+        padding: EdgeInsets.symmetric(horizontal: 9),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -686,6 +708,10 @@ class _DatePickerContainerState extends State<DatePickerContainer> {
 }
 
 class TimePickerContainer extends StatefulWidget {
+  final String reminderId;
+  const TimePickerContainer({required this.reminderId, Key? key}) : super(key: key);
+
+
   @override
   _TimePickerContainerState createState() => _TimePickerContainerState();
 }
@@ -769,7 +795,7 @@ class _TimePickerContainerState extends State<TimePickerContainer> {
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 15),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -781,10 +807,13 @@ class _TimePickerContainerState extends State<TimePickerContainer> {
                   color: Colors.black,
                 ),
               ),
-              Icon(
-                CupertinoIcons.time,
-                size: 22,
-                color: Colors.black,
+              Padding(
+                padding: const EdgeInsets.only(right: 7),
+                child: Icon(
+                  CupertinoIcons.time,
+                  size: 22,
+                  color: Colors.black,
+                ),
               ),
             ],
           ),
@@ -795,8 +824,10 @@ class _TimePickerContainerState extends State<TimePickerContainer> {
 }
 
 
-Future<String?> _showReminderPicker(BuildContext context) async {
-
+Future<String?> showReminderDialog(
+    BuildContext context,
+    String selectedReminder,
+    ) async {
   final List<String> reminderOptions = [
     "No Reminder",
     "5 min Before",
@@ -807,61 +838,36 @@ Future<String?> _showReminderPicker(BuildContext context) async {
     "1 day Before",
   ];
 
-  int selectedIndex = 3;
-
-  return await showModalBottomSheet<String>(
+  return showDialog<String>(
     context: context,
-    backgroundColor: Colors.white,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-    ),
-    builder: (_) {
-      return StatefulBuilder(
-        builder: (context, setStateSB) {
-          return Container(
-            height: 250,
-            child: Column(
-              children: [
-                SizedBox(height: 10),
-                Text(
-                  "Reminder Time",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                Expanded(
-                  child: CupertinoPicker(
-                    itemExtent: 35,
-                    scrollController:
-                    FixedExtentScrollController(initialItem: selectedIndex),
-                    onSelectedItemChanged: (int index) {
-                      setStateSB(() {
-                        selectedIndex = index;
-                      });
-                    },
-                    children: reminderOptions
-                        .map((item) => Center(child: Text(item)))
-                        .toList(),
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(
-                        context, reminderOptions[selectedIndex]); // RETURN VALUE
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xff0376FA),
-                    shape: StadiumBorder(),
-                  ),
-                  child: Text("OK", style: TextStyle(color: Colors.white)),
-                ),
-                SizedBox(height: 10),
-              ],
-            ),
-          );
-        },
+    builder: (context) {
+      return AlertDialog(
+        title: Text("Reminder Time"),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: reminderOptions.length,
+            itemBuilder: (context, index) {
+              final item = reminderOptions[index];
+
+              return ListTile(
+                title: Text(item),
+                trailing: item == selectedReminder
+                    ? Icon(Icons.check, color: Colors.blue)
+                    : null,
+                onTap: () {
+                  Navigator.pop(context, item);
+                },
+              );
+            },
+          ),
+        ),
       );
     },
   );
 }
+
 
 
 
@@ -883,119 +889,136 @@ class _SubtaskListContainerState extends State<SubtaskListContainer> {
     final provider = Provider.of<MainProvider>(context);
 
     // Get the reminder by ID
-    final reminder = provider.reminders
-        .firstWhere((r) => r.id == widget.reminderId);
-
+    final reminder =
+    provider.reminders.firstWhere((r) => r.id == widget.reminderId);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Subtasks", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-        SizedBox(height: 10),
+        const Text(
+          "Subtasks",
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 10),
 
-        // List all subtasks
-        // List all subtasks with same container design
+        // Existing subtasks
         if (reminder.subtasks.isNotEmpty)
-          ...reminder.subtasks.map(
-                (task) => Container(
-                  width: double.infinity,
-              margin: EdgeInsets.only(bottom: 8),
-              height: 56,
-
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 2,
-                    offset: Offset(0, 1),
+          ...reminder.subtasks.map((task) => Container(
+            width: double.infinity,
+            margin: const EdgeInsets.only(bottom: 8),
+            height: 56,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.black26, width: 1),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 2,
+                  offset: Offset(0, 1),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 12, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      task,
+                      style: const TextStyle(
+                          fontSize: 16, color: Colors.black87),
+                    ),
+                  ),
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                          color: const Color(0xff0376FA), width: 1.5),
+                    ),
+                    child: const Icon(
+                      Icons.group_add_outlined,
+                      color: Color(0xff0376FA),
+                    ),
                   ),
                 ],
               ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-                child: Text(
-                  task,
-                  style: TextStyle(fontSize: 16, color: Colors.black87),
-                ),
-              ),
             ),
-          ),
+          )),
 
         // Input field
         if (isTyping)
-          Row(
-            children: [
-              Expanded(
-   child:  Container(
-    height: 56,
-     width: double.infinity,
-    decoration: BoxDecoration(
-    color: Colors.white,
-    borderRadius: BorderRadius.circular(15),
-    boxShadow: [
-    BoxShadow(
-    color: Colors.black12,
-    blurRadius: 2,
-    offset: Offset(0, 1),
-    ),
-    ],
-    ),
-            child: Padding(
-              padding: const EdgeInsets.all(8),
-              child: TextFormField(
-                controller: subtaskController,
-                decoration: InputDecoration(
-                  hintText: "Enter Subtask...",
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: BorderSide.none,
-                  ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: TextFormField(
+              controller: subtaskController,
+              decoration: InputDecoration(
+                hintText: "Enter Subtask...",
+                hintStyle: const TextStyle(color: Colors.grey),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: Colors.black26, width: 1),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide:
+                  const BorderSide(color: Colors.black26, width: 1),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide:
+                  const BorderSide(color: Colors.black45, width: 1.5),
                 ),
               ),
             ),
-   )
-              ),
-              SizedBox(width: 10,),
-            ],
           ),
-            SizedBox(
-              height: 10,
-            ),
 
-            Center(child: SizedBox(
-            height: 40,   // ↓ decrease height
-            width: 80,
-             child:  FloatingActionButton.extended(
-                onPressed: () async {
-                  if (isTyping) {
-                    final text = subtaskController.text.trim();
-                    if (text.isEmpty) return;
+        const SizedBox(height: 10),
 
-                    await provider.addSubtaskToReminder(widget.reminderId, text);
-
-                    subtaskController.clear();
-                    setState(() {
-                      isTyping = false;
-                    });
-                  } else {
-                    setState(() {
-                      isTyping = true;
-                    });
-                  }
-                },
+        // Add/Save button
+        Center(
+          child: SizedBox(
+            height: 40,
+            width: 100,
+            child: ElevatedButton.icon(
+              icon: const Icon(CupertinoIcons.add_circled),
+              label: Text(isTyping ? "Save" : "Add"),
+              style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
-                foregroundColor: Color(0xff0376FA),
+                foregroundColor: const Color(0xff0376FA),
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(30),
+                  side: const BorderSide(color: Color(0xff0376FA), width: 1),
                 ),
-                label: Text(isTyping ? "Save" : "Add"),
               ),
-        ),
+              onPressed: () async {
+                if (isTyping) {
+                  final text = subtaskController.text.trim();
+                  if (text.isEmpty) return;
 
-            )
+                  // Add subtask in provider and Firestore
+                  await provider.addSubtaskToReminder(widget.reminderId, text);
+
+                  // Clear field and close input
+                  subtaskController.clear();
+                  setState(() {
+                    isTyping = false;
+                  });
+                } else {
+                  setState(() {
+                    isTyping = true;
+                  });
+                }
+              },
+            ),
+          ),
+        ),
       ],
     );
   }
