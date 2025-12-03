@@ -13,9 +13,9 @@ import 'package:lottie/lottie.dart';
 
 import 'contact_asign.dart';
 
-
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -50,7 +50,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     Future.microtask(() => _initAudio());
   }
 
-
   Future<void> _initAudio() async {
     // Request permissions (best-effort)
     await Permission.microphone.request();
@@ -63,19 +62,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Future<void> _startRecording() async {
-    if (_recorder.isRecording) return;      // FIX
+    if (_recorder.isRecording) return; // FIX
     final dir = await getApplicationDocumentsDirectory();
     _filePath =
     '${dir.path}/reminder_record_${DateTime.now().millisecondsSinceEpoch}.aac';
 
-    await _recorder.startRecorder(
-      toFile: _filePath,
-      codec: Codec.aacADTS,
-    );
+    await _recorder.startRecorder(toFile: _filePath, codec: Codec.aacADTS);
 
     setState(() => _isRecording = true);
   }
-
 
   Future<void> _stopRecording(MainProvider provider) async {
     if (!_recorder.isRecording) return;
@@ -87,15 +82,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
-
-
   Future<void> _playAudio(String filePath) async {
     if (!File(filePath).existsSync()) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Audio file not found!')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Audio file not found!')));
       return;
     }
-
 
     if (_currentAudio == filePath) {
       await _player.stopPlayer();
@@ -133,11 +126,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
-
-
-  Widget _buildBottomInputBar(double height, double width,MainProvider provider) {
+  Widget _buildBottomInputBar(
+      double height,
+      double width,
+      MainProvider provider,
+      ) {
     return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -163,15 +160,26 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       focusNode: _focusNode,
                       decoration: InputDecoration(
                         hintText: "Enter Your Task",
-                        hintStyle: const TextStyle(color: Colors.grey, fontSize: 16),
-                        contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                        hintStyle: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 16,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 0,
+                        ),
                         enabledBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(color: Colors.black12, width: 1),
+                          borderSide: const BorderSide(
+                            color: Colors.black12,
+                            width: 1,
+                          ),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(color: Colors.black12, width: 1),
+                          borderSide: const BorderSide(
+                            color: Colors.black12,
+                            width: 1,
+                          ),
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
@@ -187,11 +195,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               bottom: 5,
               child: Container(
                 decoration: BoxDecoration(
-                  color: _focusNode.hasFocus ? Colors.green : const Color(0xff074899),
+                  color: _focusNode.hasFocus
+                      ? Colors.green
+                      : const Color(0xff074899),
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
-                  icon: Icon(_focusNode.hasFocus ? Icons.add : Icons.mic, color: Colors.white),
+                  icon: Icon(
+                    _focusNode.hasFocus ? Icons.add : Icons.mic,
+                    color: Colors.white,
+                  ),
                   onPressed: () async {
                     if (_focusNode.hasFocus) {
                       _saveReminder(provider);
@@ -219,13 +232,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               );
                             },
                           );
-
                         },
                       );
                     }
                   },
-
-
                 ),
               ),
             ),
@@ -235,11 +245,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildStatCard(double width, double height,
-      {required color, required int count, required String label, required String assetPath}) {
+  Widget _buildStatCard(
+      double width,
+      double height, {
+        required color,
+        required int count,
+        required String label,
+        required String assetPath,
+      }) {
     return Container(
       width: width / 2.3,
-      height: height/ 7.5,
+      height: height / 7.5,
       padding: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -257,7 +273,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               Container(
                 width: width / 9,
                 height: height / 18,
-                decoration: BoxDecoration(borderRadius: BorderRadius.circular(10.0)),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
                 child: Padding(
                   padding: const EdgeInsets.all(2.0),
                   child: Image.asset(assetPath, fit: BoxFit.contain),
@@ -268,12 +286,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 padding: const EdgeInsets.only(right: 10),
                 child: Text(
                   count.toString(),
-                  style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.black87),
+                  style: const TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
                 ),
               ),
             ],
           ),
-          Text(label, style: TextStyle(fontSize: 25, fontWeight: FontWeight.w800, color: color)),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 25,
+              fontWeight: FontWeight.w800,
+              color: color,
+            ),
+          ),
         ],
       ),
     );
@@ -281,9 +310,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<MainProvider>(context, listen: true); // listen to changes
+    final provider = Provider.of<MainProvider>(
+      context,
+      listen: true,
+    ); // listen to changes
     final reminders = provider.reminders;
-
 
     final todayCount = reminders.where((r) {
       final now = DateTime.now();
@@ -294,14 +325,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     // Count all voice reminders in the current list
     int totalVoiceCount = reminders.where((r) => r.taskVoice != null).length;
 
-// Map each reminder to its voice number, if applicable
+    // Map each reminder to its voice number, if applicable
     List<int> voiceNumbers = reminders.map((r) {
       if (r.taskVoice != null) {
         return totalVoiceCount--;
       }
       return 0;
     }).toList();
-
 
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
@@ -319,60 +349,71 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 CircleAvatar(
                   backgroundColor: Colors.white,
                   radius: 20,
-                  child: Image.asset("assets/Frame6.png", width: 20, height: 20, fit: BoxFit.contain),
+                  child: Image.asset(
+                    "assets/Frame6.png",
+                    width: 20,
+                    height: 20,
+                    fit: BoxFit.contain,
+                  ),
                 ),
                 SizedBox(width: width / 40),
-                const Text("Hi, Nihal", style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text(
+                  "Hi, Nihal",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 Spacer(),
                 Padding(
-                  padding: const EdgeInsets.only(right: 15),
+                  padding: const EdgeInsets.only(right: 24),
                   child: SizedBox(
                     width: 100, // set width
                     height: 50, // set height
                     child: Consumer<MainProvider>(
-                        builder: (context,mainPro,child) {
-                          return ElevatedButton(
-                            onPressed: () {
-                              mainPro.fetchContacts();
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => ContactAsign()),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white, // button color
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12), // rounded corners
+                      builder: (context, mainPro, child) {
+                        return ElevatedButton(
+                          onPressed: () {
+                            mainPro.fetchContacts();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ContactAsign(),
                               ),
-                              elevation: 1, // shadow depth
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white, // button color
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                12,
+                              ), // rounded corners
                             ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  "Add",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.normal,
-                                    fontSize: 16,
-                                    color: Colors.black,
-                                  ),
+                            elevation: 1, // shadow depth
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Add",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.normal,
+                                  fontSize: 16,
+                                  color: Colors.black,
                                 ),
-                                Text(
-                                  "Contacts",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.normal,
-                                    fontSize: 12,
-                                    color: Colors.black,
-                                  ),
+                              ),
+                              Text(
+                                "Contacts",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.normal,
+                                  fontSize: 12,
+                                  color: Colors.black,
                                 ),
-                              ],
-                            ),
-                          );
-                        }
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),
-
               ],
             ),
           ),
@@ -393,7 +434,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
 
                 SizedBox(width: width / 25),
-                _buildStatCard(width, height, count: reminders.length, label: 'Total', assetPath: "assets/Frame5.png", color: const Color(0xff00B9D6)),
+                _buildStatCard(
+                  width,
+                  height,
+                  count: reminders.length,
+                  label: 'Total',
+                  assetPath: "assets/Frame5.png",
+                  color: const Color(0xff00B9D6),
+                ),
               ],
             ),
           ),
@@ -405,19 +453,39 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             padding: EdgeInsets.symmetric(horizontal: width / 19),
             child: Row(
               children: [
-                const Text("Tasks", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 28)),
+                const Text(
+                  "Tasks",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 28),
+                ),
                 const Spacer(),
                 GestureDetector(
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const HistoryScreen()));
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const HistoryScreen(),
+                      ),
+                    );
                   },
                   child: Container(
                     height: width / 8,
                     width: width / 3.5,
-                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(30), color: const Color(0xffEDEDED)),
-                    child: const Center(child: Text("History", style: TextStyle(fontWeight: FontWeight.w500, color: Colors.black, fontSize: 18))),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(30),
+                      color: const Color(0xffEDEDED),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        "History",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black,
+                          fontSize: 18,
+                        ),
+                      ),
+                    ),
                   ),
-                )
+                ),
               ],
             ),
           ),
@@ -426,55 +494,94 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
           // Reminder list
           Expanded(
-              child: reminders.isEmpty
-                  ? const Center(child: Text("No tasks found"))
-                  : ListView.builder(
-                padding: EdgeInsets.symmetric(horizontal: width / 19),
-                itemCount: reminders.length,
-                itemBuilder: (context, index) {
-                  final reminder = reminders[index];
-                  int voiceCount = voiceNumbers[index];
+            child: reminders.isEmpty
+                ? const Center(child: Text("No tasks found"))
+                : ListView.builder(
+              padding: EdgeInsets.symmetric(horizontal: width / 19),
+              itemCount: reminders.length,
+              itemBuilder: (context, index) {
+                final reminder = reminders[index];
+                int voiceCount = voiceNumbers[index];
 
-                  return InkWell(
-                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) =>  Taskdetailspage( taskText: reminder.taskText,   // make sure task["text"] is a String?
-                    taskVoice: reminder.taskVoice,reminder: reminder
-                  ))),
+                return InkWell(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Taskdetailspage(
+                        reminder: reminder,
+                        taskText: reminder.taskText,
+                        taskVoice: reminder.taskVoice,
+                      ),
+                    ),
+                  ),
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 12),
                     padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                     child: Row(
                       children: [
                         Container(
                           width: width / 10,
                           height: height / 20,
-                          decoration: BoxDecoration(color: const Color(0xFFFFE7DD), borderRadius: BorderRadius.circular(12)),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFE7DD),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                           child: Icon(
-                            reminder.taskVoice != null ? Icons.mic_none_outlined : Icons.checklist,
+                            reminder.taskVoice != null
+                                ? Icons.mic_none_outlined
+                                : Icons.checklist,
                             size: 24,
                             color: const Color(0xFFFE6B2C),
                           ),
                         ),
                         SizedBox(width: width / 25),
                         Expanded(
-                          child: reminder.taskVoice!= null
-                              ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                            Text("Voice - $voiceCount", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF4B5563),)),
-                          ])
-                              : Text(reminder.taskText?? "", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF4B5563),)),
+                          child: reminder.taskVoice != null
+                              ? Column(
+                            crossAxisAlignment:
+                            CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Voice - $voiceCount",
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF4B5563),
+                                ),
+                              ),
+                            ],
+                          )
+                              : Text(
+                            reminder.taskText ?? "",
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF4B5563),
+                            ),
+                          ),
                         ),
 
                         // Play button for voice reminders
                         if (reminder.taskVoice != null)
                           IconButton(
                             iconSize: 32,
-                            icon: Icon(_currentAudio == reminder.taskVoice ? Icons.stop : Icons.play_arrow, color: Color(0xff0376FA),),
-                            onPressed: () => _playAudio(reminder.taskVoice!),
+                            icon: Icon(
+                              _currentAudio == reminder.taskVoice
+                                  ? Icons.stop
+                                  : Icons.play_arrow,
+                              color: Color(0xff0376FA),
+                            ),
+                            onPressed: () =>
+                                _playAudio(reminder.taskVoice!),
                           ),
 
                         // Group add button (left as original)
                         InkWell(
-                          onTap: () async{
+                          onTap: () async {
                             await provider.fetchContacts();
                             // if (isCheckedList.length != Contactlist.length) {
                             //   isCheckedList = List.generate(Contactlist.length, (_) => false);
@@ -483,33 +590,140 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               context: context,
                               backgroundColor: const Color(0xffF2F2F2),
                               builder: (BuildContext context) {
-                                final double halfScreenHeight = MediaQuery.of(context).size.height / 2;
+                                final double halfScreenHeight =
+                                    MediaQuery.of(context).size.height /
+                                        2;
                                 return Container(
-                                  padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                                  padding: EdgeInsets.only(
+                                    bottom: MediaQuery.of(
+                                      context,
+                                    ).viewInsets.bottom,
+                                  ),
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                    CrossAxisAlignment.start,
                                     children: <Widget>[
                                       Padding(
-                                        padding: EdgeInsets.only(top: height / 22, left: width / 30, bottom: height / 35),
+                                        padding: EdgeInsets.only(
+                                          top: height / 22,
+                                          left: width / 30,
+                                          bottom: height / 35,
+                                        ),
                                         child: Row(
                                           children: [
-                                            const Text("Contact List", style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+                                            const Text(
+                                              "Contact List",
+                                              style: TextStyle(
+                                                fontSize: 25,
+                                                fontWeight:
+                                                FontWeight.bold,
+                                              ),
+                                            ),
                                             const Spacer(),
                                             Padding(
-                                              padding: const EdgeInsets.only(right: 10),
+                                              padding:
+                                              const EdgeInsets.only(
+                                                right: 10,
+                                              ),
                                               child: SizedBox(
                                                 height: height / 25,
                                                 width: width / 6,
                                                 child: ElevatedButton(
-                                                  onPressed: () {},
+                                                  onPressed: () {
+                                                    final selected = provider.tempCheckedList == -1
+                                                        ? null
+                                                        : provider.contactList[provider.tempCheckedList];
+
+                                                    showDialog(
+                                                      context: context,
+                                                      builder: (context) {
+                                                        return AlertDialog(
+                                                          content: Text(
+                                                            selected == null
+                                                                ? "No contact selected!"
+                                                                : "Are you sure you want to assign this task to ${selected.username}?",
+                                                          ),
+                                                          actions: [
+                                                            TextButton(
+                                                              onPressed: () => Navigator.pop(context),
+                                                              child: const Text("Cancel"),
+                                                            ),
+                                                            TextButton(
+                                                              onPressed: () {
+                                                                provider.tempCheckedList = -1;
+                                                                provider.notifyListeners();
+                                                                Navigator.pop(context);
+
+                                                                    if (selected != null) {
+                                                                   provider.assignContact_Task(reminder);
+
+                                                                   ScaffoldMessenger.of(context).showSnackBar(
+                                                                          SnackBar(
+                                                               behavior: SnackBarBehavior.floating,
+                                                                     margin: const EdgeInsets.all(16),
+
+                                                                     shape: RoundedRectangleBorder(
+                                                                     borderRadius: BorderRadius.circular(15),   // radius 15
+                                                                     side: const BorderSide(
+                                                                        color: Colors.blue,                     // black border
+                                                                     width: 1,
+                                                                   ),
+                                                                      ),
+
+                                                                           backgroundColor: Colors.white,               // clean white background
+                                                                      elevation: 0,                                // flat box look
+
+                                                                     content: const Text(
+                                                                        "Assigned Successfully",
+                                                                        style: TextStyle(
+                                                                        color: Colors.blue,
+                                                                         fontWeight: FontWeight.bold,
+                                                                           ),
+                                                                            ),
+
+                                                                        duration: Duration(seconds: 2),
+                                                                          )
+                                                                            );
+
+
+// assign
+                                                                }
+                                                                Navigator.pop(context); // close dialog
+                                                              },
+                                                              child: const Text("Assign"),
+                                                            )
+                                                          ],
+                                                        );
+                                                      },
+                                                    );
+                                                  },
+
                                                   style: ElevatedButton.styleFrom(
-                                                    backgroundColor: Color(0xff0376FA),
-                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                                                    backgroundColor:
+                                                    Color(0xff0376FA),
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                      BorderRadius.circular(
+                                                        18,
+                                                      ),
+                                                    ),
                                                     elevation: 2,
-                                                    padding: EdgeInsets.zero,
+                                                    padding:
+                                                    EdgeInsets.zero,
                                                   ),
-                                                  child: const Center(child: Text("Add", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+                                                  child: const Center(
+                                                    child: Text(
+                                                      "Add",
+                                                      style: TextStyle(
+                                                        color:
+                                                        Colors.white,
+                                                        fontWeight:
+                                                        FontWeight
+                                                            .bold,
+                                                      ),
+                                                    ),
+                                                  ),
                                                 ),
                                               ),
                                             ),
@@ -519,66 +733,100 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       SizedBox(
                                         height: halfScreenHeight - 50,
                                         child: Consumer<MainProvider>(
-                                            builder: (context,provider,child) {
-                                              return ListView.builder(
-                                                itemCount: provider.contactList.length,
-                                                itemBuilder: (context, index) {
-                                                  final contact = provider.contactList[index];
+                                          builder: (context, provider, child) {
+                                            return ListView.builder(
+                                              itemCount: provider
+                                                  .contactList
+                                                  .length,
+                                              itemBuilder: (context, index) {
+                                                final contact = provider
+                                                    .contactList[index];
 
-                                                  return Container(
-                                                    decoration: BoxDecoration(
-                                                      borderRadius: BorderRadius.circular(12),
-                                                      color: Colors.white,
+                                                return Container(
+                                                  decoration: BoxDecoration(
+                                                    borderRadius:
+                                                    BorderRadius.circular(
+                                                      12,
                                                     ),
-                                                    margin: const EdgeInsets.all(8),
-                                                    child: Padding(
-                                                      padding: const EdgeInsets.all(12.0),
-                                                      child: Row(
-                                                        children: [
-                                                          SizedBox(
-                                                            width:width/15,
-                                                              height: height/15,
-                                                              child: Image(image: AssetImage("assets/Frame6.png"))),
-                                                          SizedBox(width: 16),
-
-                                                          Expanded(
-                                                            child: Column(
-                                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                                              children: [
-                                                                Text(
-                                                                 contact.username,
-                                                                  style: TextStyle(
-                                                                    fontWeight: FontWeight.bold,
-                                                                    fontSize: 16,
-                                                                  ),
-                                                                  overflow: TextOverflow.ellipsis,
-                                                                ),
-                                                                SizedBox(height: 4),
-                                                                Text(
-                                                                  contact.userContactNumber,
-                                                                  overflow: TextOverflow.ellipsis,
-                                                                ),
-                                                              ],
+                                                    color: Colors.white,
+                                                  ),
+                                                  margin:
+                                                  const EdgeInsets.all(
+                                                    8,
+                                                  ),
+                                                  child: Padding(
+                                                    padding:
+                                                    const EdgeInsets.all(
+                                                      12.0,
+                                                    ),
+                                                    child: Row(
+                                                      children: [
+                                                        SizedBox(
+                                                          width:
+                                                          width / 15,
+                                                          height:
+                                                          height / 15,
+                                                          child: Image(
+                                                            image: AssetImage(
+                                                              "assets/Frame6.png",
                                                             ),
                                                           ),
+                                                        ),
+                                                        SizedBox(
+                                                          width: 16,
+                                                        ),
 
-                                                          InkWell(
-                                                            onTap: () => provider.chnageAddContact(index),
-                                                            child: Icon(
-                                                              provider.tempCheckedList == index
-                                                                  ? Icons.check_box_outlined
-                                                                  : Icons.check_box_outline_blank,
-                                                              color: Colors.black,
-                                                            ),
+                                                        Expanded(
+                                                          child: Column(
+                                                            crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                            children: [
+                                                              Text(
+                                                                contact
+                                                                    .username,
+                                                                style: TextStyle(
+                                                                  fontWeight:
+                                                                  FontWeight.bold,
+                                                                  fontSize:
+                                                                  16,
+                                                                ),
+                                                                overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                              ),
+                                                              SizedBox(
+                                                                height: 4,
+                                                              ),
+                                                              Text(
+                                                                contact
+                                                                    .userContactNumber,
+                                                                overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                              ),
+                                                            ],
                                                           ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  );
-                                                },
-                                              );
+                                                        ),
 
-                                            }
+                                                        InkWell(
+                                                          onTap: () {
+                                                            provider.changeAddContact(index);
+                                                          },
+                                                          child: Icon(
+                                                            provider.tempCheckedList == index
+                                                                ? Icons.check_box_outlined     // SELECTED ✔
+                                                                : Icons.check_box_outline_blank, // NOT SELECTED
+                                                            color: Colors.black,
+                                                          ),
+                                                        )
+                                                      ],
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                            );
+                                          },
                                         ),
                                       ),
                                     ],
@@ -590,8 +838,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           child: Container(
                             width: width / 10,
                             height: height / 20,
-                            decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: Color(0xff0376FA),),
-                            child: const Icon(Icons.group_add_outlined, color: Colors.white),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              color: Color(0xff0376FA),
+                            ),
+                            child: const Icon(
+                              Icons.group_add_outlined,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ],
@@ -604,17 +858,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ],
       ),
 
-
       // Bottom input bar
-      bottomNavigationBar: _buildBottomInputBar(height, width,provider),
+      bottomNavigationBar: _buildBottomInputBar(height, width, provider),
     );
   }
 }
-
-
-
-
-
 
 class TokenBottomSheet extends StatelessWidget {
   final Future<void> Function() startRecording;
@@ -652,7 +900,10 @@ class TokenBottomSheet extends StatelessWidget {
               width: double.infinity,
               height: h * 0.12,
               child: isRecording
-                  ? Transform.scale(scale: 2.5, child: Lottie.asset('assets/audio_wave.json'))
+                  ? Transform.scale(
+                scale: 2.5,
+                child: Lottie.asset('assets/audio_wave.json'),
+              )
                   : const SizedBox.shrink(),
             ),
             const SizedBox(height: 20),

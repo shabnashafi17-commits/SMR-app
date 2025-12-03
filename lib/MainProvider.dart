@@ -188,42 +188,50 @@ class MainProvider extends ChangeNotifier {
 
 
   // Nihal
-
   TextEditingController usernameControler = TextEditingController();
   TextEditingController contactnumberControler = TextEditingController();
+
+  FirebaseFirestore Db = FirebaseFirestore.instance;
+
   Future<bool> addcontact() async {
+    // Generate unique key for contact
+    String Key = DateTime.now().millisecondsSinceEpoch.toString();
+
     try {
-      // Save to Firebase
-      var docRef = await FirebaseFirestore.instance.collection("contacts").add({
+      // Save to Firebase with custom ID
+      await Db.collection("contacts").doc(Key).set({
+        "User_id": Key,
+        "Added_ Time ":DateTime.now(),
         "name": usernameControler.text.trim(),
         "number": contactnumberControler.text.trim(),
       });
 
-      // Add to local list instantly (UI updates immediately)
+      // Add to local list instantly
       contactList.insert(
-        0, // index 0 → first element
+        0,
         Contact(
-          id: docRef.id,
+          id: Key, // use your custom ID
           username: usernameControler.text.trim(),
           userContactNumber: contactnumberControler.text.trim(),
         ),
       );
 
-
-      notifyListeners();  // 🔥 refresh ListView immediately
+      notifyListeners();
 
       // Clear controllers
       usernameControler.clear();
       contactnumberControler.clear();
 
-      return true; // success
+      return true;
+
     } catch (e) {
       print("Error adding contact: $e");
-      return false; // failed
+      return false;
     }
-  }  //fetch Function for
+  }
+  //fetch Function for
   int tempCheckedList=-1;
-  void chnageAddContact(int index){
+  void changeAddContact(int index){
     if (index==tempCheckedList){
       tempCheckedList=-1;
     }
@@ -257,5 +265,62 @@ class MainProvider extends ChangeNotifier {
       print("Error fetching contacts: $e");
     }
   }
+  // Future<void> assignTask(Reminder reminder) async {
+  //   if (tempCheckedList == -1) {
+  //     print("No contact selected");
+  //     return;
+  //   }
+  //
+  //   final selected = contactList[tempCheckedList];
+  //
+  //   String taskId = reminder.id; // use reminder id
+  //
+  //   await Db
+  //       .collection("contacts")
+  //       .doc(selected.id) // contact document
+  //       .collection("AssignedTasks ID") // sub-collection
+  //       .doc(taskId) // task document
+  //       .set({
+  //     "Task": taskId,
+  //     "Assigned_Time": DateTime.now(),
+  //   });
+  //
+  //   print("Task assigned to ${selected.username}");
+  // }
+  Future<void> assignContact_Task(Reminder reminder) async {
+    if (tempCheckedList == -1) {
+      print("No contact selected");
+      return;
+    }
+
+    final selected = contactList[tempCheckedList];
+    String taskId = reminder.id;
+
+    // Save under Contact -> AssignedTasks
+    await Db
+        .collection("Tasks")
+        .doc(selected.id)
+        .collection("AssignedTasks ID")
+        .doc(taskId)
+        .set({
+      "Task": taskId,
+      "Assigned_Time": DateTime.now(),
+    });
+
+    // Save under Task -> AssignedContacts
+    await Db
+        .collection("Tasks")
+        .doc(taskId)
+        .collection("AssignedContacts")
+        .doc(selected.id)
+        .set({
+      "contactId": selected.id,
+      "assignedTime": DateTime.now(),
+    });
+
+    print("Task assigned to ${selected.username}");
+  }
+
+
 
 }

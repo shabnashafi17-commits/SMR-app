@@ -5,14 +5,15 @@ import 'package:smr_app/MainProvider.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class Taskdetailspage extends StatelessWidget {
-  final Reminder reminder; // <-- Add this
+  final Reminder reminder;
   final String? taskText;
   final String? taskVoice;
     const Taskdetailspage({super.key,this.taskText,this.taskVoice,required this.reminder});
 
+
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<MainProvider>(context, listen: true); // listen to changes
+    final provider = Provider.of<MainProvider>(context, listen: true);
     final reminders = provider.reminders;
     int voiceCount = reminders.where(
             (r) => r.taskVoice != null && r.taskVoice!.isNotEmpty).length;
@@ -291,7 +292,7 @@ class Taskdetailspage extends StatelessWidget {
                                                                       ),
 
                                                                       InkWell(
-                                                                        onTap: () => provider.chnageAddContact(index),
+                                                                        onTap: () => provider.changeAddContact(index),
                                                                         child: Icon(
                                                                           provider.tempCheckedList == index
                                                                               ? Icons.check_box_outlined
@@ -329,19 +330,52 @@ class Taskdetailspage extends StatelessWidget {
                           SizedBox(height: screenHeight * 10 / 932),
                           // DATE / TIME for text task
                           Padding(
-                            padding: const EdgeInsets.only(right: 14),
-                            child: Align(
-                              alignment: Alignment.bottomRight,
-                              child: Text(
-                                "Your Date & Time",
-                                style: TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: Color(0xFF4B5563),
-                                ),
-                              ),
+                            padding: const EdgeInsets.only(left: 130),
+                            child: Consumer<MainProvider>(
+                              builder: (context, provider, child) {
+                                final current = provider.reminders.firstWhere(
+                                      (r) => r.id == reminder.id,
+                                );
+
+                                String displayText = "Your Date & Time";
+
+                                if (current.date != null && current.time != null) {
+                                  final combined = DateTime(
+                                    current.date!.year,
+                                    current.date!.month,
+                                    current.date!.day,
+                                    current.time!.inHours,
+                                    current.time!.inMinutes.remainder(60),
+                                  );
+
+                                  // Convert to AM/PM
+                                  int hour = combined.hour;
+                                  final minute = combined.minute.toString().padLeft(2, '0');
+                                  final ampm = hour >= 12 ? "PM" : "AM";
+                                  if (hour == 0) hour = 12;
+                                  if (hour > 12) hour -= 12;
+
+                                  displayText =
+                                  "${combined.day.toString().padLeft(2, '0')}/"
+                                      "${combined.month.toString().padLeft(2, '0')}/"
+                                      "${combined.year}  "
+                                      "${hour.toString().padLeft(2, '0')}:$minute $ampm";
+                                }
+
+                                return Text(
+                                  displayText,
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF4B5563),
+                                  ),
+                                );
+                              },
                             ),
+
+
+
                           ),
                         ],
                       ),
@@ -502,31 +536,7 @@ class Taskdetailspage extends StatelessWidget {
 
                       SizedBox(height: 10),
 
-    Align(
-    alignment: Alignment.centerRight,
-    child: ElevatedButton(
-    onPressed: () async {
-    final provider = Provider.of<MainProvider>(context, listen: false);
-
-    // SAVE ONLY REMINDER OPTION
-    await provider.updateReminderOption(
-    reminder.id,
-    provider.selectedReminder, // <-- this is the selected value
-    );
-
-    Navigator.pop(context);
-    },
-    style: ElevatedButton.styleFrom(
-    backgroundColor: Colors.white,
-    foregroundColor: Color(0xff0376FA),
-    side: BorderSide(color: Color(0xff0376FA)),
-    shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(20),
-    ),
-    ),
-    child: Text("Save"),
-    ),
-    ),
+                      ReminderSaveButton(reminderId: reminder.id),
 
 
     SizedBox(height: 10),
@@ -536,7 +546,7 @@ class Taskdetailspage extends StatelessWidget {
               ),
 
 
-              SubtaskListContainer(reminderId: reminder.id), // ✅ pass the reminder ID
+              SubtaskListContainer(reminderId: reminder.id), //
 
             ]
     )
@@ -560,6 +570,17 @@ class DatePickerContainer extends StatefulWidget {
 class _DatePickerContainerState extends State<DatePickerContainer> {
   DateTime? _selectedDate;
   DateTime _focusedDay = DateTime.now();
+  @override
+  void initState() {
+    super.initState();
+
+    final provider = Provider.of<MainProvider>(context, listen: false);
+    final reminder = provider.reminders.firstWhere((r) => r.id == widget.reminderId);
+
+    _selectedDate = reminder.date;        // 🔵 LOAD from Firestore
+    _focusedDay = reminder.date ?? DateTime.now();
+  }
+
 
   void _pickDate() async {
     DateTime initialDate = _selectedDate ?? DateTime.now();
@@ -582,6 +603,13 @@ class _DatePickerContainerState extends State<DatePickerContainer> {
               lastDay: DateTime.utc(2030, 12, 31),
               focusedDay: _focusedDay,
               selectedDayPredicate: (day) => isSameDay(_selectedDate, day),
+
+              // 🔵 Disable previous dates
+              enabledDayPredicate: (day) {
+                final today = DateTime.now();
+                return !day.isBefore(DateTime(today.year, today.month, today.day));
+              },
+
               onDaySelected: (selectedDay, focusedDay) {
                 setState(() {
                   _selectedDate = selectedDay;
@@ -589,6 +617,7 @@ class _DatePickerContainerState extends State<DatePickerContainer> {
                 });
                 Navigator.of(context).pop(selectedDay);
               },
+
               calendarFormat: CalendarFormat.month,
               headerVisible: true,
               headerStyle: HeaderStyle(
@@ -606,8 +635,7 @@ class _DatePickerContainerState extends State<DatePickerContainer> {
                         padding: const EdgeInsets.only(left: 10),
                         child: Text(
                           "${_monthName(day.month)} ${day.year}",
-                          style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
+                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                       ),
                       Row(
@@ -616,18 +644,17 @@ class _DatePickerContainerState extends State<DatePickerContainer> {
                             icon: Icon(Icons.chevron_left, color: Colors.blue),
                             onPressed: () {
                               setState(() {
-                                _focusedDay = DateTime(_focusedDay.year,
-                                    _focusedDay.month - 1, _focusedDay.day);
+                                _focusedDay = DateTime(
+                                    _focusedDay.year, _focusedDay.month - 1, _focusedDay.day);
                               });
                             },
                           ),
                           IconButton(
-                            icon:
-                            Icon(Icons.chevron_right, color: Colors.blue),
+                            icon: Icon(Icons.chevron_right, color: Colors.blue),
                             onPressed: () {
                               setState(() {
-                                _focusedDay = DateTime(_focusedDay.year,
-                                    _focusedDay.month + 1, _focusedDay.day);
+                                _focusedDay = DateTime(
+                                    _focusedDay.year, _focusedDay.month + 1, _focusedDay.day);
                               });
                             },
                           ),
@@ -645,12 +672,19 @@ class _DatePickerContainerState extends State<DatePickerContainer> {
                 selectedTextStyle: TextStyle(color: Colors.white),
               ),
             ),
+
           ),
         ),
       ),
     );
+    if (picked != null) {
+      setState(() => _selectedDate = picked);
 
-    if (picked != null) setState(() => _selectedDate = picked);
+      // 🔵 SAVE DATE TO FIREBASE
+      final provider = Provider.of<MainProvider>(context, listen: false);
+      provider.updateReminderDate(widget.reminderId, picked);
+    }
+
   }
 
   String _monthName(int month) {
@@ -718,6 +752,16 @@ class TimePickerContainer extends StatefulWidget {
 
 class _TimePickerContainerState extends State<TimePickerContainer> {
   Duration? _selectedTime;
+  @override
+  void initState() {
+    super.initState();
+
+    final provider = Provider.of<MainProvider>(context, listen: false);
+    final reminder = provider.reminders.firstWhere((r) => r.id == widget.reminderId);
+
+    _selectedTime = reminder.time;   // 🔵 LOAD SAVED TIME
+  }
+
 
   void _showTimePicker(BuildContext context) {
     Duration initialTime = _selectedTime ?? Duration(hours: 15, minutes: 0);
@@ -757,7 +801,16 @@ class _TimePickerContainerState extends State<TimePickerContainer> {
                         backgroundColor: Color(0xff0376FA),
                         foregroundColor: Colors.white,
                       ),
-                      onPressed: () => Navigator.of(ctx).pop(),
+                      onPressed: () {
+                        Navigator.of(ctx).pop();
+
+                        // 🔵 SAVE TIME TO FIREBASE
+                        if (_selectedTime != null) {
+                          final provider = Provider.of<MainProvider>(context, listen: false);
+                          provider.updateReminderTime(widget.reminderId, _selectedTime!);
+                        }
+                      },
+
                       child: Text('OK'),
                     ),
                   ),
@@ -867,7 +920,37 @@ Future<String?> showReminderDialog(
     },
   );
 }
+class ReminderSaveButton extends StatelessWidget {
+  final String reminderId;
+  const ReminderSaveButton({required this.reminderId, Key? key}) : super(key: key);
 
+  @override
+  Widget build(BuildContext context) {
+    final provider = Provider.of<MainProvider>(context);
+
+    return Align(
+      alignment: Alignment.centerRight,
+      child: ElevatedButton(
+        onPressed: () async {
+          // ALWAYS SAVE
+          await provider.updateReminderOption(
+            reminderId,
+            provider.selectedReminder,
+          );
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.white,
+          foregroundColor: Color(0xff0376FA),
+          side: BorderSide(color: Color(0xff0376FA)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ),
+        child: const Text("Save"),
+      ),
+    );
+  }
+}
 
 
 
@@ -888,138 +971,147 @@ class _SubtaskListContainerState extends State<SubtaskListContainer> {
   Widget build(BuildContext context) {
     final provider = Provider.of<MainProvider>(context);
 
-    // Get the reminder by ID
-    final reminder =
-    provider.reminders.firstWhere((r) => r.id == widget.reminderId);
+     return Consumer<MainProvider>(
+        builder: (context, provider, child) {
+          final reminder = provider.reminders.firstWhere(
+                  (r) => r.id == widget.reminderId
+          );
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          "Subtasks",
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 10),
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Subtasks",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 10),
 
-        // Existing subtasks
-        if (reminder.subtasks.isNotEmpty)
-          ...reminder.subtasks.map((task) => Container(
-            width: double.infinity,
-            margin: const EdgeInsets.only(bottom: 8),
-            height: 56,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.black26, width: 1),
-              boxShadow: const [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 2,
-                  offset: Offset(0, 1),
-                ),
-              ],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 12, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      task,
-                      style: const TextStyle(
-                          fontSize: 16, color: Colors.black87),
+              // Existing subtasks
+              if (reminder.subtasks.isNotEmpty)
+                ...reminder.subtasks.map((task) =>
+                    Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.only(bottom: 8),
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.black26, width: 1),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 2,
+                            offset: Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                task,
+                                style: const TextStyle(
+                                    fontSize: 16, color: Colors.black87),
+                              ),
+                            ),
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                    color: const Color(0xff0376FA), width: 1.5),
+                              ),
+                              child: const Icon(
+                                Icons.group_add_outlined,
+                                color: Color(0xff0376FA),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )),
+
+              // Input field
+              if (isTyping)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: TextFormField(
+                    controller: subtaskController,
+                    decoration: InputDecoration(
+                      hintText: "Enter Subtask...",
+                      hintStyle: const TextStyle(color: Colors.grey),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(
+                            color: Colors.black26, width: 1),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide:
+                        const BorderSide(color: Colors.black26, width: 1),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide:
+                        const BorderSide(color: Colors.black45, width: 1.5),
+                      ),
                     ),
                   ),
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                          color: const Color(0xff0376FA), width: 1.5),
+                ),
+
+              const SizedBox(height: 10),
+
+              // Add/Save button
+              Center(
+                child: SizedBox(
+                  height: 40,
+                  width: 100,
+                  child: ElevatedButton.icon(
+                    icon: const Icon(CupertinoIcons.add_circled),
+                    label: Text(isTyping ? "Save" : "Add"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: const Color(0xff0376FA),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        side: const BorderSide(
+                            color: Color(0xff0376FA), width: 1),
+                      ),
                     ),
-                    child: const Icon(
-                      Icons.group_add_outlined,
-                      color: Color(0xff0376FA),
-                    ),
+                    onPressed: () async {
+                      if (isTyping) {
+                        final text = subtaskController.text.trim();
+                        if (text.isEmpty) return;
+
+                        // Add subtask in provider and Firestore
+                        await provider.addSubtaskToReminder(
+                            widget.reminderId, text);
+
+                        // Clear field and close input
+                        subtaskController.clear();
+                        setState(() {
+                          isTyping = false;
+                        });
+                      } else {
+                        setState(() {
+                          isTyping = true;
+                        });
+                      }
+                    },
                   ),
-                ],
-              ),
-            ),
-          )),
-
-        // Input field
-        if (isTyping)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: TextFormField(
-              controller: subtaskController,
-              decoration: InputDecoration(
-                hintText: "Enter Subtask...",
-                hintStyle: const TextStyle(color: Colors.grey),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Colors.black26, width: 1),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide:
-                  const BorderSide(color: Colors.black26, width: 1),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide:
-                  const BorderSide(color: Colors.black45, width: 1.5),
                 ),
               ),
-            ),
-          ),
-
-        const SizedBox(height: 10),
-
-        // Add/Save button
-        Center(
-          child: SizedBox(
-            height: 40,
-            width: 100,
-            child: ElevatedButton.icon(
-              icon: const Icon(CupertinoIcons.add_circled),
-              label: Text(isTyping ? "Save" : "Add"),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: const Color(0xff0376FA),
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  side: const BorderSide(color: Color(0xff0376FA), width: 1),
-                ),
-              ),
-              onPressed: () async {
-                if (isTyping) {
-                  final text = subtaskController.text.trim();
-                  if (text.isEmpty) return;
-
-                  // Add subtask in provider and Firestore
-                  await provider.addSubtaskToReminder(widget.reminderId, text);
-
-                  // Clear field and close input
-                  subtaskController.clear();
-                  setState(() {
-                    isTyping = false;
-                  });
-                } else {
-                  setState(() {
-                    isTyping = true;
-                  });
-                }
-              },
-            ),
-          ),
-        ),
-      ],
+            ],
+          );
+        }
     );
+
   }
 }
