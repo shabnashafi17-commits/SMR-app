@@ -139,20 +139,28 @@ class MainProvider extends ChangeNotifier {
 
   Future<void> addSubtaskToReminder(String reminderId, String text) async {
     if (text.trim().isEmpty) return;
+
     final index = reminders.indexWhere((r) => r.id == reminderId);
     if (index == -1) return;
 
-    reminders[index].subtasks.add(text.trim());
+    // Create a new modifiable list
+    final updatedList = List<String>.from(reminders[index].subtasks)
+      ..add(text.trim());
+
+    // Replace old subtasks list
+    reminders[index].subtasks = updatedList;
+
     notifyListeners();
 
     try {
       await ref.doc(reminderId).update({
-        'subtasks': reminders[index].subtasks,
+        'subtasks': updatedList,
       });
     } catch (e) {
       print("Error updating subtask: $e");
     }
   }
+
 
   // ------------------ DATE / TIME / REMINDER OPTION ------------------
   String selectedReminder = "30 min Before";
@@ -271,17 +279,15 @@ class MainProvider extends ChangeNotifier {
     if (tempCheckedList == -1) return false;
 
     final selected = contactList[tempCheckedList];
-    final taskId = reminder.id;
     final contactId = selected.id;
 
-    // 🔥 CHECK IF CONTACT ALREADY ASSIGNED
-    bool alreadyAssigned = await isContactAssigned(contactId);
-    if (alreadyAssigned) {
-      print("Contact already assigned to a task");
-      return false;   // IMPORTANT → return false
-    }
+    // Check if contact is already assigned
+    final alreadyAssigned = await isContactAlreadyAssigned(contactId);
+    if (alreadyAssigned) return false;
 
-    // ➤ Assign to CONTACT
+    final taskId = reminder.id;
+
+    // Save in contact's assignedTasks
     await Db.collection("contacts")
         .doc(contactId)
         .collection("assignedTasks")
@@ -292,10 +298,8 @@ class MainProvider extends ChangeNotifier {
       "assignedTime": DateTime.now(),
     });
 
-    // ➤ Assign to TASK
-    await Db.collection("Tasks")
-        .doc(taskId)
-        .update({
+    // Update task
+    await Db.collection("Tasks").doc(taskId).update({
       "taskAssignedToId": contactId,
       "taskAssignedToName": selected.username,
       "assignedTime": DateTime.now(),
@@ -305,15 +309,13 @@ class MainProvider extends ChangeNotifier {
     return true;
   }
 
-
-  Future<bool> isContactAssigned(String contactId) async {
-    final snap = await Db
-        .collection("contacts")
-        .doc(contactId)
-        .collection("assignedTasks")
+  Future<bool> isContactAlreadyAssigned(String contactId) async {
+    final snapshot = await Db
+        .collection("Tasks")
+        .where("taskAssignedToId", isEqualTo: contactId)
         .get();
 
-    return snap.docs.isNotEmpty; // true = already assigned
+    return snapshot.docs.isNotEmpty; // TRUE = already assigned
   }
 
 

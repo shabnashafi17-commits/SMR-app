@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
@@ -649,39 +648,64 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                               child: const Text("Cancel"),
                                                             ),
                                                             TextButton(
-                                                              onPressed: () {
-                                                                provider.tempCheckedList = -1;
-                                                                provider.notifyListeners();
+                                                              onPressed: () async {
+                                                                final selected = provider.tempCheckedList == -1
+                                                                    ? null
+                                                                    : provider.contactList[provider.tempCheckedList];
 
                                                                 if (selected != null) {
-                                                                  provider.assignTask(reminder);
-                                                                  print("asigned Contact ${selected.username}");
+                                                                  bool ok = await provider.assignTask(reminder);
 
-                                                                  ScaffoldMessenger.of(context).showSnackBar(
-                                                                    SnackBar(
-                                                                      behavior: SnackBarBehavior.floating,
-                                                                      margin: const EdgeInsets.all(16),
-                                                                      shape: RoundedRectangleBorder(
-                                                                        borderRadius: BorderRadius.circular(15),
-                                                                        side: const BorderSide(
-                                                                          color: Colors.blue,
-                                                                          width: 1,
+                                                                  if (!ok) {
+                                                                    // ❌ Contact already assigned → Show SnackBar
+                                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                                      SnackBar(
+                                                                        content: const Text(
+                                                                          "This contact is already assigned another task ",
+
+                                                                          style: TextStyle(color: Colors.red),
+                                                                        ),
+                                                                        backgroundColor: Colors.white,
+                                                                        behavior: SnackBarBehavior.floating,
+                                                                        margin: const EdgeInsets.all(16),
+
+                                                                        shape: RoundedRectangleBorder(
+                                                                          borderRadius: BorderRadius.circular(12),
+                                                                          side: const BorderSide(
+                                                                            color: Colors.red, // border color
+                                                                            width: 2, // border width
+                                                                          ),
+
                                                                         ),
                                                                       ),
-                                                                      backgroundColor: Colors.white,
-                                                                      elevation: 0,
-                                                                      content: const Text(
-                                                                        "Assigned Successfully",
-                                                                        style: TextStyle(
-                                                                          color: Colors.blue,
-                                                                          fontWeight: FontWeight.bold,
+                                                                    );
+                                                                  } else {
+                                                                    // ✅ Success
+                                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                                      SnackBar(
+                                                                        content: const Text(
+                                                                          "Task assigned successfully!",
+                                                                          style: TextStyle(color: Colors.green),
+                                                                        ),
+                                                                        backgroundColor: Colors.white,
+                                                                        behavior: SnackBarBehavior.floating,
+                                                                        margin: const EdgeInsets.all(16),
+                                                                        shape: RoundedRectangleBorder(
+                                                                          borderRadius: BorderRadius.circular(12),
+                                                                          side: const BorderSide(
+                                                                            color: Colors.green, // border color
+                                                                            width: 2, // border width
+                                                                          ),
                                                                         ),
                                                                       ),
-                                                                      duration: Duration(seconds: 2),
-                                                                    ),
-                                                                  );
+                                                                    );
+                                                                  }
+
+                                                                  provider.tempCheckedList = -1;
+                                                                  provider.notifyListeners();
+                                                                  Navigator.pop(context);
+                                                                  Navigator.of(context).pop();
                                                                 }
-                                                                Navigator.pop(context);
                                                               },
                                                               child: const Text("Assign"),
                                                             )
@@ -732,8 +756,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                         .contactList
                                                         .length,
                                                     itemBuilder: (context, index) {
-                                                      final contact = provider
-                                                          .contactList[index];
+                                                      final contact = provider.contactList[index];
                                                       final isAssigned = provider.isContactAlreadyAssigned(contact.id);
 
 
@@ -806,23 +829,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
                                                         InkWell(
                                                           onTap: () {
-                                                            if (isAssigned) {
-                                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                                SnackBar(
-                                                                  content: const Text(
-                                                                    "This contact is already assigned a task",
-                                                                    style: TextStyle(color: Colors.white),
-                                                                  ),
-                                                                  backgroundColor: Colors.red,
-                                                                  behavior: SnackBarBehavior.floating,
-                                                                  margin: const EdgeInsets.all(16),
-                                                                  shape: RoundedRectangleBorder(
-                                                                    borderRadius: BorderRadius.circular(12),
-                                                                  ),
-                                                                ),
-                                                              );
-                                                              return;
-                                                            }
+
                                                             provider.changeAddContact(index);
                                                           },
                                                           child: Icon(

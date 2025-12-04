@@ -231,11 +231,12 @@ class _LoginpageState extends State<Loginpage> {
 
                             onChanged: (value) {
                               setState(() {
-                                if (value.length < 6) {
+                                if (value.length != 6 || !RegExp(r'^\d{6}$').hasMatch(value)) {
                                   otpError = "Please enter a valid 6-digit OTP";
                                 } else {
                                   otpError = null;
                                 }
+
                               });
                             },
 
