@@ -358,7 +358,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
                 SizedBox(width: width / 40),
                 const Text(
-                  "Hi, Nihal",
+                  "Hi, Nihal ",
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 Spacer(),
@@ -634,7 +634,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                     final selected = provider.tempCheckedList == -1
                                                         ? null
                                                         : provider.contactList[provider.tempCheckedList];
-
                                                     showDialog(
                                                       context: context,
                                                       builder: (context) {
@@ -653,46 +652,40 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                               onPressed: () {
                                                                 provider.tempCheckedList = -1;
                                                                 provider.notifyListeners();
-                                                                Navigator.pop(context);
 
-                                                                    if (selected != null) {
-                                                                   provider.assignContact_Task(reminder);
+                                                                if (selected != null) {
+                                                                  provider.assignTask(reminder);
+                                                                  print("asigned Contact ${selected.username}");
 
-                                                                   ScaffoldMessenger.of(context).showSnackBar(
-                                                                          SnackBar(
-                                                               behavior: SnackBarBehavior.floating,
-                                                                     margin: const EdgeInsets.all(16),
-
-                                                                     shape: RoundedRectangleBorder(
-                                                                     borderRadius: BorderRadius.circular(15),   // radius 15
-                                                                     side: const BorderSide(
-                                                                        color: Colors.blue,                     // black border
-                                                                     width: 1,
-                                                                   ),
+                                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                                    SnackBar(
+                                                                      behavior: SnackBarBehavior.floating,
+                                                                      margin: const EdgeInsets.all(16),
+                                                                      shape: RoundedRectangleBorder(
+                                                                        borderRadius: BorderRadius.circular(15),
+                                                                        side: const BorderSide(
+                                                                          color: Colors.blue,
+                                                                          width: 1,
+                                                                        ),
                                                                       ),
-
-                                                                           backgroundColor: Colors.white,               // clean white background
-                                                                      elevation: 0,                                // flat box look
-
-                                                                     content: const Text(
+                                                                      backgroundColor: Colors.white,
+                                                                      elevation: 0,
+                                                                      content: const Text(
                                                                         "Assigned Successfully",
                                                                         style: TextStyle(
-                                                                        color: Colors.blue,
-                                                                         fontWeight: FontWeight.bold,
-                                                                           ),
-                                                                            ),
-
-                                                                        duration: Duration(seconds: 2),
-                                                                          )
-                                                                            );
-
-
-// assign
+                                                                          color: Colors.blue,
+                                                                          fontWeight: FontWeight.bold,
+                                                                        ),
+                                                                      ),
+                                                                      duration: Duration(seconds: 2),
+                                                                    ),
+                                                                  );
                                                                 }
-                                                                Navigator.pop(context); // close dialog
+                                                                Navigator.pop(context);
                                                               },
                                                               child: const Text("Assign"),
                                                             )
+
                                                           ],
                                                         );
                                                       },
@@ -724,6 +717,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                       ),
                                                     ),
                                                   ),
+
                                                 ),
                                               ),
                                             ),

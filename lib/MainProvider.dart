@@ -265,61 +265,48 @@ class MainProvider extends ChangeNotifier {
       print("Error fetching contacts: $e");
     }
   }
-  // Future<void> assignTask(Reminder reminder) async {
-  //   if (tempCheckedList == -1) {
-  //     print("No contact selected");
-  //     return;
-  //   }
-  //
-  //   final selected = contactList[tempCheckedList];
-  //
-  //   String taskId = reminder.id; // use reminder id
-  //
-  //   await Db
-  //       .collection("contacts")
-  //       .doc(selected.id) // contact document
-  //       .collection("AssignedTasks ID") // sub-collection
-  //       .doc(taskId) // task document
-  //       .set({
-  //     "Task": taskId,
-  //     "Assigned_Time": DateTime.now(),
-  //   });
-  //
-  //   print("Task assigned to ${selected.username}");
-  // }
-  Future<void> assignContact_Task(Reminder reminder) async {
+  Future<void> assignTask(Reminder reminder) async {
     if (tempCheckedList == -1) {
       print("No contact selected");
       return;
     }
 
     final selected = contactList[tempCheckedList];
-    String taskId = reminder.id;
+    final taskId = reminder.id;
+    final contactId = selected.id;
 
-    // Save under Contact -> AssignedTasks
+    print("Assigning task '${reminder.taskText}' to contact ${selected.username}");
+
+    // ➤ Save task under CONTACT → assignedTasks
     await Db
-        .collection("Tasks")
-        .doc(selected.id)
-        .collection("AssignedTasks ID")
+        .collection("contacts")
+        .doc(contactId)
+        .collection("assignedTasks")
         .doc(taskId)
         .set({
-      "Task": taskId,
-      "Assigned_Time": DateTime.now(),
-    });
-
-    // Save under Task -> AssignedContacts
-    await Db
-        .collection("Tasks")
-        .doc(taskId)
-        .collection("AssignedContacts")
-        .doc(selected.id)
-        .set({
-      "contactId": selected.id,
+      "taskId": taskId,
+      "taskText": reminder.taskText,
       "assignedTime": DateTime.now(),
     });
 
-    print("Task assigned to ${selected.username}");
+    // ➤ Save contact under TASK → assignedContacts
+    await Db
+        .collection("Tasks")
+        .doc(taskId)
+        .collection("assignedContacts")
+        .doc(contactId)
+        .set({
+      "contactId": contactId,
+      "contactName": selected.username,
+      "assignedTime": DateTime.now(),
+    });
+
+    print("Task assigned successfully!");
+
+    notifyListeners();
   }
+
+
 
 
 
