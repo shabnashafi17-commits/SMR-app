@@ -13,7 +13,9 @@ class Reminder {
   List<String> subtasks;
   DateTime? date;         // selected date
   Duration? time;         // selected time
-  String reminderOption;  // e.g. "5 min Before"
+  String reminderOption;
+  String? assignedContactId;   // add this
+// e.g. "5 min Before"
 
   Reminder({
     required this.id,
@@ -305,6 +307,11 @@ class MainProvider extends ChangeNotifier {
 
     notifyListeners();
   }
+  bool isContactAlreadyAssigned(String contactId) {
+    return reminders.any((r) => r.assignedContactId == contactId);
+  }
+
+
 
 
 

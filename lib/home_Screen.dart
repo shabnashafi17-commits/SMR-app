@@ -735,6 +735,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                               itemBuilder: (context, index) {
                                                 final contact = provider
                                                     .contactList[index];
+                                                final isAssigned = provider.isContactAlreadyAssigned(contact.id);
+
 
                                                 return Container(
                                                   decoration: BoxDecoration(
@@ -805,15 +807,33 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
                                                         InkWell(
                                                           onTap: () {
+                                                            if (isAssigned) {
+                                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                                SnackBar(
+                                                                  content: const Text(
+                                                                    "This contact is already assigned a task",
+                                                                    style: TextStyle(color: Colors.white),
+                                                                  ),
+                                                                  backgroundColor: Colors.red,
+                                                                  behavior: SnackBarBehavior.floating,
+                                                                  margin: const EdgeInsets.all(16),
+                                                                  shape: RoundedRectangleBorder(
+                                                                    borderRadius: BorderRadius.circular(12),
+                                                                  ),
+                                                                ),
+                                                              );
+                                                              return;
+                                                            }
                                                             provider.changeAddContact(index);
                                                           },
                                                           child: Icon(
                                                             provider.tempCheckedList == index
-                                                                ? Icons.check_box_outlined     // SELECTED ✔
-                                                                : Icons.check_box_outline_blank, // NOT SELECTED
+                                                                ? Icons.check_box_outlined
+                                                                : Icons.check_box_outline_blank,
                                                             color: Colors.black,
                                                           ),
                                                         )
+
                                                       ],
                                                     ),
                                                   ),
