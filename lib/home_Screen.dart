@@ -358,7 +358,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
                 SizedBox(width: width / 40),
                 const Text(
-                  "Hi, Nihal",
+                  "Hi, Nihal here",
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 Spacer(),
