@@ -497,87 +497,87 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             child: reminders.isEmpty
                 ? const Center(child: Text("No tasks found"))
                 : ListView.builder(
-              padding: EdgeInsets.symmetric(horizontal: width / 19),
-              itemCount: reminders.length,
-              itemBuilder: (context, index) {
-                final reminder = reminders[index];
-                int voiceCount = voiceNumbers[index];
+                    padding: EdgeInsets.symmetric(horizontal: width / 19),
+                    itemCount: reminders.length,
+                    itemBuilder: (context, index) {
+                      final reminder = reminders[index];
+                      int voiceCount = voiceNumbers[index];
 
-                return InkWell(
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Taskdetailspage(
-                        reminder: reminder,
-                        taskText: reminder.taskText,
-                        taskVoice: reminder.taskVoice,
-                      ),
-                    ),
-                  ),
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: width / 10,
-                          height: height / 20,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFE7DD),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                            reminder.taskVoice != null
-                                ? Icons.mic_none_outlined
-                                : Icons.checklist,
-                            size: 24,
-                            color: const Color(0xFFFE6B2C),
+                      return InkWell(
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Taskdetailspage(
+                              reminder: reminder,
+                              taskText: reminder.taskText,
+                              taskVoice: reminder.taskVoice,
+                            ),
                           ),
                         ),
-                        SizedBox(width: width / 25),
-                        Expanded(
-                          child: reminder.taskVoice != null
-                              ? Column(
-                            crossAxisAlignment:
-                            CrossAxisAlignment.start,
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Row(
                             children: [
-                              Text(
-                                "Voice - $voiceCount",
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF4B5563),
+                              Container(
+                                width: width / 10,
+                                height: height / 20,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFE7DD),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Icon(
+                                  reminder.taskVoice != null
+                                      ? Icons.mic_none_outlined
+                                      : Icons.checklist,
+                                  size: 24,
+                                  color: const Color(0xFFFE6B2C),
                                 ),
                               ),
-                            ],
-                          )
-                              : Text(
-                            reminder.taskText ?? "",
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF4B5563),
-                            ),
-                          ),
-                        ),
+                              SizedBox(width: width / 25),
+                              Expanded(
+                                child: reminder.taskVoice != null
+                                    ? Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            "Voice - $voiceCount",
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w700,
+                                              color: Color(0xFF4B5563),
+                                            ),
+                                          ),
+                                        ],
+                                      )
+                                    : Text(
+                                        reminder.taskText ?? "",
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF4B5563),
+                                        ),
+                                      ),
+                              ),
 
-                        // Play button for voice reminders
-                        if (reminder.taskVoice != null)
-                          IconButton(
-                            iconSize: 32,
-                            icon: Icon(
-                              _currentAudio == reminder.taskVoice
-                                  ? Icons.stop
-                                  : Icons.play_arrow,
-                              color: Color(0xff0376FA),
-                            ),
-                            onPressed: () =>
-                                _playAudio(reminder.taskVoice!),
-                          ),
+                              // Play button for voice reminders
+                              if (reminder.taskVoice != null)
+                                IconButton(
+                                  iconSize: 32,
+                                  icon: Icon(
+                                    _currentAudio == reminder.taskVoice
+                                        ? Icons.stop
+                                        : Icons.play_arrow,
+                                    color: Color(0xff0376FA),
+                                  ),
+                                  onPressed: () =>
+                                      _playAudio(reminder.taskVoice!),
+                                ),
 
                         // Group add button (left as original)
                         InkWell(
@@ -692,118 +692,117 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                     );
                                                   },
 
-                                                  style: ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                    Color(0xff0376FA),
-                                                    shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                      BorderRadius.circular(
-                                                        18,
-                                                      ),
-                                                    ),
-                                                    elevation: 2,
-                                                    padding:
-                                                    EdgeInsets.zero,
-                                                  ),
-                                                  child: const Center(
-                                                    child: Text(
-                                                      "Add",
-                                                      style: TextStyle(
-                                                        color:
-                                                        Colors.white,
-                                                        fontWeight:
-                                                        FontWeight
-                                                            .bold,
-                                                      ),
-                                                    ),
-                                                  ),
-
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        height: halfScreenHeight - 50,
-                                        child: Consumer<MainProvider>(
-                                          builder: (context, provider, child) {
-                                            return ListView.builder(
-                                              itemCount: provider
-                                                  .contactList
-                                                  .length,
-                                              itemBuilder: (context, index) {
-                                                final contact = provider
-                                                    .contactList[index];
-                                                final isAssigned = provider.isContactAlreadyAssigned(contact.id);
-
-
-                                                return Container(
-                                                  decoration: BoxDecoration(
-                                                    borderRadius:
-                                                    BorderRadius.circular(
-                                                      12,
-                                                    ),
-                                                    color: Colors.white,
-                                                  ),
-                                                  margin:
-                                                  const EdgeInsets.all(
-                                                    8,
-                                                  ),
-                                                  child: Padding(
-                                                    padding:
-                                                    const EdgeInsets.all(
-                                                      12.0,
-                                                    ),
-                                                    child: Row(
-                                                      children: [
-                                                        SizedBox(
-                                                          width:
-                                                          width / 15,
-                                                          height:
-                                                          height / 15,
-                                                          child: Image(
-                                                            image: AssetImage(
-                                                              "assets/Frame6.png",
+                                                        style: ElevatedButton.styleFrom(
+                                                          backgroundColor:
+                                                              Color(0xff0376FA),
+                                                          shape: RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  18,
+                                                                ),
+                                                          ),
+                                                          elevation: 2,
+                                                          padding:
+                                                              EdgeInsets.zero,
+                                                        ),
+                                                        child: const Center(
+                                                          child: Text(
+                                                            "Add",
+                                                            style: TextStyle(
+                                                              color:
+                                                                  Colors.white,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
                                                             ),
                                                           ),
                                                         ),
-                                                        SizedBox(
-                                                          width: 16,
-                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            SizedBox(
+                                              height: halfScreenHeight - 50,
+                                              child: Consumer<MainProvider>(
+                                                builder: (context, provider, child) {
+                                                  return ListView.builder(
+                                                    itemCount: provider
+                                                        .contactList
+                                                        .length,
+                                                    itemBuilder: (context, index) {
+                                                      final contact = provider
+                                                          .contactList[index];
+                                                      final isAssigned = provider.isContactAlreadyAssigned(contact.id);
 
-                                                        Expanded(
-                                                          child: Column(
-                                                            crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
+
+                                                      return Container(
+                                                        decoration: BoxDecoration(
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                12,
+                                                              ),
+                                                          color: Colors.white,
+                                                        ),
+                                                        margin:
+                                                            const EdgeInsets.all(
+                                                              8,
+                                                            ),
+                                                        child: Padding(
+                                                          padding:
+                                                              const EdgeInsets.all(
+                                                                12.0,
+                                                              ),
+                                                          child: Row(
                                                             children: [
-                                                              Text(
-                                                                contact
-                                                                    .username,
-                                                                style: TextStyle(
-                                                                  fontWeight:
-                                                                  FontWeight.bold,
-                                                                  fontSize:
-                                                                  16,
+                                                              SizedBox(
+                                                                width:
+                                                                    width / 15,
+                                                                height:
+                                                                    height / 15,
+                                                                child: Image(
+                                                                  image: AssetImage(
+                                                                    "assets/Frame6.png",
+                                                                  ),
                                                                 ),
-                                                                overflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
                                                               ),
                                                               SizedBox(
-                                                                height: 4,
+                                                                width: 16,
                                                               ),
-                                                              Text(
-                                                                contact
-                                                                    .userContactNumber,
-                                                                overflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
+
+                                                              Expanded(
+                                                                child: Column(
+                                                                  crossAxisAlignment:
+                                                                      CrossAxisAlignment
+                                                                          .start,
+                                                                  children: [
+                                                                    Text(
+                                                                      contact
+                                                                          .username,
+                                                                      style: TextStyle(
+                                                                        fontWeight:
+                                                                            FontWeight.bold,
+                                                                        fontSize:
+                                                                            16,
+                                                                      ),
+                                                                      overflow:
+                                                                          TextOverflow
+                                                                              .ellipsis,
+                                                                    ),
+                                                                    SizedBox(
+                                                                      height: 4,
+                                                                    ),
+                                                                    Text(
+                                                                      contact
+                                                                          .userContactNumber,
+                                                                      overflow:
+                                                                          TextOverflow
+                                                                              .ellipsis,
+                                                                    ),
+                                                                  ],
+                                                                ),
                                                               ),
-                                                            ],
-                                                          ),
-                                                        ),
 
                                                         InkWell(
                                                           onTap: () {
@@ -915,9 +914,9 @@ class TokenBottomSheet extends StatelessWidget {
               height: h * 0.12,
               child: isRecording
                   ? Transform.scale(
-                scale: 2.5,
-                child: Lottie.asset('assets/audio_wave.json'),
-              )
+                      scale: 2.5,
+                      child: Lottie.asset('assets/audio_wave.json'),
+                    )
                   : const SizedBox.shrink(),
             ),
             const SizedBox(height: 20),

@@ -154,29 +154,33 @@ class ContactAsign extends StatelessWidget {
                             }
                             bool result = await provider.addcontact();
 
-                            showDialog(
-                              context: context,
-                              builder: (context) {
-                                Future.delayed(Duration(seconds: 2), () {
-                                  Navigator.of(context).pop();
-                                });
-
-                                return AlertDialog(
-                                  content: Padding(
-                                    padding: EdgeInsets.only(left: width / 8),
-                                    child: Text(
-                                      result ? "Contact Added Successfully ✅"
-                                          : "Failed! ❌ Try Again",
-                                      style: TextStyle(
-                                        color: result ? Colors.green : Colors.red,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 22,
-                                      ),
-                                    ),
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                behavior: SnackBarBehavior.floating,
+                                margin: const EdgeInsets.all(16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                  side: BorderSide(
+                                    color: result ? Colors.green : Colors.red,
+                                    width: 1,
                                   ),
-                                );
-                              },
+                                ),
+                                backgroundColor: Colors.white,
+                                elevation: 0,
+                                duration: const Duration(seconds: 1),
+                                content: Text(
+                                  result
+                                      ? "Contact Added Successfully ✅"
+                                      : "Failed! ❌ Try Again",
+                                  style: TextStyle(
+                                    color: result ? Colors.green : Colors.red,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
                             );
+
                           },
 
                           child: Container(

@@ -267,21 +267,22 @@ class MainProvider extends ChangeNotifier {
       print("Error fetching contacts: $e");
     }
   }
-  Future<void> assignTask(Reminder reminder) async {
-    if (tempCheckedList == -1) {
-      print("No contact selected");
-      return;
-    }
+  Future<bool> assignTask(Reminder reminder) async {
+    if (tempCheckedList == -1) return false;
 
     final selected = contactList[tempCheckedList];
     final taskId = reminder.id;
     final contactId = selected.id;
 
-    print("Assigning task '${reminder.taskText}' to contact ${selected.username}");
+    // 🔥 CHECK IF CONTACT ALREADY ASSIGNED
+    bool alreadyAssigned = await isContactAssigned(contactId);
+    if (alreadyAssigned) {
+      print("Contact already assigned to a task");
+      return false;   // IMPORTANT → return false
+    }
 
-    // ➤ Save task under CONTACT → assignedTasks
-    await Db
-        .collection("contacts")
+    // ➤ Assign to CONTACT
+    await Db.collection("contacts")
         .doc(contactId)
         .collection("assignedTasks")
         .doc(taskId)
@@ -291,25 +292,30 @@ class MainProvider extends ChangeNotifier {
       "assignedTime": DateTime.now(),
     });
 
-    // ➤ Save contact under TASK → assignedContacts
-    await Db
-        .collection("Tasks")
+    // ➤ Assign to TASK
+    await Db.collection("Tasks")
         .doc(taskId)
-        .collection("assignedContacts")
-        .doc(contactId)
-        .set({
-      "contactId": contactId,
-      "contactName": selected.username,
+        .update({
+      "taskAssignedToId": contactId,
+      "taskAssignedToName": selected.username,
       "assignedTime": DateTime.now(),
     });
 
     print("Task assigned successfully!");
+    return true;
+  }
 
-    notifyListeners();
+
+  Future<bool> isContactAssigned(String contactId) async {
+    final snap = await Db
+        .collection("contacts")
+        .doc(contactId)
+        .collection("assignedTasks")
+        .get();
+
+    return snap.docs.isNotEmpty; // true = already assigned
   }
-  bool isContactAlreadyAssigned(String contactId) {
-    return reminders.any((r) => r.assignedContactId == contactId);
-  }
+
 
 
 
