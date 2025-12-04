@@ -65,7 +65,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     if (_recorder.isRecording) return; // FIX
     final dir = await getApplicationDocumentsDirectory();
     _filePath =
-    '${dir.path}/reminder_record_${DateTime.now().millisecondsSinceEpoch}.aac';
+        '${dir.path}/reminder_record_${DateTime.now().millisecondsSinceEpoch}.aac';
 
     await _recorder.startRecorder(toFile: _filePath, codec: Codec.aacADTS);
 
@@ -127,10 +127,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildBottomInputBar(
-      double height,
-      double width,
-      MainProvider provider,
-      ) {
+    double height,
+    double width,
+    MainProvider provider,
+  ) {
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -246,13 +246,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildStatCard(
-      double width,
-      double height, {
-        required color,
-        required int count,
-        required String label,
-        required String assetPath,
-      }) {
+    double width,
+    double height, {
+    required color,
+    required int count,
+    required String label,
+    required String assetPath,
+  }) {
     return Container(
       width: width / 2.3,
       height: height / 7.5,
@@ -497,357 +497,407 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             child: reminders.isEmpty
                 ? const Center(child: Text("No tasks found"))
                 : ListView.builder(
-              padding: EdgeInsets.symmetric(horizontal: width / 19),
-              itemCount: reminders.length,
-              itemBuilder: (context, index) {
-                final reminder = reminders[index];
-                int voiceCount = voiceNumbers[index];
+                    padding: EdgeInsets.symmetric(horizontal: width / 19),
+                    itemCount: reminders.length,
+                    itemBuilder: (context, index) {
+                      final reminder = reminders[index];
+                      int voiceCount = voiceNumbers[index];
 
-                return InkWell(
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Taskdetailspage(
-                        reminder: reminder,
-                        taskText: reminder.taskText,
-                        taskVoice: reminder.taskVoice,
-                      ),
-                    ),
-                  ),
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: width / 10,
-                          height: height / 20,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFE7DD),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                            reminder.taskVoice != null
-                                ? Icons.mic_none_outlined
-                                : Icons.checklist,
-                            size: 24,
-                            color: const Color(0xFFFE6B2C),
+                      return InkWell(
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Taskdetailspage(
+                              reminder: reminder,
+                              taskText: reminder.taskText,
+                              taskVoice: reminder.taskVoice,
+                            ),
                           ),
                         ),
-                        SizedBox(width: width / 25),
-                        Expanded(
-                          child: reminder.taskVoice != null
-                              ? Column(
-                            crossAxisAlignment:
-                            CrossAxisAlignment.start,
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Row(
                             children: [
-                              Text(
-                                "Voice - $voiceCount",
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF4B5563),
+                              Container(
+                                width: width / 10,
+                                height: height / 20,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFE7DD),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Icon(
+                                  reminder.taskVoice != null
+                                      ? Icons.mic_none_outlined
+                                      : Icons.checklist,
+                                  size: 24,
+                                  color: const Color(0xFFFE6B2C),
                                 ),
                               ),
-                            ],
-                          )
-                              : Text(
-                            reminder.taskText ?? "",
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF4B5563),
-                            ),
-                          ),
-                        ),
-
-                        // Play button for voice reminders
-                        if (reminder.taskVoice != null)
-                          IconButton(
-                            iconSize: 32,
-                            icon: Icon(
-                              _currentAudio == reminder.taskVoice
-                                  ? Icons.stop
-                                  : Icons.play_arrow,
-                              color: Color(0xff0376FA),
-                            ),
-                            onPressed: () =>
-                                _playAudio(reminder.taskVoice!),
-                          ),
-
-                        // Group add button (left as original)
-                        InkWell(
-                          onTap: () async {
-                            await provider.fetchContacts();
-                            // if (isCheckedList.length != Contactlist.length) {
-                            //   isCheckedList = List.generate(Contactlist.length, (_) => false);
-                            // }
-                            showModalBottomSheet(
-                              context: context,
-                              backgroundColor: const Color(0xffF2F2F2),
-                              builder: (BuildContext context) {
-                                final double halfScreenHeight =
-                                    MediaQuery.of(context).size.height /
-                                        2;
-                                return Container(
-                                  padding: EdgeInsets.only(
-                                    bottom: MediaQuery.of(
-                                      context,
-                                    ).viewInsets.bottom,
-                                  ),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment:
-                                    CrossAxisAlignment.start,
-                                    children: <Widget>[
-                                      Padding(
-                                        padding: EdgeInsets.only(
-                                          top: height / 22,
-                                          left: width / 30,
-                                          bottom: height / 35,
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            const Text(
-                                              "Contact List",
-                                              style: TextStyle(
-                                                fontSize: 25,
-                                                fontWeight:
-                                                FontWeight.bold,
-                                              ),
+                              SizedBox(width: width / 25),
+                              Expanded(
+                                child: reminder.taskVoice != null
+                                    ? Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            "Voice - $voiceCount",
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w700,
+                                              color: Color(0xFF4B5563),
                                             ),
-                                            const Spacer(),
-                                            Padding(
-                                              padding:
-                                              const EdgeInsets.only(
-                                                right: 10,
-                                              ),
-                                              child: SizedBox(
-                                                height: height / 25,
-                                                width: width / 6,
-                                                child: ElevatedButton(
-                                                  onPressed: () {
-                                                    final selected = provider.tempCheckedList == -1
-                                                        ? null
-                                                        : provider.contactList[provider.tempCheckedList];
-                                                    showDialog(
-                                                      context: context,
-                                                      builder: (context) {
-                                                        return AlertDialog(
-                                                          content: Text(
-                                                            selected == null
-                                                                ? "No contact selected!"
-                                                                : "Are you sure you want to assign this task to ${selected.username}?",
-                                                          ),
-                                                          actions: [
-                                                            TextButton(
-                                                              onPressed: () => Navigator.pop(context),
-                                                              child: const Text("Cancel"),
-                                                            ),
-                                                            TextButton(
-                                                              onPressed: () {
-                                                                provider.tempCheckedList = -1;
-                                                                provider.notifyListeners();
-
-                                                                if (selected != null) {
-                                                                  provider.assignTask(reminder);
-                                                                  print("asigned Contact ${selected.username}");
-
-                                                                  ScaffoldMessenger.of(context).showSnackBar(
-                                                                    SnackBar(
-                                                                      behavior: SnackBarBehavior.floating,
-                                                                      margin: const EdgeInsets.all(16),
-                                                                      shape: RoundedRectangleBorder(
-                                                                        borderRadius: BorderRadius.circular(15),
-                                                                        side: const BorderSide(
-                                                                          color: Colors.blue,
-                                                                          width: 1,
-                                                                        ),
-                                                                      ),
-                                                                      backgroundColor: Colors.white,
-                                                                      elevation: 0,
-                                                                      content: const Text(
-                                                                        "Assigned Successfully",
-                                                                        style: TextStyle(
-                                                                          color: Colors.blue,
-                                                                          fontWeight: FontWeight.bold,
-                                                                        ),
-                                                                      ),
-                                                                      duration: Duration(seconds: 2),
-                                                                    ),
-                                                                  );
-                                                                }
-                                                                Navigator.pop(context);
-                                                              },
-                                                              child: const Text("Assign"),
-                                                            )
-
-                                                          ],
-                                                        );
-                                                      },
-                                                    );
-                                                  },
-
-                                                  style: ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                    Color(0xff0376FA),
-                                                    shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                      BorderRadius.circular(
-                                                        18,
-                                                      ),
-                                                    ),
-                                                    elevation: 2,
-                                                    padding:
-                                                    EdgeInsets.zero,
-                                                  ),
-                                                  child: const Center(
-                                                    child: Text(
-                                                      "Add",
-                                                      style: TextStyle(
-                                                        color:
-                                                        Colors.white,
-                                                        fontWeight:
-                                                        FontWeight
-                                                            .bold,
-                                                      ),
-                                                    ),
-                                                  ),
-
-                                                ),
-                                              ),
-                                            ),
-                                          ],
+                                          ),
+                                        ],
+                                      )
+                                    : Text(
+                                        reminder.taskText ?? "",
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF4B5563),
                                         ),
                                       ),
-                                      SizedBox(
-                                        height: halfScreenHeight - 50,
-                                        child: Consumer<MainProvider>(
-                                          builder: (context, provider, child) {
-                                            return ListView.builder(
-                                              itemCount: provider
-                                                  .contactList
-                                                  .length,
-                                              itemBuilder: (context, index) {
-                                                final contact = provider
-                                                    .contactList[index];
+                              ),
 
-                                                return Container(
-                                                  decoration: BoxDecoration(
-                                                    borderRadius:
-                                                    BorderRadius.circular(
-                                                      12,
+                              // Play button for voice reminders
+                              if (reminder.taskVoice != null)
+                                IconButton(
+                                  iconSize: 32,
+                                  icon: Icon(
+                                    _currentAudio == reminder.taskVoice
+                                        ? Icons.stop
+                                        : Icons.play_arrow,
+                                    color: Color(0xff0376FA),
+                                  ),
+                                  onPressed: () =>
+                                      _playAudio(reminder.taskVoice!),
+                                ),
+
+                              // Group add button (left as original)
+                              InkWell(
+                                onTap: () async {
+                                  await provider.fetchContacts();
+                                  // if (isCheckedList.length != Contactlist.length) {
+                                  //   isCheckedList = List.generate(Contactlist.length, (_) => false);
+                                  // }
+                                  showModalBottomSheet(
+                                    context: context,
+                                    backgroundColor: const Color(0xffF2F2F2),
+                                    builder: (BuildContext context) {
+                                      final double halfScreenHeight =
+                                          MediaQuery.of(context).size.height /
+                                          2;
+                                      return Container(
+                                        padding: EdgeInsets.only(
+                                          bottom: MediaQuery.of(
+                                            context,
+                                          ).viewInsets.bottom,
+                                        ),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: <Widget>[
+                                            Padding(
+                                              padding: EdgeInsets.only(
+                                                top: height / 22,
+                                                left: width / 30,
+                                                bottom: height / 35,
+                                              ),
+                                              child: Row(
+                                                children: [
+                                                  const Text(
+                                                    "Contact List",
+                                                    style: TextStyle(
+                                                      fontSize: 25,
+                                                      fontWeight:
+                                                          FontWeight.bold,
                                                     ),
-                                                    color: Colors.white,
                                                   ),
-                                                  margin:
-                                                  const EdgeInsets.all(
-                                                    8,
-                                                  ),
-                                                  child: Padding(
+                                                  const Spacer(),
+                                                  Padding(
                                                     padding:
-                                                    const EdgeInsets.all(
-                                                      12.0,
-                                                    ),
-                                                    child: Row(
-                                                      children: [
-                                                        SizedBox(
-                                                          width:
-                                                          width / 15,
-                                                          height:
-                                                          height / 15,
-                                                          child: Image(
-                                                            image: AssetImage(
-                                                              "assets/Frame6.png",
+                                                        const EdgeInsets.only(
+                                                          right: 10,
+                                                        ),
+                                                    child: SizedBox(
+                                                      height: height / 25,
+                                                      width: width / 6,
+                                                      child: ElevatedButton(
+                                                        onPressed: () {
+                                                          final selected =
+                                                              provider.tempCheckedList ==
+                                                                  -1
+                                                              ? null
+                                                              : provider
+                                                                    .contactList[provider
+                                                                    .tempCheckedList];
+                                                          showDialog(
+                                                            context: context,
+                                                            builder: (context) {
+                                                              return AlertDialog(
+                                                                content: Text(
+                                                                  selected ==
+                                                                          null
+                                                                      ? "No contact selected!"
+                                                                      : "Are you sure you want to assign this task to ${selected.username}?",
+                                                                ),
+                                                                actions: [
+                                                                  TextButton(
+                                                                    onPressed: () =>
+                                                                        Navigator.pop(
+                                                                          context,
+                                                                        ),
+                                                                    child: const Text(
+                                                                      "Cancel",
+                                                                    ),
+                                                                  ),
+                                                                  TextButton(
+                                                                    onPressed: () {
+                                                                      final selected =
+                                                                          provider.tempCheckedList ==
+                                                                              -1
+                                                                          ? null
+                                                                          : provider.contactList[provider.tempCheckedList];
+
+                                                                      if (selected !=
+                                                                          null) {
+                                                                        provider.assignTask(
+                                                                          reminder,
+                                                                        );
+                                                                        print(
+                                                                          "Assigned contact: ${selected.username}",
+                                                                        );
+
+                                                                        ScaffoldMessenger.of(
+                                                                          context,
+                                                                        ).showSnackBar(
+                                                                          SnackBar(
+                                                                            behavior:
+                                                                                SnackBarBehavior.floating,
+                                                                            margin: const EdgeInsets.all(
+                                                                              16,
+                                                                            ),
+                                                                            shape: RoundedRectangleBorder(
+                                                                              borderRadius: BorderRadius.circular(
+                                                                                15,
+                                                                              ),
+                                                                              side: BorderSide(
+                                                                                color: Colors.blue,
+                                                                                width: 1,
+                                                                              ),
+                                                                            ),
+                                                                            backgroundColor:
+                                                                                Colors.white,
+                                                                            elevation:
+                                                                                0,
+                                                                            content: Text(
+                                                                              "Assigned Successfully",
+                                                                              style: TextStyle(
+                                                                                color: Colors.blue,
+                                                                                fontWeight: FontWeight.bold,
+                                                                              ),
+                                                                            ),
+                                                                            duration: Duration(
+                                                                              seconds: 2,
+                                                                            ),
+                                                                          ),
+                                                                        );
+                                                                      } else {
+                                                                        print(
+                                                                          "No contact selected",
+                                                                        );
+                                                                      }
+
+                                                                      // RESET after finish
+                                                                      provider.tempCheckedList =
+                                                                          -1;
+                                                                      provider
+                                                                          .notifyListeners();
+
+                                                                      Navigator.pop(
+                                                                        context,
+                                                                      );
+                                                                    },
+                                                                    child: const Text(
+                                                                      "Assign",
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              );
+                                                            },
+                                                          );
+                                                        },
+
+                                                        style: ElevatedButton.styleFrom(
+                                                          backgroundColor:
+                                                              Color(0xff0376FA),
+                                                          shape: RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  18,
+                                                                ),
+                                                          ),
+                                                          elevation: 2,
+                                                          padding:
+                                                              EdgeInsets.zero,
+                                                        ),
+                                                        child: const Center(
+                                                          child: Text(
+                                                            "Add",
+                                                            style: TextStyle(
+                                                              color:
+                                                                  Colors.white,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
                                                             ),
                                                           ),
                                                         ),
-                                                        SizedBox(
-                                                          width: 16,
-                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            SizedBox(
+                                              height: halfScreenHeight - 50,
+                                              child: Consumer<MainProvider>(
+                                                builder: (context, provider, child) {
+                                                  return ListView.builder(
+                                                    itemCount: provider
+                                                        .contactList
+                                                        .length,
+                                                    itemBuilder: (context, index) {
+                                                      final contact = provider
+                                                          .contactList[index];
 
-                                                        Expanded(
-                                                          child: Column(
-                                                            crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
+                                                      return Container(
+                                                        decoration: BoxDecoration(
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                12,
+                                                              ),
+                                                          color: Colors.white,
+                                                        ),
+                                                        margin:
+                                                            const EdgeInsets.all(
+                                                              8,
+                                                            ),
+                                                        child: Padding(
+                                                          padding:
+                                                              const EdgeInsets.all(
+                                                                12.0,
+                                                              ),
+                                                          child: Row(
                                                             children: [
-                                                              Text(
-                                                                contact
-                                                                    .username,
-                                                                style: TextStyle(
-                                                                  fontWeight:
-                                                                  FontWeight.bold,
-                                                                  fontSize:
-                                                                  16,
+                                                              SizedBox(
+                                                                width:
+                                                                    width / 15,
+                                                                height:
+                                                                    height / 15,
+                                                                child: Image(
+                                                                  image: AssetImage(
+                                                                    "assets/Frame6.png",
+                                                                  ),
                                                                 ),
-                                                                overflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
                                                               ),
                                                               SizedBox(
-                                                                height: 4,
+                                                                width: 16,
                                                               ),
-                                                              Text(
-                                                                contact
-                                                                    .userContactNumber,
-                                                                overflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
+
+                                                              Expanded(
+                                                                child: Column(
+                                                                  crossAxisAlignment:
+                                                                      CrossAxisAlignment
+                                                                          .start,
+                                                                  children: [
+                                                                    Text(
+                                                                      contact
+                                                                          .username,
+                                                                      style: TextStyle(
+                                                                        fontWeight:
+                                                                            FontWeight.bold,
+                                                                        fontSize:
+                                                                            16,
+                                                                      ),
+                                                                      overflow:
+                                                                          TextOverflow
+                                                                              .ellipsis,
+                                                                    ),
+                                                                    SizedBox(
+                                                                      height: 4,
+                                                                    ),
+                                                                    Text(
+                                                                      contact
+                                                                          .userContactNumber,
+                                                                      overflow:
+                                                                          TextOverflow
+                                                                              .ellipsis,
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              ),
+
+                                                              InkWell(
+                                                                onTap: () {
+                                                                  provider
+                                                                      .changeAddContact(
+                                                                        index,
+                                                                      );
+                                                                },
+                                                                child: Icon(
+                                                                  provider.tempCheckedList ==
+                                                                          index
+                                                                      ? Icons
+                                                                            .check_box_outlined // SELECTED ✔
+                                                                      : Icons
+                                                                            .check_box_outline_blank,
+                                                                  // NOT SELECTED
+                                                                  color: Colors
+                                                                      .black,
+                                                                ),
                                                               ),
                                                             ],
                                                           ),
                                                         ),
-
-                                                        InkWell(
-                                                          onTap: () {
-                                                            provider.changeAddContact(index);
-                                                          },
-                                                          child: Icon(
-                                                            provider.tempCheckedList == index
-                                                                ? Icons.check_box_outlined     // SELECTED ✔
-                                                                : Icons.check_box_outline_blank, // NOT SELECTED
-                                                            color: Colors.black,
-                                                          ),
-                                                        )
-                                                      ],
-                                                    ),
-                                                  ),
-                                                );
-                                              },
-                                            );
-                                          },
+                                                      );
+                                                    },
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                      ),
-                                    ],
+                                      );
+                                    },
+                                  );
+                                },
+                                child: Container(
+                                  width: width / 10,
+                                  height: height / 20,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(20),
+                                    color: Color(0xff0376FA),
                                   ),
-                                );
-                              },
-                            );
-                          },
-                          child: Container(
-                            width: width / 10,
-                            height: height / 20,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              color: Color(0xff0376FA),
-                            ),
-                            child: const Icon(
-                              Icons.group_add_outlined,
-                              color: Colors.white,
-                            ),
+                                  child: const Icon(
+                                    Icons.group_add_outlined,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
         ],
       ),
@@ -895,9 +945,9 @@ class TokenBottomSheet extends StatelessWidget {
               height: h * 0.12,
               child: isRecording
                   ? Transform.scale(
-                scale: 2.5,
-                child: Lottie.asset('assets/audio_wave.json'),
-              )
+                      scale: 2.5,
+                      child: Lottie.asset('assets/audio_wave.json'),
+                    )
                   : const SizedBox.shrink(),
             ),
             const SizedBox(height: 20),

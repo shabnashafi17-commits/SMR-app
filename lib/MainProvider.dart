@@ -275,11 +275,9 @@ class MainProvider extends ChangeNotifier {
     final taskId = reminder.id;
     final contactId = selected.id;
 
-    print("Assigning task '${reminder.taskText}' to contact ${selected.username}");
+    print("Assigning task '${reminder.taskText}' to ${selected.username}");
 
-    // ➤ Save task under CONTACT → assignedTasks
-    await Db
-        .collection("contacts")
+    await Db.collection("contacts")
         .doc(contactId)
         .collection("assignedTasks")
         .doc(taskId)
@@ -289,22 +287,19 @@ class MainProvider extends ChangeNotifier {
       "assignedTime": DateTime.now(),
     });
 
-    // ➤ Save contact under TASK → assignedContacts
-    await Db
-        .collection("Tasks")
+    await Db.collection("Tasks")
         .doc(taskId)
-        .collection("assignedContacts")
-        .doc(contactId)
-        .set({
-      "contactId": contactId,
-      "contactName": selected.username,
+        // .collection("assignedContacts")
+        // .doc(contactId)
+        .update({
+      "taskAssignedToId": contactId,
+      "taskAssignedToName": selected.username,
       "assignedTime": DateTime.now(),
     });
 
     print("Task assigned successfully!");
-
-    notifyListeners();
   }
+
 
 
 
