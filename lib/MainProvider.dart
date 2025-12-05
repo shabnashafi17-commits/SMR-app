@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'user_class.dart'; // your Contact class
+import 'user_class.dart';
 
 class Reminder {
   String id;
@@ -11,11 +11,13 @@ class Reminder {
   String createdBy;
   String createdById;
   List<String> subtasks;
-  DateTime? date;         // selected date
-  Duration? time;         // selected time
+  DateTime? date;
+  Duration? time;
   String reminderOption;
-  String? assignedContactId;   // add this
-// e.g. "5 min Before"
+  String? assignedContactId;
+  String? taskAssignedToId;
+  String? taskAssignedToName;
+
 
   Reminder({
     required this.id,
@@ -29,6 +31,9 @@ class Reminder {
     this.date,
     this.time,
     this.reminderOption = "No Reminder",
+    this.taskAssignedToId,
+    this.taskAssignedToName,
+
   });
 
   Map<String, dynamic> toMap() {
@@ -44,6 +49,10 @@ class Reminder {
       'date': date != null ? Timestamp.fromDate(date!) : null,
       'time': time != null ? time!.inSeconds : null,
       'reminderOption': reminderOption,
+      'taskAssignedToId': taskAssignedToId,
+      'taskAssignedToName': taskAssignedToName,
+
+
     };
   }
 
@@ -81,6 +90,10 @@ class Reminder {
       date: date,
       time: time,
       reminderOption: map['reminderOption'] ?? "No Reminder",
+      taskAssignedToId: map['taskAssignedToId'],
+      taskAssignedToName: map['taskAssignedToName'],
+
+
     );
   }
 }
@@ -316,6 +329,21 @@ class MainProvider extends ChangeNotifier {
         .get();
 
     return snapshot.docs.isNotEmpty; // TRUE = already assigned
+  }
+  Future<void> replaceAssignedContact(Reminder reminder, Contact newContact) async {
+    reminder.taskAssignedToId = newContact.id;
+    reminder.taskAssignedToName = newContact.username;
+    notifyListeners();
+
+    // Save to Firestore if needed
+    await FirebaseFirestore.instance
+        .collection("Tasks")
+        .doc(reminder.id)
+        .update({
+      "taskAssignedToId": newContact.id,
+      "taskAssignedToName": newContact.username,
+    });
+
   }
 
 

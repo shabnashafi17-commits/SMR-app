@@ -9,7 +9,6 @@ import 'package:smr_app/HistoryPage.dart';
 import 'package:smr_app/MainProvider.dart';
 import 'package:smr_app/TaskDetailsPage.dart';
 import 'package:lottie/lottie.dart';
-
 import 'contact_asign.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -628,121 +627,154 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                               child: SizedBox(
                                                 height: height / 25,
                                                 width: width / 6,
-                                                child: ElevatedButton(
+                                                child:ElevatedButton(
                                                   onPressed: () {
                                                     final selected = provider.tempCheckedList == -1
                                                         ? null
                                                         : provider.contactList[provider.tempCheckedList];
+
                                                     showDialog(
                                                       context: context,
                                                       builder: (context) {
                                                         return AlertDialog(
+                                                          backgroundColor: Colors.white,
                                                           content: Text(
                                                             selected == null
                                                                 ? "No contact selected!"
                                                                 : "Are you sure you want to assign this task to ${selected.username}?",
+                                                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                                                           ),
                                                           actions: [
                                                             TextButton(
                                                               onPressed: () => Navigator.pop(context),
-                                                              child: const Text("Cancel"),
+                                                              style: TextButton.styleFrom(
+                                                                backgroundColor: Colors.white,
+                                                                foregroundColor: Colors.black,
+                                                                elevation: 4,
+                                                                shadowColor: Colors.black54,
+                                                                padding: const EdgeInsets.symmetric(horizontal: 16, ),
+                                                                shape: RoundedRectangleBorder(
+                                                                  borderRadius: BorderRadius.circular(30),
+                                                                ),
+                                                              ),
+                                                              child: const Text(
+                                                                "Cancel",
+                                                                style: TextStyle(fontSize: 12,),
+                                                              ),
                                                             ),
+                                                            SizedBox(width: 20,),
                                                             TextButton(
                                                               onPressed: () async {
-                                                                final selected = provider.tempCheckedList == -1
-                                                                    ? null
-                                                                    : provider.contactList[provider.tempCheckedList];
+                                                                if (selected == null) return;
+                                                                if (reminder.taskAssignedToId != null && reminder.taskAssignedToId!.isNotEmpty) {
+                                                                  Navigator.pop(context); // Close main dialog
 
-                                                                if (selected != null) {
-                                                                  bool ok = await provider.assignTask(reminder);
-
-                                                                  if (!ok) {
-                                                                    // ❌ Contact already assigned → Show SnackBar
-                                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                                      SnackBar(
-                                                                        content: const Text(
-                                                                          "This contact is already assigned another task ",
-
-                                                                          style: TextStyle(color: Colors.red),
-                                                                        ),
-                                                                        backgroundColor: Colors.white,
-                                                                        behavior: SnackBarBehavior.floating,
-                                                                        margin: const EdgeInsets.all(16),
-
-                                                                        shape: RoundedRectangleBorder(
-                                                                          borderRadius: BorderRadius.circular(12),
-                                                                          side: const BorderSide(
-                                                                            color: Colors.red, // border color
-                                                                            width: 2, // border width
+                                                                  // Delay to ensure the first dialog is fully closed
+                                                                  Future.delayed(Duration(milliseconds: 200), () {
+                                                                    showDialog(
+                                                                      context: context,
+                                                                      builder: (context) {
+                                                                        return AlertDialog(
+                                                                          title: const Text("Contact Already Assigned"),
+                                                                          content: Text(
+                                                                            "This task is already assigned to ${reminder.taskAssignedToName ?? ''}. "
+                                                                                "Do you want to replace this contact?",
                                                                           ),
+                                                                          actions: [
+                                                                            TextButton(
+                                                                              onPressed: () => Navigator.pop(context), // close replace dialog
+                                                                              child: const Text("No"),
+                                                                            ),
+                                                                            TextButton(
+                                                                              onPressed: () async {
+                                                                                Navigator.pop(context); // close replace dialog
+                                                                                await provider.replaceAssignedContact(reminder, selected);
 
-                                                                        ),
-                                                                      ),
-                                                                    );
-                                                                  } else {
-                                                                    // ✅ Success
-                                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                                      SnackBar(
-                                                                        content: const Text(
-                                                                          "Task assigned successfully!",
-                                                                          style: TextStyle(color: Colors.green),
-                                                                        ),
-                                                                        backgroundColor: Colors.white,
-                                                                        behavior: SnackBarBehavior.floating,
-                                                                        margin: const EdgeInsets.all(16),
-                                                                        shape: RoundedRectangleBorder(
-                                                                          borderRadius: BorderRadius.circular(12),
-                                                                          side: const BorderSide(
-                                                                            color: Colors.green, // border color
-                                                                            width: 2, // border width
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                    );
-                                                                  }
+                                                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                                                  const SnackBar(
+                                                                                    backgroundColor: Colors.blue,
+                                                                                    content: Text("Existing contact replaced successfully!"),
+                                                                                  ),
+                                                                                );
 
-                                                                  provider.tempCheckedList = -1;
-                                                                  provider.notifyListeners();
-                                                                  Navigator.pop(context);
-                                                                  Navigator.of(context).pop();
+                                                                                provider.tempCheckedList = -1;
+                                                                                provider.notifyListeners();
+                                                                              },
+                                                                              child: const Text("Replace"),
+                                                                            ),
+                                                                          ],
+                                                                        );
+                                                                      },
+                                                                    );
+                                                                  });
+
+                                                                  return; // stop normal assign flow
                                                                 }
-                                                              },
-                                                              child: const Text("Assign"),
-                                                            )
 
+                                                                // ⚡ CASE 2: No assigned contact → normal assign
+                                                                bool ok = await provider.assignTask(reminder);
+
+                                                                if (ok) {
+                                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                                    const SnackBar(
+                                                                      backgroundColor: Colors.blue,
+                                                                      content: Text(
+                                                                        "Task assigned successfully!",
+                                                                        style: TextStyle(
+                                                                          color: Colors.white,
+                                                                          fontSize: 15,
+                                                                          fontWeight: FontWeight.w500,
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  );
+                                                                }
+
+                                                                provider.tempCheckedList = -1;
+                                                                provider.notifyListeners();
+
+                                                                Navigator.pop(context); // close main dialog
+                                                              },
+                                                              style: TextButton.styleFrom(
+                                                                backgroundColor: Colors.blue,
+                                                                foregroundColor: Colors.white,
+                                                                elevation: 4,
+                                                                shadowColor: Colors.black54,
+                                                                padding: const EdgeInsets.symmetric(horizontal: 16, ),
+                                                                shape: RoundedRectangleBorder(
+                                                                  borderRadius: BorderRadius.circular(30),
+                                                                ),
+                                                              ),
+                                                              child: const Text("Assign",style: TextStyle(
+                                                                color: Colors.white,
+                                                                fontSize: 14,
+                                                              ),),
+                                                            ),
                                                           ],
                                                         );
                                                       },
                                                     );
                                                   },
-
-                                                        style: ElevatedButton.styleFrom(
-                                                          backgroundColor:
-                                                              Color(0xff0376FA),
-                                                          shape: RoundedRectangleBorder(
-                                                            borderRadius:
-                                                                BorderRadius.circular(
-                                                                  18,
-                                                                ),
-                                                          ),
-                                                          elevation: 2,
-                                                          padding:
-                                                              EdgeInsets.zero,
-                                                        ),
-                                                        child: const Center(
-                                                          child: Text(
-                                                            "Add",
-                                                            style: TextStyle(
-                                                              color:
-                                                                  Colors.white,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                            ),
-                                                          ),
-                                                        ),
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor: Color(0xff0376FA),
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius: BorderRadius.circular(18),
+                                                    ),
+                                                    elevation: 2,
+                                                    padding: EdgeInsets.zero,
+                                                  ),
+                                                  child: const Center(
+                                                    child: Text(
+                                                      "Add",
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontWeight: FontWeight.bold,
                                                       ),
                                                     ),
+                                                  ),
+                                                )
+
+                                              ),
                                                   ),
                                                 ],
                                               ),
