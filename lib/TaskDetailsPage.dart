@@ -39,7 +39,7 @@ class Taskdetailspage extends StatelessWidget {
             ),
             // <-- FIX: wrap InkWell in a Builder so Navigator.pop uses the correct context
             leading: Padding(
-              padding: const EdgeInsets.only(left: 15),
+              padding: const EdgeInsets.only(left: 20),
               child: Builder(
                 builder: (context) => InkWell(
                   borderRadius: BorderRadius.circular(25),
@@ -122,7 +122,7 @@ class Taskdetailspage extends StatelessWidget {
         child: SingleChildScrollView(
         reverse: true,
          child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -133,8 +133,8 @@ class Taskdetailspage extends StatelessWidget {
                   // --------- LARGER TEXT TASK CONTAINER ---------
                   if (taskVoice == null)
                     Container(
-                      height: screenHeight * 103 / 932,
-                      width: screenWidth * 361 / 430,
+                      height: screenHeight * 110 / 932,
+                      width: screenWidth * 384 / 430,
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(18),
@@ -152,7 +152,7 @@ class Taskdetailspage extends StatelessWidget {
                             padding: const EdgeInsets.only(top: 8, right: 5, left: 5),
                             child: Container(
                               height: screenHeight * 60 / 932,
-                              width: screenWidth * 350 / 430,
+                              width: screenWidth * 360 / 430,
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(18),
