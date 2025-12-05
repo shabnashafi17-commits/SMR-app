@@ -337,7 +337,7 @@ class Taskdetailspage extends StatelessWidget {
                                       (r) => r.id == reminder.id,
                                 );
 
-                                String displayText = "Your Date & Time";
+                                String displayText = "Not Scheduled";
 
                                 if (current.date != null && current.time != null) {
                                   final combined = DateTime(
