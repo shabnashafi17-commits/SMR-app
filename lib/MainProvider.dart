@@ -293,14 +293,9 @@ class MainProvider extends ChangeNotifier {
 
     final selected = contactList[tempCheckedList];
     final contactId = selected.id;
-
-    // Check if contact is already assigned
-    final alreadyAssigned = await isContactAlreadyAssigned(contactId);
-    if (alreadyAssigned) return false;
-
     final taskId = reminder.id;
 
-    // Save in contact's assignedTasks
+    // Save to contact's assignedTasks list
     await Db.collection("contacts")
         .doc(contactId)
         .collection("assignedTasks")
@@ -318,9 +313,14 @@ class MainProvider extends ChangeNotifier {
       "assignedTime": DateTime.now(),
     });
 
+    reminder.taskAssignedToId = contactId;
+    reminder.taskAssignedToName = selected.username;
+    notifyListeners();
+
     print("Task assigned successfully!");
     return true;
   }
+
 
   Future<bool> isContactAlreadyAssigned(String contactId) async {
     final snapshot = await Db

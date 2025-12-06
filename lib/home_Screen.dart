@@ -633,122 +633,233 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                         ? null
                                                         : provider.contactList[provider.tempCheckedList];
 
+                                                    if (selected == null) {
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        const SnackBar(
+                                                          content: Text("No contact selected!"),
+                                                        ),
+                                                      );
+                                                      return;
+                                                    }
+
                                                     showDialog(
                                                       context: context,
                                                       builder: (context) {
                                                         return AlertDialog(
                                                           backgroundColor: Colors.white,
                                                           content: Text(
-                                                            selected == null
-                                                                ? "No contact selected!"
-                                                                : "Are you sure you want to assign this task to ${selected.username}?",
-                                                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                                                            "Assign this task to ${selected.username}?",
+                                                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                                                           ),
                                                           actions: [
-                                                            TextButton(
-                                                              onPressed: () => Navigator.pop(context),
-                                                              style: TextButton.styleFrom(
+                                                            // Cancel Button
+                                                            ElevatedButton(
+                                                              style: ElevatedButton.styleFrom(
                                                                 backgroundColor: Colors.white,
                                                                 foregroundColor: Colors.black,
-                                                                elevation: 4,
-                                                                shadowColor: Colors.black54,
-                                                                padding: const EdgeInsets.symmetric(horizontal: 16, ),
                                                                 shape: RoundedRectangleBorder(
                                                                   borderRadius: BorderRadius.circular(30),
                                                                 ),
+                                                                elevation: 6,
+                                                                shadowColor: Colors.black26,
                                                               ),
+                                                              onPressed: () => Navigator.pop(context),
                                                               child: const Text(
                                                                 "Cancel",
-                                                                style: TextStyle(fontSize: 12,),
+                                                                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                                                               ),
                                                             ),
-                                                            SizedBox(width: 20,),
+
+                                                            const SizedBox(width: 16),
+
+                                                            // Assign Button
                                                             TextButton(
+                                                              style: TextButton.styleFrom(
+                                                                backgroundColor: const Color(0xff0376FA),
+                                                                foregroundColor: Colors.white,
+                                                              ),
+                                                              child: const Text(
+                                                                "Assign",
+                                                                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                                                              ),
                                                               onPressed: () async {
-                                                                if (selected == null) return;
-                                                                if (reminder.taskAssignedToId != null && reminder.taskAssignedToId!.isNotEmpty) {
-                                                                  Navigator.pop(context); // Close main dialog
+                                                                Navigator.pop(context); // Close assign dialog
 
-                                                                  // Delay to ensure the first dialog is fully closed
-                                                                  Future.delayed(Duration(milliseconds: 200), () {
-                                                                    showDialog(
-                                                                      context: context,
-                                                                      builder: (context) {
-                                                                        return AlertDialog(
-                                                                          title: const Text("Contact Already Assigned"),
-                                                                          content: Text(
-                                                                            "This task is already assigned to ${reminder.taskAssignedToName ?? ''}. "
-                                                                                "Do you want to replace this contact?",
-                                                                          ),
-                                                                          actions: [
-                                                                            TextButton(
-                                                                              onPressed: () => Navigator.pop(context), // close replace dialog
-                                                                              child: const Text("No"),
-                                                                            ),
-                                                                            TextButton(
-                                                                              onPressed: () async {
-                                                                                Navigator.pop(context); // close replace dialog
-                                                                                await provider.replaceAssignedContact(reminder, selected);
+                                                                // Already assigned? Show replace dialog
+                                                                if (reminder.taskAssignedToId != null &&
+                                                                    reminder.taskAssignedToId!.isNotEmpty) {
 
-                                                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                                                  const SnackBar(
-                                                                                    backgroundColor: Colors.blue,
-                                                                                    content: Text("Existing contact replaced successfully!"),
-                                                                                  ),
-                                                                                );
-
-                                                                                provider.tempCheckedList = -1;
-                                                                                provider.notifyListeners();
-                                                                              },
-                                                                              child: const Text("Replace"),
-                                                                            ),
-                                                                          ],
-                                                                        );
-                                                                      },
-                                                                    );
-                                                                  });
-
-                                                                  return; // stop normal assign flow
-                                                                }
-
-                                                                // ⚡ CASE 2: No assigned contact → normal assign
-                                                                bool ok = await provider.assignTask(reminder);
-
-                                                                if (ok) {
-                                                                  ScaffoldMessenger.of(context).showSnackBar(
-                                                                    const SnackBar(
-                                                                      backgroundColor: Colors.blue,
-                                                                      content: Text(
-                                                                        "Task assigned successfully!",
-                                                                        style: TextStyle(
-                                                                          color: Colors.white,
-                                                                          fontSize: 15,
-                                                                          fontWeight: FontWeight.w500,
+                                                                  await showDialog(
+                                                                    context: context,
+                                                                    builder: (context) {
+                                                                      return AlertDialog(
+                                                                        backgroundColor: Colors.white,
+                                                                        title: const Text(
+                                                                          "Contact Already Assigned",
+                                                                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
                                                                         ),
-                                                                      ),
-                                                                    ),
+                                                                        content: Text(
+                                                                          "Task is already assigned to ${reminder.taskAssignedToName}. Replace?",
+                                                                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                                                                        ),
+                                                                        actions: [
+                                                                          ElevatedButton(
+                                                                            style: ElevatedButton.styleFrom(
+                                                                              backgroundColor: Colors.white,
+                                                                              foregroundColor: Colors.black,
+                                                                              shape: RoundedRectangleBorder(
+                                                                                borderRadius: BorderRadius.circular(30),
+                                                                              ),
+                                                                              elevation: 6,
+                                                                              shadowColor: Colors.black26,
+                                                                            ),
+                                                                            onPressed: () => Navigator.pop(context),
+                                                                            child: const Text(
+                                                                              "No",
+                                                                              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                                                                            ),
+                                                                          ),
+
+                                                                          const SizedBox(width: 16),
+
+                                                                          TextButton(
+                                                                            style: TextButton.styleFrom(
+                                                                              backgroundColor: const Color(0xff0376FA),
+                                                                              foregroundColor: Colors.white,
+                                                                            ),
+                                                                            onPressed: () async {
+                                                                              // Replace contact
+                                                                              await provider.replaceAssignedContact(reminder, selected);
+
+                                                                              // Reset selection
+                                                                              provider.tempCheckedList = -1;
+                                                                              provider.notifyListeners();
+
+                                                                              // Close dialog + bottom sheet
+                                                                              Navigator.pop(context); // Close replace dialog
+                                                                              Navigator.pop(context); // Close bottom sheet
+
+                                                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                                                SnackBar(
+                                                                                  backgroundColor: Colors.transparent, // Transparent to allow custom container styling
+                                                                                  elevation: 0,
+                                                                                  behavior: SnackBarBehavior.floating, // Floating style for rounded effect
+                                                                                  margin: EdgeInsets.symmetric(
+                                                                                    horizontal: 20,
+                                                                                    vertical: 30,
+                                                                                  ),
+                                                                                  content: Container(
+                                                                                    width: double.infinity,
+                                                                                    padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 30),
+                                                                                    decoration: BoxDecoration(
+                                                                                      color: Colors.white,
+                                                                                      borderRadius: BorderRadius.circular(16),
+                                                                                      boxShadow: [
+                                                                                        BoxShadow(
+                                                                                          color: Colors.black.withOpacity(0.15),
+                                                                                          blurRadius: 6,
+                                                                                          offset: const Offset(0, 3),
+                                                                                        ),
+                                                                                      ],
+                                                                                    ),
+                                                                                    child: Column(
+                                                                                      mainAxisSize: MainAxisSize.min,
+                                                                                      children: [
+                                                                                        Icon(
+                                                                                          CupertinoIcons.checkmark_alt_circle_fill,
+                                                                                          size: 39,
+                                                                                          color: const Color(0xFF00BA25),
+                                                                                        ),
+                                                                                        SizedBox(height: 16),
+                                                                                        const Text(
+                                                                                          'Contact Replaced Successfully',
+                                                                                          style: TextStyle(
+                                                                                            fontSize: 16,
+                                                                                            fontWeight: FontWeight.w900,
+                                                                                            color: Color(0xFF1F2937),
+                                                                                            fontFamily: 'Intel',
+                                                                                          ),
+                                                                                        ),
+                                                                                      ],
+                                                                                    ),
+                                                                                  ),
+                                                                                ),
+                                                                              );
+
+
+                                                                            },
+                                                                            child: const Text(
+                                                                              "Replace",
+                                                                              style: TextStyle(fontWeight: FontWeight.w600),
+                                                                            ),
+                                                                          ),
+                                                                        ],
+                                                                      );
+                                                                    },
                                                                   );
+
+                                                                  return;
                                                                 }
 
+                                                                // Normal assign
+                                                                await provider.assignTask(reminder);
+
+                                                                // Reset selection
                                                                 provider.tempCheckedList = -1;
                                                                 provider.notifyListeners();
 
-                                                                Navigator.pop(context); // close main dialog
+                                                                // Close bottom sheet
+                                                                Navigator.pop(context);
+
+                                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                                  SnackBar(
+                                                                    backgroundColor: Colors.transparent, // Transparent to allow custom container styling
+                                                                    elevation: 0,
+                                                                    behavior: SnackBarBehavior.floating, // Floating style for rounded effect
+                                                                    margin: EdgeInsets.symmetric(
+                                                                      horizontal: 16,
+                                                                      vertical: 16,
+                                                                    ),
+                                                                    content: Container(
+                                                                      width: double.infinity,
+                                                                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                                                                      decoration: BoxDecoration(
+                                                                        color: Colors.white,
+                                                                        borderRadius: BorderRadius.circular(16),
+                                                                        boxShadow: [
+                                                                          BoxShadow(
+                                                                            color: Colors.black.withOpacity(0.15),
+                                                                            blurRadius: 6,
+                                                                            offset: const Offset(0, 3),
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                                      child: Column(
+                                                                        mainAxisSize: MainAxisSize.min,
+                                                                        children: [
+                                                                          Icon(
+                                                                            CupertinoIcons.checkmark_alt_circle_fill,
+                                                                            size: 39,
+                                                                            color: const Color(0xFF00BA25),
+                                                                          ),
+                                                                          SizedBox(height: 16),
+                                                                          const Text(
+                                                                            'Contact Assigned Successfully',
+                                                                            style: TextStyle(
+                                                                              fontSize: 16,
+                                                                              fontWeight: FontWeight.w400,
+                                                                              color: Color(0xFF1F2937),
+                                                                              fontFamily: 'Intel',
+                                                                            ),
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                );
+
+
                                                               },
-                                                              style: TextButton.styleFrom(
-                                                                backgroundColor: Colors.blue,
-                                                                foregroundColor: Colors.white,
-                                                                elevation: 4,
-                                                                shadowColor: Colors.black54,
-                                                                padding: const EdgeInsets.symmetric(horizontal: 16, ),
-                                                                shape: RoundedRectangleBorder(
-                                                                  borderRadius: BorderRadius.circular(30),
-                                                                ),
-                                                              ),
-                                                              child: const Text("Assign",style: TextStyle(
-                                                                color: Colors.white,
-                                                                fontSize: 14,
-                                                              ),),
                                                             ),
                                                           ],
                                                         );
@@ -756,23 +867,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                     );
                                                   },
                                                   style: ElevatedButton.styleFrom(
-                                                    backgroundColor: Color(0xff0376FA),
+                                                    backgroundColor: const Color(0xff0376FA),
                                                     shape: RoundedRectangleBorder(
                                                       borderRadius: BorderRadius.circular(18),
                                                     ),
-                                                    elevation: 2,
-                                                    padding: EdgeInsets.zero,
+                                                    padding: const EdgeInsets.symmetric(horizontal: 16),
                                                   ),
-                                                  child: const Center(
-                                                    child: Text(
-                                                      "Add",
-                                                      style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontWeight: FontWeight.bold,
-                                                      ),
-                                                    ),
+                                                  child: const Text(
+                                                    "Add",
+                                                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                                                   ),
-                                                )
+                                                ),
+
+
+
+
 
                                               ),
                                                   ),
