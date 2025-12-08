@@ -490,31 +490,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ],
             ),
           ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => UserHomeScreen(),
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-            ),
-            child: const Text(
-              "Assingned Task",
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-            ),
-          ),
-
-
-
           SizedBox(height: height / 40),
 
           // Reminder list
@@ -710,9 +685,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                 style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                                                               ),
                                                               onPressed: () async {
-                                                                Navigator.pop(context); // Close assign dialog
-
-                                                                // Already assigned? Show replace dialog
+                                                                Navigator.pop(context);
+                                                                                                                               // Already assigned? Show replace dialog
                                                                 if (reminder.taskAssignedToId != null &&
                                                                     reminder.taskAssignedToId!.isNotEmpty) {
 
@@ -747,7 +721,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                             ),
                                                                           ),
 
-                                                                          const SizedBox(width: 16),
+                                                                          const SizedBox(width: 15),
 
                                                                           TextButton(
                                                                             style: TextButton.styleFrom(
