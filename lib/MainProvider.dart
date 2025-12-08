@@ -347,10 +347,31 @@ class MainProvider extends ChangeNotifier {
   }
 
 
+  List<Reminder> userAssignedTasks = [];
+
+  Future<void> fetchTasksAssignedToUser(String userId) async {
+    try {
+      userAssignedTasks.clear();
 
 
+      final snapshot = await FirebaseFirestore.instance
+          .collection("Tasks")
+          .where("taskAssignedToId", isEqualTo: userId)
+          .get();
+
+      for (var doc in snapshot.docs) {
+        Map<String, dynamic> data = doc.data();
+        data["id"] = doc.id;
+        userAssignedTasks.add(Reminder.fromMap(data));
+      }
+
+      notifyListeners();
+    } catch (e) {
+      print("Error fetching tasks for user: $e");
+    }
 
 
+  }
 
 
 }
