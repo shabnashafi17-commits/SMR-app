@@ -9,6 +9,7 @@ import 'package:smr_app/HistoryPage.dart';
 import 'package:smr_app/MainProvider.dart';
 import 'package:smr_app/TaskDetailsPage.dart';
 import 'package:lottie/lottie.dart';
+import 'package:smr_app/user_home_screen.dart';
 import 'contact_asign.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -465,6 +466,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       ),
                     );
                   },
+
+
                   child: Container(
                     height: width / 8,
                     width: width / 3.5,
@@ -487,6 +490,30 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ],
             ),
           ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => UserHomeScreen(),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+            child: const Text(
+              "Assingned Task",
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            ),
+          ),
+
+
 
           SizedBox(height: height / 40),
 
