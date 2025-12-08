@@ -1510,7 +1510,7 @@
 // //                               : Text(
 // //                             reminder['text'] ?? "",
 // //                             style: TextStyle(
-// //                               fontSize: 16,
+//   fontSize: 16,
 // //                               fontWeight: FontWeight.w700,
 // //                               color: Colors.grey,
 // //                             ),
@@ -1858,5 +1858,4 @@
 // //         ],
 // //       ),
 // //     );
-// //   }
-// // }
+// //   }}//

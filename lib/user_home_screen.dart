@@ -284,6 +284,13 @@ class _HomeScreenState extends State<UserHomeScreen> with TickerProviderStateMix
                   "Tasks",
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 28),
                 ),
+                TextButton(onPressed: () {
+                  // provider.userAssignedTasks.clear();
+                  provider.fetchTasksAssignedToUser("1765179490504");
+                  print("fetch task numbers ${provider.userAssignedTasks.length}");
+                },
+                    child: Text("Fetch")
+                ),
                 const Spacer(),
                 GestureDetector(
                   onTap: () {
@@ -321,95 +328,110 @@ class _HomeScreenState extends State<UserHomeScreen> with TickerProviderStateMix
 
           // Reminder list
           Expanded(
-            child: reminders.isEmpty
-                ? const Center(child: Text("No tasks found"))
-                : ListView.builder(
-              padding: EdgeInsets.symmetric(horizontal: width / 19),
-              itemCount: reminders.length,
-              itemBuilder: (context, index) {
-                final reminder = reminders[index];
-                int voiceCount = voiceNumbers[index];
+            child: Consumer<MainProvider>(
+              builder: (context, provider, child) {
 
-                return InkWell(
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Taskdetailspage(
-                        reminder: reminder,
-                        taskText: reminder.taskText,
-                        taskVoice: reminder.taskVoice,
-                      ),
-                    ),
-                  ),
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: width / 10,
-                          height: height / 20,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFE7DD),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                            reminder.taskVoice != null
-                                ? Icons.mic_none_outlined
-                                : Icons.checklist,
-                            size: 24,
-                            color: const Color(0xFFFE6B2C),
+                // Use assigned tasks if available, else show all reminders
+                final list = provider.userAssignedTasks.isNotEmpty
+                    ? provider.userAssignedTasks
+                    : provider.reminders;
+
+                return list.isEmpty
+                    ? const Center(child: Text("No tasks found"))
+                    : ListView.builder(
+                  padding: EdgeInsets.symmetric(horizontal: width / 19),
+                  itemCount: list.length,
+                  itemBuilder: (context, index) {
+                    final reminder = list[index];
+
+                    // Voice numbering logic
+                    int voiceCount = 0;
+                    if (reminder.taskVoice != null) {
+                      voiceCount = index + 1;
+                    }
+
+                    return InkWell(
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Taskdetailspage(
+                            reminder: reminder,
+                            taskText: reminder.taskText,
+                            taskVoice: reminder.taskVoice,
                           ),
                         ),
-                        SizedBox(width: width / 25),
-                        Expanded(
-                          child: reminder.taskVoice != null
-                              ? Column(
-                            crossAxisAlignment:
-                            CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Voice - $voiceCount",
+                      ),
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          children: [
+                            // Icon box
+                            Container(
+                              width: width / 10,
+                              height: height / 20,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFE7DD),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                reminder.taskVoice != null
+                                    ? Icons.mic_none_outlined
+                                    : Icons.checklist,
+                                size: 24,
+                                color: const Color(0xFFFE6B2C),
+                              ),
+                            ),
+
+                            SizedBox(width: width / 25),
+
+                            // Text or Voice label
+                            Expanded(
+                              child: reminder.taskVoice != null
+                                  ? Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Voice - $voiceCount",
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF4B5563),
+                                    ),
+                                  ),
+                                ],
+                              )
+                                  : Text(
+                                reminder.taskText ?? "",
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
                                   color: Color(0xFF4B5563),
                                 ),
                               ),
-                            ],
-                          )
-                              : Text(
-                            reminder.taskText ?? "",
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF4B5563),
                             ),
-                          ),
+
+                            if (reminder.taskVoice != null)
+                              IconButton(
+                                iconSize: 32,
+                                icon: Icon(
+                                  _currentAudio == reminder.taskVoice
+                                      ? Icons.stop
+                                      : Icons.play_arrow,
+                                  color: const Color(0xff0376FA),
+                                ),
+                                onPressed: () =>
+                                    _playAudio(reminder.taskVoice!),
+                              ),
+                          ],
                         ),
-
-                        // Play button for voice reminders
-                        if (reminder.taskVoice != null)
-                          IconButton(
-                            iconSize: 32,
-                            icon: Icon(
-                              _currentAudio == reminder.taskVoice
-                                  ? Icons.stop
-                                  : Icons.play_arrow,
-                              color: Color(0xff0376FA),
-                            ),
-                            onPressed: () =>
-                                _playAudio(reminder.taskVoice!),
-                          ),
-
-
-                      ],
-                    ),
-                  ),
+                      ),
+                    );
+                  },
                 );
               },
             ),
@@ -421,82 +443,6 @@ class _HomeScreenState extends State<UserHomeScreen> with TickerProviderStateMix
     );
   }
 }
-//
 
-class TokenBottomSheet extends StatelessWidget {
-  final Future<void> Function() startRecording;
-  final Future<void> Function() stopRecording;
-  final bool isRecording;
 
-  const TokenBottomSheet({
-    super.key,
-    required this.startRecording,
-    required this.stopRecording,
-    required this.isRecording,
-  });
 
-  @override
-  Widget build(BuildContext context) {
-    final h = MediaQuery.of(context).size.height;
-
-    return SingleChildScrollView(
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.only(
-          top: 20,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-          left: 20,
-          right: 20,
-        ),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(
-              width: double.infinity,
-              height: h * 0.12,
-              child: isRecording
-                  ? Transform.scale(
-                scale: 2.5,
-                child: Lottie.asset('assets/audio_wave.json'),
-              )
-                  : const SizedBox.shrink(),
-            ),
-            const SizedBox(height: 20),
-            Material(
-              color: Colors.transparent,
-              child: InkWell(
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                onTap: () async {
-                  if (isRecording) {
-                    await stopRecording();
-                    if (context.mounted) Navigator.pop(context);
-                  } else {
-                    await startRecording();
-                  }
-                },
-                child: SizedBox(
-                  height: 80,
-                  width: 80,
-                  child: Image.asset(
-                    isRecording ? 'assets/Frame8.png' : 'assets/Frame7.png',
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              isRecording ? "Recording..." : "Speak your task",
-              style: const TextStyle(fontSize: 16),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
