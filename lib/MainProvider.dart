@@ -377,11 +377,13 @@ class MainProvider extends ChangeNotifier {
 
 
   List<Reminder> userAssignedTasks = [];
+  bool isAssignedMode = false;
 
   Future<void> fetchTasksAssignedToUser(String userId) async {
     try {
+      isAssignedMode = true;
       userAssignedTasks.clear();
-
+      notifyListeners();
 
       final snapshot = await FirebaseFirestore.instance
           .collection("Tasks")
@@ -389,7 +391,7 @@ class MainProvider extends ChangeNotifier {
           .get();
 
       for (var doc in snapshot.docs) {
-        Map<String, dynamic> data = doc.data();
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
         data["id"] = doc.id;
         userAssignedTasks.add(Reminder.fromMap(data));
       }
@@ -398,9 +400,8 @@ class MainProvider extends ChangeNotifier {
     } catch (e) {
       print("Error fetching tasks for user: $e");
     }
-
-
   }
+
 
 
 }
