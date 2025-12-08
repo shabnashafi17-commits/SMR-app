@@ -9,6 +9,7 @@ import 'package:smr_app/HistoryPage.dart';
 import 'package:smr_app/MainProvider.dart';
 import 'package:smr_app/TaskDetailsPage.dart';
 import 'package:lottie/lottie.dart';
+import 'Splash_Screen.dart';
 
 import 'contact_asign.dart';
 
@@ -241,6 +242,11 @@ class _HomeScreenState extends State<UserHomeScreen> with TickerProviderStateMix
                   "Hi, Nihal ",
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
+                TextButton(onPressed:
+                    () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => Splash_Screen(),));
+                    },
+                    child: Text("back to admin"))
               ],
             ),
           ),
@@ -254,7 +260,7 @@ class _HomeScreenState extends State<UserHomeScreen> with TickerProviderStateMix
                 _buildStatCard(
                   width,
                   height,
-                  count: todayCount,
+                  count: provider.userAssignedTasks.length,
                   label: 'Today',
                   assetPath: "assets/Frame3.png",
                   color: const Color(0xffFF6B2C),
@@ -264,7 +270,7 @@ class _HomeScreenState extends State<UserHomeScreen> with TickerProviderStateMix
                 _buildStatCard(
                   width,
                   height,
-                  count: reminders.length,
+                  count:reminders.length,
                   label: 'Total',
                   assetPath: "assets/Frame5.png",
                   color: const Color(0xff00B9D6),
@@ -286,7 +292,7 @@ class _HomeScreenState extends State<UserHomeScreen> with TickerProviderStateMix
                 ),
                 TextButton(onPressed: () {
                   // provider.userAssignedTasks.clear();
-                  provider.fetchTasksAssignedToUser("1765179490504");
+                  provider.fetchTasksAssignedToUser("1765179035645");
                   print("fetch task numbers ${provider.userAssignedTasks.length}");
                 },
                     child: Text("Fetch")
@@ -332,10 +338,9 @@ class _HomeScreenState extends State<UserHomeScreen> with TickerProviderStateMix
               builder: (context, provider, child) {
 
                 // Use assigned tasks if available, else show all reminders
-                final list = provider.userAssignedTasks.isNotEmpty
+                final list = provider.isAssignedMode
                     ? provider.userAssignedTasks
                     : provider.reminders;
-
                 return list.isEmpty
                     ? const Center(child: Text("No tasks found"))
                     : ListView.builder(
