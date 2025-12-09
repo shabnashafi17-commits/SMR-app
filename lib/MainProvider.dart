@@ -339,7 +339,7 @@ class MainProvider extends ChangeNotifier {
     await FirebaseFirestore.instance
         .collection("Tasks")
         .doc(reminder.id)
-        .update({
+        .set({
       "taskAssignedToId": newContact.id,
       "taskAssignedToName": newContact.username,
     });
@@ -353,7 +353,6 @@ class MainProvider extends ChangeNotifier {
   Future<void> fetchTasksAssignedToUser(String userId) async {
     try {
       isAssignedMode = true;
-      userAssignedTasks.clear();
       notifyListeners();
 
       final snapshot = await FirebaseFirestore.instance

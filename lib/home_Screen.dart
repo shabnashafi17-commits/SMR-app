@@ -683,6 +683,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                 style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                                                               ),
                                                               onPressed: () async {
+                                                                print("Selected Contact Name ${selected.username}");
+                                                                print("Selected Task Name ${reminder.taskText}");
+
+
                                                                 Navigator.pop(context); // Close assign dialog
 
                                                                 // Already assigned? Show replace dialog
@@ -728,6 +732,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                               foregroundColor: Colors.white,
                                                                             ),
                                                                             onPressed: () async {
+                                                                              print("Selected Contact Name ${selected.username}");
+                                                                              print("Selected task Name ${reminder.taskText}");
+
                                                                               // Replace contact
                                                                               await provider.replaceAssignedContact(reminder, selected);
 
