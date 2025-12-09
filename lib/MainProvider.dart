@@ -214,6 +214,17 @@ class MainProvider extends ChangeNotifier {
     await ref.doc(id).update({'reminderOption': option});
   }
 
+  Future<void> completeTask(Reminder reminder) async {
+    reminder.taskStatus = "completed"; // STAGE 3
+    notifyListeners();
+
+    await Db.collection("Tasks")
+        .doc(reminder.id)
+        .update({
+      "taskStatus": "completed",
+    });
+  }
+
 
 
 
@@ -302,8 +313,6 @@ class MainProvider extends ChangeNotifier {
     final contactId = selected.id;
 
     // Check if contact is already assigned
-    final alreadyAssigned = await isContactAlreadyAssigned(contactId);
-    if (alreadyAssigned) return false;
 
     final taskId = reminder.id;
 
@@ -336,70 +345,42 @@ class MainProvider extends ChangeNotifier {
     print("Task assigned successfully!");
     return true;
   }
-
-
-  Future<bool> isContactAlreadyAssigned(String contactId) async {
-    final snapshot = await Db
-        .collection("Tasks")
-        .where("taskAssignedToId", isEqualTo: contactId)
-        .where("taskStatus", isEqualTo: "assignTask")
-        .get();
-
-    return snapshot.docs.isNotEmpty; // TRUE = already assigned
-  }
-  Future<void> replaceAssignedContact(Reminder reminder, Contact newContact) async {
-    reminder.taskAssignedToId = newContact.id;
-    reminder.taskAssignedToName = newContact.username;
-    reminder.taskStatus = "assignTask";
-    notifyListeners();
-
-    // Save to Firestore if needed
-    await FirebaseFirestore.instance
-        .collection("Tasks")
-        .doc(reminder.id)
-        .set({
-      "taskAssignedToId": newContact.id,
-      "taskAssignedToName": newContact.username,
-
-    });
-
-  }
-  Future<void> completeTask(Reminder reminder) async {
-    reminder.taskStatus = "completed"; // STAGE 3
-    notifyListeners();
-
-    await Db.collection("Tasks")
-        .doc(reminder.id)
-        .update({
-      "taskStatus": "completed",
-    });
-  }
-
-
   List<Reminder> userAssignedTasks = [];
+
   bool isAssignedMode = false;
 
-  Future<void> fetchTasksAssignedToUser(String userId) async {
-    try {
-      isAssignedMode = true;
-      notifyListeners();
 
-      final snapshot = await FirebaseFirestore.instance
-          .collection("Tasks")
-          .where("taskAssignedToId", isEqualTo: userId)
-          .get();
 
-      for (var doc in snapshot.docs) {
-        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        data["id"] = doc.id;
-        userAssignedTasks.add(Reminder.fromMap(data));
-      }
+  Future<void> fetchAssignedTasks(String contactId) async {
+    QuerySnapshot snap = await Db
+        .collection("contacts")
+        .doc(contactId)
+        .collection("assignedTasks")
+        .get();
 
-      notifyListeners();
-    } catch (e) {
-      print("Error fetching tasks for user: $e");
-    }
+    userAssignedTasks = snap.docs.map((doc) {
+      return Reminder(
+        id: doc["taskId"],
+        taskText: doc["taskText"],
+        taskVoice: null,
+        taskType: "text",                // default
+        createdAt: DateTime.now(),       // no value in DB
+        createdBy: "unknown",            // required
+        createdById: "unknown",          // required
+        subtasks: [],
+        date: null,
+        time: null,
+        reminderOption: "No Reminder",
+        taskAssignedToId: contactId,
+        taskAssignedToName: "",
+        taskStatus: "assignTask",
+      );
+    }).toList();
+
+    notifyListeners();
   }
+
+
 
 
 

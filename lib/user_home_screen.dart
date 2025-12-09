@@ -249,10 +249,9 @@ class _HomeScreenState extends State<UserHomeScreen> with TickerProviderStateMix
                     child: Text("back to admin"))
               ],
             ),
+
           ),
           SizedBox(height: height / 22),
-
-          // Stats cards
           Padding(
             padding: EdgeInsets.symmetric(horizontal: width / 24),
             child: Row(
@@ -260,7 +259,7 @@ class _HomeScreenState extends State<UserHomeScreen> with TickerProviderStateMix
                 _buildStatCard(
                   width,
                   height,
-                  count: provider.userAssignedTasks.length,
+                  count: todayCount,
                   label: 'Today',
                   assetPath: "assets/Frame3.png",
                   color: const Color(0xffFF6B2C),
@@ -270,7 +269,7 @@ class _HomeScreenState extends State<UserHomeScreen> with TickerProviderStateMix
                 _buildStatCard(
                   width,
                   height,
-                  count:reminders.length,
+                  count: provider.userAssignedTasks.length,
                   label: 'Total',
                   assetPath: "assets/Frame5.png",
                   color: const Color(0xff00B9D6),
@@ -278,7 +277,6 @@ class _HomeScreenState extends State<UserHomeScreen> with TickerProviderStateMix
               ],
             ),
           ),
-
           SizedBox(height: height / 35),
 
           // Tasks Header
@@ -290,13 +288,18 @@ class _HomeScreenState extends State<UserHomeScreen> with TickerProviderStateMix
                   "Tasks",
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 28),
                 ),
-                TextButton(onPressed: () {
-                  // provider.userAssignedTasks.clear();
-                  provider.fetchTasksAssignedToUser("1765257828983");
-                  print("fetch task numbers ${provider.userAssignedTasks.length}");
+                TextButton(   onPressed: () async {
+                  // Replace with the contactId you want to test
+                  const testContactId = "1765263094196";
 
+                  await provider.fetchAssignedTasks(testContactId);
+
+                  // Optional: show a SnackBar to confirm
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Fetched tasks for contact $testContactId")),
+                  );
                 },
-                    child: Text("Fetch")
+                    child: Text("Fetch Assigned ")
                 ),
                 const Spacer(),
                 GestureDetector(
@@ -338,7 +341,6 @@ class _HomeScreenState extends State<UserHomeScreen> with TickerProviderStateMix
             child: Consumer<MainProvider>(
               builder: (context, provider, child) {
 
-                // Use assigned tasks if available, else show all reminders
                 final list = provider.isAssignedMode
                     ? provider.userAssignedTasks
                     : provider.reminders;
@@ -346,11 +348,10 @@ class _HomeScreenState extends State<UserHomeScreen> with TickerProviderStateMix
                     ? const Center(child: Text("No tasks found"))
                     : ListView.builder(
                   padding: EdgeInsets.symmetric(horizontal: width / 19),
-                  itemCount: list.length,
+                  itemCount: list.length,   // FIXED
                   itemBuilder: (context, index) {
                     final reminder = list[index];
 
-                    // Voice numbering logic
                     int voiceCount = 0;
                     if (reminder.taskVoice != null) {
                       voiceCount = index + 1;
@@ -376,7 +377,6 @@ class _HomeScreenState extends State<UserHomeScreen> with TickerProviderStateMix
                         ),
                         child: Row(
                           children: [
-                            // Icon box
                             Container(
                               width: width / 10,
                               height: height / 20,
@@ -395,21 +395,15 @@ class _HomeScreenState extends State<UserHomeScreen> with TickerProviderStateMix
 
                             SizedBox(width: width / 25),
 
-                            // Text or Voice label
                             Expanded(
                               child: reminder.taskVoice != null
-                                  ? Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "Voice - $voiceCount",
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
-                                      color: Color(0xFF4B5563),
-                                    ),
-                                  ),
-                                ],
+                                  ? Text(
+                                "Voice - $voiceCount",
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF4B5563),
+                                ),
                               )
                                   : Text(
                                 reminder.taskText ?? "",
@@ -441,7 +435,8 @@ class _HomeScreenState extends State<UserHomeScreen> with TickerProviderStateMix
                 );
               },
             ),
-          ),
+          )
+
         ],
       ),
 
