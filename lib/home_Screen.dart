@@ -9,6 +9,7 @@ import 'package:smr_app/HistoryPage.dart';
 import 'package:smr_app/MainProvider.dart';
 import 'package:smr_app/TaskDetailsPage.dart';
 import 'package:lottie/lottie.dart';
+import 'package:smr_app/user_home_screen.dart';
 import 'contact_asign.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -465,6 +466,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       ),
                     );
                   },
+
+
                   child: Container(
                     height: width / 8,
                     width: width / 3.5,
@@ -487,7 +490,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ],
             ),
           ),
-
           SizedBox(height: height / 40),
 
           // Reminder list
@@ -724,7 +726,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                             ),
                                                                           ),
 
-                                                                          const SizedBox(width: 16),
+                                                                          const SizedBox(width: 15),
 
                                                                           TextButton(
                                                                             style: TextButton.styleFrom(
