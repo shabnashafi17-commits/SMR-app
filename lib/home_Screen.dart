@@ -647,11 +647,36 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                           ),
                                                         ),
                                                         onPressed: () async {
-                                                          final selected =
-                                                              provider
-                                                                  .contactList[provider
-                                                                  .tempCheckedList];
-
+                                                          final selected = provider.contactList[provider.tempCheckedList];
+                                                          final newContactId = selected.id;
+                                                          if (reminder.taskAssignedToId == newContactId) {
+                                                            provider.tempCheckedList = -1;
+                                                          showDialog(context: context,
+                                                              builder: (context) {
+                                                                return AlertDialog(
+                                                                  title: Text("",style: TextStyle(
+                                                                    fontWeight: FontWeight.w900,
+                                                                    color:Colors.red
+                                                                  ),),
+                                                                  content: Text("This task Is already Assigned to ${selected.username}",
+                                                                    style: TextStyle(
+                                                                      fontWeight: FontWeight.bold
+                                                                    ),
+                                                                  ),
+                                                                  actions: [
+                                                                    TextButton(onPressed: () {
+                                                                      Navigator.pop(context);
+                                                                    },
+                                                                        child: Text("OK",style:
+                                                                          TextStyle(
+                                                                            color: Color(0xff0376FA),
+                                                                            fontWeight: FontWeight.bold
+                                                                          ),))
+                                                                  ],
+                                                                );
+                                                              },);
+                                                            return;
+                                                          }
                                                           // Check if task already assigned to someone else
                                                           if (reminder.taskAssignedToId !=
                                                                   null &&
@@ -669,7 +694,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                       Colors
                                                                           .white,
                                                                   content: Text(
-                                                                    "This task is already assigned to ${reminder.taskAssignedToName}.\nDo you want to replace?",
+                                                                    "This task is already assigned to ${reminder.taskAssignedToName}.Do you want to replace?",
                                                                     style: const TextStyle(
                                                                       fontSize:
                                                                           16,
@@ -714,13 +739,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                         foregroundColor: Colors.white,
                                                                       ),
                                                                       onPressed: () async {
-                                                                        // Close dialogs first
-
                                                                         // Perform replace operation
                                                                         await provider.replaceAssignedTask(
                                                                           reminder,
                                                                           selected.id,
                                                                           selected.username,
+
                                                                         );
                                                                          Navigator.pop(context);
                                                                          Navigator.pop(context);
