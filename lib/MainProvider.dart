@@ -306,17 +306,10 @@ class MainProvider extends ChangeNotifier {
       print("Error fetching contacts: $e");
     }
   }
-  Future<bool> assignTask(Reminder reminder) async {
-    if (tempCheckedList == -1) return false;
-
-    final selected = contactList[tempCheckedList];
-    final contactId = selected.id;
-
-    // Check if contact is already assigned
-
+  Future<void> _assignToFirestore(Reminder reminder, String contactId, String username) async {
     final taskId = reminder.id;
 
-    // Save in contact's assignedTasks
+    // Save in contact assignedTasks
     await Db.collection("contacts")
         .doc(contactId)
         .collection("assignedTasks")
@@ -327,24 +320,22 @@ class MainProvider extends ChangeNotifier {
       "assignedTime": DateTime.now(),
     });
 
-    // Update task in Tasks collection
+    // Update task master record
     await Db.collection("Tasks").doc(taskId).update({
       "taskAssignedToId": contactId,
-      "taskAssignedToName": selected.username,
+      "taskAssignedToName": username,
       "assignedTime": DateTime.now(),
-      "taskStatus": "assignTask",  // ✅ Set status here in DB
+      "taskStatus": "assignTask",
     });
 
-    // Update the local reminder object
+    // Update local object
     reminder.taskAssignedToId = contactId;
-    reminder.taskAssignedToName = selected.username;
-    reminder.taskStatus = "assignTask"; // ✅ Update local status
+    reminder.taskAssignedToName = username;
+    reminder.taskStatus = "assignTask";
 
-    notifyListeners(); // Notify UI / state listeners
-
-    print("Task assigned successfully!");
-    return true;
+    notifyListeners();
   }
+
   List<Reminder> userAssignedTasks = [];
 
   bool isAssignedMode = false;
@@ -379,6 +370,70 @@ class MainProvider extends ChangeNotifier {
 
     notifyListeners();
   }
+  Future<void> assignTask(Reminder reminder) async {
+    if (tempCheckedList == -1) return;
+
+    final selected = contactList[tempCheckedList];
+    final newContactId = selected.id;
+
+    // If this task is already assigned to someone else
+    if (reminder.taskAssignedToId != null &&
+        reminder.taskAssignedToId!.isNotEmpty &&
+        reminder.taskAssignedToId != newContactId) {
+
+      final oldAssignedName = reminder.taskAssignedToName ?? "another person";
+      return;
+    }
+    // If not assigned, assign normally
+    await _assignToFirestore(reminder, selected.id, selected.username);
+  }
+  Future<void> replaceAssignedTask(Reminder reminder, String newContactId, String newName) async {
+    print("Replacing assignment...");
+
+    final oldContactId = reminder.taskAssignedToId;
+
+    // Step 1: REMOVE from old contact assignedTasks
+    if (oldContactId != null && oldContactId.isNotEmpty) {
+      await Db.collection("contacts")
+          .doc(oldContactId)
+          .collection("assignedTasks")
+          .doc(reminder.id)
+          .delete();
+
+      print("Removed task from old assigned user: $oldContactId");
+    }
+
+    // Step 2: Add to new contact assignedTasks
+    await Db.collection("contacts")
+        .doc(newContactId)
+        .collection("assignedTasks")
+        .doc(reminder.id)
+        .set({
+      "taskId": reminder.id,
+      "taskText": reminder.taskText,
+      "assignedTime": DateTime.now(),
+    });
+
+    // Step 3: Update main Tasks database
+    await Db.collection("Tasks").doc(reminder.id).update({
+      "taskAssignedToId": newContactId,
+      "taskAssignedToName": newName,
+      "assignedTime": DateTime.now(),
+      "taskStatus": "assignTask",
+    });
+
+    // Step 4: Update local object
+    reminder.taskAssignedToId = newContactId;
+    reminder.taskAssignedToName = newName;
+
+    // Step 5: Refresh UI
+    notifyListeners();
+
+    print("Task replaced successfully!");
+  }
+
+
+
 
 
 

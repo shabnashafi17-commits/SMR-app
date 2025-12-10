@@ -288,20 +288,16 @@ class _HomeScreenState extends State<UserHomeScreen> with TickerProviderStateMix
                   "Tasks",
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 28),
                 ),
-                TextButton(   onPressed: () async {
-                  // Replace with the contactId you want to test
-                  const testContactId = "1765263094196";
-
-                  await provider.fetchAssignedTasks(testContactId);
-
-                  // Optional: show a SnackBar to confirm
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Fetched tasks for contact $testContactId")),
-                  );
-                },
-                    child: Text("Fetch Assigned ")
+                TextButton(
+                  onPressed: () async {
+                    await provider.fetchAssignedTasks("1765262835115");
+                    provider.isAssignedMode = true;     // ← IMPORTANT
+                    provider.notifyListeners();
+                  },
+                  child: Text("Fetch Assigned"),
                 ),
-                const Spacer(),
+
+                 Spacer(),
                 GestureDetector(
                   onTap: () {
                     Navigator.push(
@@ -344,11 +340,12 @@ class _HomeScreenState extends State<UserHomeScreen> with TickerProviderStateMix
                 final list = provider.isAssignedMode
                     ? provider.userAssignedTasks
                     : provider.reminders;
+
                 return list.isEmpty
                     ? const Center(child: Text("No tasks found"))
                     : ListView.builder(
                   padding: EdgeInsets.symmetric(horizontal: width / 19),
-                  itemCount: list.length,   // FIXED
+                  itemCount: list.length, // ✅ FIXED
                   itemBuilder: (context, index) {
                     final reminder = list[index];
 
@@ -436,6 +433,7 @@ class _HomeScreenState extends State<UserHomeScreen> with TickerProviderStateMix
               },
             ),
           )
+
 
         ],
       ),

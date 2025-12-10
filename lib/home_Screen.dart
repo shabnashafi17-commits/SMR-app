@@ -64,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     if (_recorder.isRecording) return; // FIX
     final dir = await getApplicationDocumentsDirectory();
     _filePath =
-    '${dir.path}/reminder_record_${DateTime.now().millisecondsSinceEpoch}.aac';
+        '${dir.path}/reminder_record_${DateTime.now().millisecondsSinceEpoch}.aac';
 
     await _recorder.startRecorder(toFile: _filePath, codec: Codec.aacADTS);
 
@@ -126,10 +126,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildBottomInputBar(
-      double height,
-      double width,
-      MainProvider provider,
-      ) {
+    double height,
+    double width,
+    MainProvider provider,
+  ) {
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -245,13 +245,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildStatCard(
-      double width,
-      double height, {
-        required color,
-        required int count,
-        required String label,
-        required String assetPath,
-      }) {
+    double width,
+    double height, {
+    required color,
+    required int count,
+    required String label,
+    required String assetPath,
+  }) {
     return Container(
       width: width / 2.3,
       height: height / 7.5,
@@ -467,7 +467,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     );
                   },
 
-
                   child: Container(
                     height: width / 8,
                     width: width / 3.5,
@@ -579,138 +578,365 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       _playAudio(reminder.taskVoice!),
                                 ),
 
-                        // Group add button (left as original)
-                        InkWell(
-                          onTap: () async {
-                            await provider.fetchContacts();
-                            // if (isCheckedList.length != Contactlist.length) {
-                            //   isCheckedList = List.generate(Contactlist.length, (_) => false);
-                            // }
-                            showModalBottomSheet(
-                              context: context,
-                              backgroundColor: const Color(0xffF2F2F2),
-                              builder: (BuildContext context) {
-                                final double halfScreenHeight =
-                                    MediaQuery.of(context).size.height /
-                                        2;
-                                return Container(
-                                  padding: EdgeInsets.only(
-                                    bottom: MediaQuery.of(
-                                      context,
-                                    ).viewInsets.bottom,
-                                  ),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment:
-                                    CrossAxisAlignment.start,
-                                    children: <Widget>[
-                                      Padding(
+                              // Group add button (left as original)
+                              InkWell(
+                                onTap: () async {
+                                  await provider.fetchContacts();
+                                  // if (isCheckedList.length != Contactlist.length) {
+                                  //   isCheckedList = List.generate(Contactlist.length, (_) => false);
+                                  // }
+                                  showModalBottomSheet(
+                                    context: context,
+                                    backgroundColor: const Color(0xffF2F2F2),
+                                    builder: (BuildContext context) {
+                                      final double halfScreenHeight =
+                                          MediaQuery.of(context).size.height /
+                                          2;
+                                      return Container(
                                         padding: EdgeInsets.only(
-                                          top: height / 22,
-                                          left: width / 30,
-                                          bottom: height / 35,
+                                          bottom: MediaQuery.of(
+                                            context,
+                                          ).viewInsets.bottom,
                                         ),
-                                        child: Row(
-                                          children: [
-                                            const Text(
-                                              "Contact List",
-                                              style: TextStyle(
-                                                fontSize: 25,
-                                                fontWeight:
-                                                FontWeight.bold,
-                                              ),
-                                            ),
-                                            const Spacer(),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: <Widget>[
                                             Padding(
-                                              padding:
-                                              const EdgeInsets.only(
-                                                right: 10,
+                                              padding: EdgeInsets.only(
+                                                top: height / 22,
+                                                left: width / 30,
+                                                bottom: height / 35,
                                               ),
-                                              child: SizedBox(
-                                                height: height / 25,
-                                                width: width / 6,
-                                                child:ElevatedButton(
-                                                  onPressed: () {
-                                                    final selected = provider.tempCheckedList == -1
-                                                        ? null
-                                                        : provider.contactList[provider.tempCheckedList];
-
-                                                    if (selected == null) {
-                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                        const SnackBar(
-                                                          content: Text("No contact selected!"),
-                                                        ),
-                                                      );
-                                                      return;
-                                                    }
-
-                                                    showDialog(
-                                                      context: context,
-                                                      builder: (context) {
-                                                        return AlertDialog(
-                                                          backgroundColor: Colors.white,
-                                                          content: Text(
-                                                            "Assign this task to ${selected.username}?",
-                                                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                                                          ),
-                                                          actions: [
-                                                            // Cancel Button
-                                                            ElevatedButton(
-                                                              style: ElevatedButton.styleFrom(
-                                                                backgroundColor: Colors.white,
-                                                                foregroundColor: Colors.black,
-                                                                shape: RoundedRectangleBorder(
-                                                                  borderRadius: BorderRadius.circular(30),
-                                                                ),
-                                                                elevation: 6,
-                                                                shadowColor: Colors.black26,
-                                                              ),
-                                                              onPressed: () => Navigator.pop(context),
-                                                              child: const Text(
-                                                                "Cancel",
-                                                                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-                                                              ),
-                                                            ),
-
-                                                            const SizedBox(width: 16),
-
-                                                            // Assign Button
-                                                            TextButton(
-                                                              style: TextButton.styleFrom(
-                                                                backgroundColor: const Color(0xff0376FA),
-                                                                foregroundColor: Colors.white,
-                                                              ),
-                                                              child: const Text(
-                                                                "Assign",
-                                                                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-                                                              ),
-                                                              onPressed: () async {
-                                                                provider.assignTask(reminder);
-                                                              }
-                                                            ),
-                                                          ],
-                                                        );
-                                                      },
-                                                    );
-                                                  },
-                                                  style: ElevatedButton.styleFrom(
-                                                    backgroundColor: const Color(0xff0376FA),
-                                                    shape: RoundedRectangleBorder(
-                                                      borderRadius: BorderRadius.circular(18),
+                                              child: Row(
+                                                children: [
+                                                  const Text(
+                                                    "Contact List",
+                                                    style: TextStyle(
+                                                      fontSize: 25,
+                                                      fontWeight:
+                                                          FontWeight.bold,
                                                     ),
-                                                    padding: const EdgeInsets.symmetric(horizontal: 16),
                                                   ),
-                                                  child: const Text(
-                                                    "Add",
-                                                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                                                  ),
-                                                ),
+                                                  const Spacer(),
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                          right: 10,
+                                                        ),
+                                                    child: SizedBox(
+                                                      height: height / 25,
+                                                      width: width / 5,
+                                                      child: TextButton(
+                                                        style:
+                                                            TextButton.styleFrom(
+                                                              backgroundColor:
+                                                                  const Color(
+                                                                    0xff0376FA,
+                                                                  ),
+                                                              foregroundColor:
+                                                                  Colors.white,
+                                                            ),
+                                                        child: const Text(
+                                                          "Add ",
+                                                          style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            fontSize: 14,
+                                                          ),
+                                                        ),
+                                                        onPressed: () async {
+                                                          final selected =
+                                                              provider
+                                                                  .contactList[provider
+                                                                  .tempCheckedList];
 
+                                                          // Check if task already assigned to someone else
+                                                          if (reminder.taskAssignedToId !=
+                                                                  null &&
+                                                              reminder
+                                                                  .taskAssignedToId!
+                                                                  .isNotEmpty &&
+                                                              reminder.taskAssignedToId !=
+                                                                  selected.id) {
+                                                            // 🔥 Show replace dialog right here
+                                                            showDialog(
+                                                              context: context,
+                                                              builder: (context) {
+                                                                return AlertDialog(
+                                                                  backgroundColor:
+                                                                      Colors
+                                                                          .white,
+                                                                  content: Text(
+                                                                    "This task is already assigned to ${reminder.taskAssignedToName}.\nDo you want to replace?",
+                                                                    style: const TextStyle(
+                                                                      fontSize:
+                                                                          16,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w600,
+                                                                    ),
+                                                                  ),
+                                                                  actions: [
+                                                                    // Cancel
+                                                                    ElevatedButton(
+                                                                      style: ElevatedButton.styleFrom(
+                                                                        backgroundColor:
+                                                                            Colors.white,
+                                                                        foregroundColor:
+                                                                            Colors.black,
+                                                                        shape: RoundedRectangleBorder(
+                                                                          borderRadius: BorderRadius.circular(
+                                                                            30,
+                                                                          ),
+                                                                        ),
+                                                                        elevation:
+                                                                            6,
+                                                                      ),
+                                                                      onPressed: () =>
+                                                                          Navigator.pop(
+                                                                            context,
+                                                                          ),
+                                                                      child: const Text(
+                                                                        "Cancel",
+                                                                      ),
+                                                                    ),
 
+                                                                    const SizedBox(
+                                                                      width: 16,
+                                                                    ),
 
+                                                                    // Replace
+                                                                    TextButton(
+                                                                      style: TextButton.styleFrom(
+                                                                        backgroundColor: Color(0xff0376FA),
+                                                                        foregroundColor: Colors.white,
+                                                                      ),
+                                                                      onPressed: () async {
+                                                                        // Close dialogs first
 
+                                                                        // Perform replace operation
+                                                                        await provider.replaceAssignedTask(
+                                                                          reminder,
+                                                                          selected.id,
+                                                                          selected.username,
+                                                                        );
+                                                                         Navigator.pop(context);
+                                                                         Navigator.pop(context);
 
-                                              ),
+                                                                        ScaffoldMessenger.of(context).showSnackBar(
+                                                                          SnackBar(
+                                                                            behavior: SnackBarBehavior.floating,
+                                                                            backgroundColor: Colors.transparent,
+                                                                            elevation: 0,
+                                                                            content: Container(
+                                                                              padding: const EdgeInsets.all(16),
+                                                                              decoration: BoxDecoration(
+                                                                                color: Colors.white,
+                                                                                borderRadius: BorderRadius.circular(16),
+                                                                                boxShadow: [
+                                                                                  BoxShadow(
+                                                                                    color: Colors.black.withOpacity(0.1),
+                                                                                    blurRadius: 10,
+                                                                                    offset: Offset(0, 5),
+                                                                                  ),
+                                                                                ],
+                                                                              ),
+                                                                              child: Column(
+                                                                                mainAxisSize: MainAxisSize.min,
+                                                                                children: [
+                                                                                  Icon(
+                                                                                    CupertinoIcons.checkmark_alt_circle_fill,
+                                                                                    size: 39,
+                                                                                    color: Color(0xFF00BA25),
+                                                                                  ),
+                                                                                  SizedBox(height: 16),
+                                                                                  const Text(
+                                                                                    'Contact Replaced Successfully',
+                                                                                    style: TextStyle(
+                                                                                      fontSize: 16,
+                                                                                      fontWeight: FontWeight.w900,
+                                                                                      color: Color(0xFF1F2937),
+                                                                                      fontFamily: 'Intel',
+                                                                                    ),
+                                                                                  ),
+                                                                                ],
+                                                                              ),
+                                                                            ),
+
+                                                                            duration: Duration(seconds: 2),
+                                                                          ),
+                                                                        );
+                                                                        provider.tempCheckedList = -1;
+
+                                                                      },
+                                                                      child: const Text("Replace"),
+                                                                    ),
+
+                                                                  ],
+                                                                );
+                                                              },
+                                                            );
+
+                                                            return; // stop here
+                                                          }
+                                                          showDialog(
+                                                            context: context,
+                                                            builder: (context) {
+                                                              return AlertDialog(
+                                                                backgroundColor:
+                                                                    Colors
+                                                                        .white,
+                                                                content: Text(
+                                                                  "Are you sure? Do you want to add this task, ${selected.username}?",
+
+                                                                  style: const TextStyle(
+                                                                    fontSize:
+                                                                        16,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w600,
+                                                                  ),
+                                                                ),
+                                                                actions: [
+                                                                  // Cancel
+                                                                  ElevatedButton(
+                                                                    style: ElevatedButton.styleFrom(
+                                                                      backgroundColor:
+                                                                          Colors
+                                                                              .white,
+                                                                      foregroundColor:
+                                                                          Colors
+                                                                              .black,
+                                                                      shape: RoundedRectangleBorder(
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(
+                                                                              30,
+                                                                            ),
+                                                                      ),
+                                                                      elevation:
+                                                                          6,
+                                                                    ),
+                                                                    onPressed: () =>
+                                                                        Navigator.pop(
+                                                                          context,
+                                                                        ),
+                                                                    child: const Text(
+                                                                      "Cancel",
+                                                                    ),
+                                                                  ),
+
+                                                                  const SizedBox(
+                                                                    width: 16,
+                                                                  ),
+
+                                                                  // Replace
+                                                                  TextButton(
+                                                                    style: TextButton.styleFrom(
+                                                                      backgroundColor:
+                                                                          Color(
+                                                                            0xff0376FA,
+                                                                          ),
+                                                                      foregroundColor:
+                                                                          Colors
+                                                                              .white,
+                                                                    ),
+                                                                    onPressed: () async {
+                                                                      await provider
+                                                                          .assignTask(
+                                                                            reminder,
+                                                                          );
+
+                                                                      // Close both dialogs
+                                                                      Navigator.pop(
+                                                                        context,
+                                                                      );
+                                                                      Navigator.pop(
+                                                                        context,
+                                                                      );
+
+                                                                      // ✅ SHOW CUSTOM SUCCESS SNACK
+                                                                      ScaffoldMessenger.of(
+                                                                        context,
+                                                                      ).showSnackBar(
+                                                                        SnackBar(
+                                                                          behavior:
+                                                                              SnackBarBehavior.floating,
+                                                                          backgroundColor:
+                                                                              Colors.transparent,
+                                                                          elevation:
+                                                                              0,
+                                                                          content: Container(
+                                                                            padding: const EdgeInsets.all(
+                                                                              16,
+                                                                            ),
+                                                                            decoration: BoxDecoration(
+                                                                              color: Colors.white,
+                                                                              borderRadius: BorderRadius.circular(
+                                                                                16,
+                                                                              ),
+                                                                              boxShadow: [
+                                                                                BoxShadow(
+                                                                                  color: Colors.black.withOpacity(
+                                                                                    0.1,
+                                                                                  ),
+                                                                                  blurRadius: 10,
+                                                                                  offset: Offset(
+                                                                                    0,
+                                                                                    5,
+                                                                                  ),
+                                                                                ),
+                                                                              ],
+                                                                            ),
+                                                                            child: Column(
+                                                                              mainAxisSize: MainAxisSize.min,
+                                                                              children: [
+                                                                                Icon(
+                                                                                  CupertinoIcons.checkmark_alt_circle_fill,
+                                                                                  size: 39,
+                                                                                  color: Color(
+                                                                                    0xFF00BA25,
+                                                                                  ),
+                                                                                ),
+                                                                                SizedBox(
+                                                                                  height: 16,
+                                                                                ),
+                                                                                const Text(
+                                                                                  'Task Added Successfully',
+                                                                                  style: TextStyle(
+                                                                                    fontSize: 16,
+                                                                                    fontWeight: FontWeight.w900,
+                                                                                    color: Color(
+                                                                                      0xFF1F2937,
+                                                                                    ),
+                                                                                    fontFamily: 'Intel',
+                                                                                  ),
+                                                                                ),
+                                                                              ],
+                                                                            ),
+                                                                          ),
+                                                                          duration: Duration(
+                                                                            seconds:
+                                                                                2,
+                                                                          ),
+                                                                        ),
+                                                                      );
+                                                                      provider.tempCheckedList = -1;
+                                                                    },
+
+                                                                    child:
+                                                                        const Text(
+                                                                          "Add",
+                                                                        ),
+                                                                  ),
+                                                                ],
+                                                              );
+                                                            },
+                                                          );
+                                                        },
+                                                      ),
+                                                    ),
                                                   ),
                                                 ],
                                               ),
@@ -724,9 +950,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                         .contactList
                                                         .length,
                                                     itemBuilder: (context, index) {
-                                                      final contact = provider.contactList[index];
+                                                      final contact = provider
+                                                          .contactList[index];
                                                       // final isAssigned = provider.isContactAlreadyAssigned(contact.id);
-
 
                                                       return Container(
                                                         decoration: BoxDecoration(
@@ -795,53 +1021,58 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                 ),
                                                               ),
 
-                                                        InkWell(
-                                                          onTap: () {
-
-                                                            provider.changeAddContact(index);
-                                                          },
-                                                          child: Icon(
-                                                            provider.tempCheckedList == index
-                                                                ? Icons.check_box_outlined
-                                                                : Icons.check_box_outline_blank,
-                                                            color: Colors.black,
+                                                              InkWell(
+                                                                onTap: () {
+                                                                  provider
+                                                                      .changeAddContact(
+                                                                        index,
+                                                                      );
+                                                                },
+                                                                child: Icon(
+                                                                  provider.tempCheckedList ==
+                                                                          index
+                                                                      ? Icons
+                                                                            .check_box_outlined
+                                                                      : Icons
+                                                                            .check_box_outline_blank,
+                                                                  color: Colors
+                                                                      .black,
+                                                                ),
+                                                              ),
+                                                            ],
                                                           ),
-                                                        )
-
-                                                      ],
-                                                    ),
-                                                  ),
-                                                );
-                                              },
-                                            );
-                                          },
+                                                        ),
+                                                      );
+                                                    },
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                      ),
-                                    ],
+                                      );
+                                    },
+                                  );
+                                },
+                                child: Container(
+                                  width: width / 10,
+                                  height: height / 20,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(20),
+                                    color: Color(0xff0376FA),
                                   ),
-                                );
-                              },
-                            );
-                          },
-                          child: Container(
-                            width: width / 10,
-                            height: height / 20,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              color: Color(0xff0376FA),
-                            ),
-                            child: const Icon(
-                              Icons.group_add_outlined,
-                              color: Colors.white,
-                            ),
+                                  child: const Icon(
+                                    Icons.group_add_outlined,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
         ],
       ),
