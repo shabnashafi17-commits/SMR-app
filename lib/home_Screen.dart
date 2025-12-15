@@ -465,6 +465,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         builder: (context) => const HistoryScreen(),
                       ),
                     );
+                    provider.fetchCompletedTasks();
                   },
 
                   child: Container(

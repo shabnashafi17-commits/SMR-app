@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
+
+
+import 'MainProvider.dart';
 
 class HistoryScreen extends StatelessWidget {
   const HistoryScreen({super.key});
@@ -75,85 +80,100 @@ class HistoryScreen extends StatelessWidget {
         ],
       ),
 
-      body: ListView.builder(
-        padding: EdgeInsets.symmetric(horizontal: width / 19),
-        itemCount: items.length,
-        itemBuilder: (context, index) {
-          //date And Time continer
-          return Container(
-            margin: EdgeInsets.only(bottom: height / 40),
-            decoration: BoxDecoration(
-              color: Color(0xffF2F2F2),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.08), // soft shadow
-                  blurRadius: 15, // spread radius
-                  offset: Offset(0, 5), // vertical offset
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                // Task Continer
-                Padding(
-                  padding:  EdgeInsets.all(8.0),
-                  child: Container(
+      body: Consumer<MainProvider>(
+        builder: (context,provider,child) {
+          return ListView.builder(
+            padding: EdgeInsets.symmetric(horizontal: width / 19),
+            itemCount: provider.completedTasks.length,
+            itemBuilder: (context, index) {
+              final task = provider.completedTasks[index];
 
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
+              //date And Time continer
+              return Container(
+                margin: EdgeInsets.only(bottom: height / 40),
+                decoration: BoxDecoration(
+                  color: Color(0xffF2F2F2),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08), // soft shadow
+                      blurRadius: 15, // spread radius
+                      offset: Offset(0, 5), // vertical offset
                     ),
-
-                    child: Row(
-                      children: [
-                        Container(
-                          width: width / 10,
-                          height: height / 24,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFE7DD),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Icon(
-                            Icons.mic_none_outlined,
-                            color: Color(0xFFFF894D),
-                          ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding:  EdgeInsets.all(8.0),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        SizedBox(width: width / 30),
-                        Expanded(
-                          child: Text(
-                            items[index],
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
+                        child: Row(
+                          children: [
+                            Container(
+                              width: width / 10,
+                              height: height / 24,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFE7DD),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                              task.taskType == 'voice'
+                                  ?Icons.mic_none_outlined
+                                  :Icons.checklist,
+                                color: const Color(0xFFFF894D),
+                              ),
                             ),
-                          ),
+                            SizedBox(width: width / 30),
+                            Expanded(
+                              child: Text(
+                               task.taskText.toString(),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 13),
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Text("15/10/2020,",
-                            style: TextStyle(color: Colors.black54)),
-                        Text("10:00 AM",
-                            style: TextStyle(color: Colors.black54)),
-                      ],
+                    Padding(
+                      padding: const EdgeInsets.only(right: 13),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            if (task.date != null)
+                              Text(
+                                DateFormat("dd/MM/yyyy").format(task.date!),
+                                style: const TextStyle(color: Colors.black54),
+                              ),
+                            const SizedBox(width: 6),
+                            if (task.time != null)
+                              Text(
+                                DateFormat("hh:mm a").format(
+                                  DateTime(0).add(task.time!),
+                                ),
+                                style: const TextStyle(color: Colors.black54),
+                              ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ],
-            ),
 
+                  ],
+                ),
+
+              );
+            },
           );
-        },
+        }
       ),
     );
   }
