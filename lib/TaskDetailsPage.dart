@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smr_app/MainProvider.dart';
+import 'package:smr_app/home_Screen.dart' show HomeScreen;
 import 'package:table_calendar/table_calendar.dart';
 
 class Taskdetailspage extends StatelessWidget {
@@ -75,12 +76,16 @@ class Taskdetailspage extends StatelessWidget {
                         ),
                         title: const Text(
                           'Complete Task',
-                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                         ),
                         content: const Text(
                           'Do you want to complete this task?',
-                          style: TextStyle(fontSize: 16),
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold, // Increase font weight
+                          ),
                         ),
+
                         actions: [
                           // No button
                           ElevatedButton(
@@ -96,7 +101,7 @@ class Taskdetailspage extends StatelessWidget {
                             onPressed: () => Navigator.pop(context),
                             child: const Text(
                               "No",
-                              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                             ),
                           ),
                           SizedBox(width: 15,),
@@ -112,6 +117,7 @@ class Taskdetailspage extends StatelessWidget {
 
                               // Update task status in Firestore
                               await provider.completeTask(reminder);
+                              await provider.addToHistory(reminder);
 
                               // Show Task Completed dialog
                               showDialog(
@@ -139,7 +145,7 @@ class Taskdetailspage extends StatelessWidget {
                                           'Task Completed',
                                           style: TextStyle(
                                               fontSize: 16,
-                                              fontWeight: FontWeight.w400,
+                                              fontWeight: FontWeight.bold,
                                               color: Color(0xFF1F2937),
                                               fontFamily: 'Intel'),
                                         ),
@@ -148,10 +154,18 @@ class Taskdetailspage extends StatelessWidget {
                                   ),
                                 ),
                               );
+
+                              await Future.delayed(const Duration(seconds: 2));
+
+                              Navigator.of(context, rootNavigator: true).pop();
+
+                              Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(builder: (_) => HomeScreen()),
+                              );
                             },
                             child: const Text(
                               'Yes',
-                              style: TextStyle(fontWeight: FontWeight.w500),
+                              style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ),
                         ],
@@ -177,6 +191,7 @@ class Taskdetailspage extends StatelessWidget {
           ),
         ),
       ),
+
         body: SafeArea(
         child: SingleChildScrollView(
         reverse: true,
@@ -389,7 +404,7 @@ class Taskdetailspage extends StatelessWidget {
                           SizedBox(height: screenHeight * 10 / 932),
                           // DATE / TIME for text task
                           Padding(
-                            padding: const EdgeInsets.only(left: 130),
+                            padding: const EdgeInsets.only(left: 140),
                             child: Consumer<MainProvider>(
                               builder: (context, provider, child) {
                                 final current = provider.reminders.firstWhere(

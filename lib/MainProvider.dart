@@ -213,6 +213,63 @@ class MainProvider extends ChangeNotifier {
 
     await ref.doc(id).update({'reminderOption': option});
   }
+  bool isHistoryLoading = false;
+  List<Reminder> historyList = [];
+
+  Future<void> addToHistory(Reminder reminder) async {
+    await FirebaseFirestore.instance
+        .collection("History")
+        .doc(reminder.id)
+        .set(reminder.toMap());
+
+    historyList.insert(0, reminder); // update local list
+    notifyListeners();
+  }
+  Future<void> completeTask(Reminder task) async {
+    await FirebaseFirestore.instance
+        .collection("Tasks")
+        .doc(task.id)
+        .update({"taskStatus": "completed"});
+
+    // Refresh history from Firestore
+    await fetchHistory();
+  }
+
+
+
+  Future<void> fetchHistory() async {
+    isHistoryLoading = true;
+    notifyListeners();
+
+    try {
+      QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection("Tasks")
+          .where("taskStatus", isEqualTo: "completed") // only completed tasks
+      // If some tasks don’t have createdAt, remove orderBy for now
+      //.orderBy("createdAt", descending: true)
+          .get();
+
+      historyList = snapshot.docs.map((doc) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        data['id'] = doc.id;
+        return Reminder.fromMap(data);
+      }).toList();
+
+      print("Fetched ${historyList.length} completed tasks");
+    } catch (e) {
+      print("Error fetching history: $e");
+    }
+
+    isHistoryLoading = false;
+    notifyListeners();
+  }
+
+
+
+
+
+
+
 
 
 
@@ -364,16 +421,7 @@ class MainProvider extends ChangeNotifier {
     });
 
   }
-  Future<void> completeTask(Reminder reminder) async {
-    reminder.taskStatus = "completed"; // STAGE 3
-    notifyListeners();
 
-    await Db.collection("Tasks")
-        .doc(reminder.id)
-        .update({
-      "taskStatus": "completed",
-    });
-  }
 
 
   List<Reminder> userAssignedTasks = [];
@@ -401,6 +449,8 @@ class MainProvider extends ChangeNotifier {
       print("Error fetching tasks for user: $e");
     }
   }
+
+
 
 
 
