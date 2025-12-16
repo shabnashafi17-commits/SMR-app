@@ -236,6 +236,7 @@ class MainProvider extends ChangeNotifier {
 
         DateTime? completedDate;
         Duration? completedTime;
+        
 
         if (data["Completed_date"] != null) {
           completedDate =
