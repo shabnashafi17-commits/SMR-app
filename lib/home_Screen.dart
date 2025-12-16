@@ -466,6 +466,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       ),
                     );
                     provider.fetchCompletedTasks();
+
+
                   },
 
                   child: Container(
