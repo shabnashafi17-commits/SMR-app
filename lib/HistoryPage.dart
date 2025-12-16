@@ -81,25 +81,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
     int remainingVoiceCount = tasks.where((t) => t.taskVoice != null).length;
 
 // Generate voice numbers list (same length as tasks)
-    // Get original order (oldest → latest)
-    final originalTasks = provider.completedTasks;
-
-// Map taskId -> voice number (oldest = 1)
-    final Map<String, int> voiceIndexMap = {};
-    int counter = 1;
-
-    for (final t in originalTasks) {
+    List<int> voiceNumbers = tasks.map((t) {
       if (t.taskVoice != null) {
-        voiceIndexMap[t.id] = counter;
-        counter++;
+        return remainingVoiceCount--;
+      } else {
+        return 0;
       }
-    }
-
-// Apply numbers to reversed list
-    final List<int> voiceNumbers = tasks.map((t) {
-      return voiceIndexMap[t.id] ?? 0;
     }).toList();
-
 
 
     var width = MediaQuery.of(context).size.width;
@@ -137,6 +125,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
             itemBuilder: (context, index) {
               final task = tasks[index];
               final voiceCount = voiceNumbers[index];
+
+
+
+
               return Container(
                 margin: EdgeInsets.only(bottom: height / 40),
                 decoration: BoxDecoration(

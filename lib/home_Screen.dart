@@ -314,7 +314,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       listen: true,
     ); // listen to changes
     final reminders = provider.reminders;
-
+    // Get only tasks that are not completed
+    final activeTasks = provider.reminders
+        .where((r) => r.taskStatus != "completed")
+        .toList();
 
     final todayCount = reminders.where((r) {
       final now = DateTime.now();
@@ -332,10 +335,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       }
       return 0;
     }).toList();
-
-    List<Reminder> activeTasks = provider.reminders
-        .where((r) => r.taskStatus != "completed")
-        .toList();
 
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
@@ -506,8 +505,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 : ListView.builder(
                     padding: EdgeInsets.symmetric(horizontal: width / 19),
               itemCount: activeTasks.length,
-              itemBuilder: (context, index) {
-                final reminder = activeTasks[index];
+                    itemBuilder: (context, index) {
+                      final reminder = activeTasks[index];
                       int voiceCount = voiceNumbers[index];
 
                       return InkWell(
