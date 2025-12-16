@@ -158,15 +158,16 @@ class HistoryScreen extends StatelessWidget {
                             ),
                             if (task.taskType == 'voice')
                               IconButton(
-                                iconSize: 32,
-                                icon: Icon(
-                                  _currentAudio == reminder.taskVoice
-                                      ? Icons.stop
-                                      : Icons.play_arrow,
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                                icon: const Icon(
+                                  Icons.play_arrow,
+
                                   color: Color(0xff0376FA),
                                 ),
-                                onPressed: () =>
-                                    _playAudio(reminder.taskVoice!),
+                                onPressed: () {
+                                  // playVoice(task.taskVoice!);
+                                },
                               ),
                           ],
                         ),
