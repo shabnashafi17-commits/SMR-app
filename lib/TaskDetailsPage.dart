@@ -117,7 +117,6 @@ class Taskdetailspage extends StatelessWidget {
 
                               // Update task status in Firestore
                               await provider.completeTask(reminder);
-                              await provider.addToHistory(reminder);
 
                               // Show Task Completed dialog
                               showDialog(

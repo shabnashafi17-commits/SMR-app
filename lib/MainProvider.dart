@@ -211,16 +211,25 @@ class MainProvider extends ChangeNotifier {
 
   Future<void> completeTask(Reminder reminder) async {
     final taskId = reminder.id;
-    notifyListeners();
-    await Db.collection("Tasks").doc(reminder.id).update({
-      "Completed_date": DateTime.now(),               // DateTime
-      // "Completed_time": DateTime.now().hour * 60 + DateTime.now().minute,
 
+    // Update task in Firestore
+    await Db.collection("Tasks").doc(taskId).update({
+      "Completed_date": DateTime.now(),
       "taskStatus": "completed",
     });
-    reminder.taskStatus = "Completed";
+
+    // Update local object
+    reminder.taskStatus = "completed";
+
+    // Remove from active list
+    reminders.removeWhere((r) => r.id == taskId);
+
+    // Add to completed tasks list
+    completedTasks.add(reminder);
+
     notifyListeners();
   }
+
 
   List<Reminder> completedTasks = [];
 
