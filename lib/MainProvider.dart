@@ -19,6 +19,8 @@ class Reminder {
   String? taskAssignedToName;
   String? taskStatus;
 
+  // NOT Duration
+
   Reminder({
     required this.id,
     this.taskText,
@@ -209,28 +211,15 @@ class MainProvider extends ChangeNotifier {
 
   Future<void> completeTask(Reminder reminder) async {
     final taskId = reminder.id;
-
-    reminder.taskStatus = "completed";
     notifyListeners();
+    await Db.collection("Tasks").doc(reminder.id).update({
+      "Completed_date": DateTime.now(),               // DateTime
+      // "Completed_time": DateTime.now().hour * 60 + DateTime.now().minute,
 
-    // 2️⃣ Copy task to completed_tasks collection
-    await FirebaseFirestore.instance
-        .collection("Completed_tasks")
-        .doc(taskId)
-        .set({
-          "id": taskId,
-          "title": reminder.taskText,
-          "voice": reminder.taskVoice,
-      "date": DateTime.now(),                     // current date
-      "time": DateTime.now().hour * 60 +
-          DateTime.now().minute,
-      "subtasks": reminder.subtasks,
-          "completedAt": FieldValue.serverTimestamp(),
-          "status": "completed",
-        });
-    await FirebaseFirestore.instance.collection("Tasks").doc(taskId).update({
       "taskStatus": "completed",
     });
+    reminder.taskStatus = "Completed";
+    notifyListeners();
   }
 
   List<Reminder> completedTasks = [];
@@ -238,32 +227,48 @@ class MainProvider extends ChangeNotifier {
   Future<void> fetchCompletedTasks() async {
     try {
       final snapshot = await FirebaseFirestore.instance
-          .collection("Completed_tasks")
-          .orderBy("completedAt", descending: true)
+          .collection("Tasks")
+          .where("taskStatus", isEqualTo: "completed")
           .get();
 
       completedTasks = snapshot.docs.map((doc) {
         final data = doc.data();
 
-        final String? voice = data["voice"];
+        DateTime? completedDate;
+        Duration? completedTime;
+
+        if (data["Completed_date"] != null) {
+          completedDate =
+              (data["Completed_date"] as Timestamp).toDate();
+
+          completedTime = Duration(
+            hours: completedDate.hour,
+            minutes: completedDate.minute,
+          );
+        }
 
         return Reminder(
-          id: data["id"],
-          taskText: data["title"],
-          taskVoice: voice,
-          taskType: voice != null && voice.isNotEmpty ? "voice" : "text", // ✅
-          createdBy: "unknown",
-          createdById: "unknown",
+          id: doc.id,
+          taskText: data["taskText"],
+          taskVoice: data["taskVoice"],
+          taskType: data["taskVoice"] != null &&
+              data["taskVoice"].toString().isNotEmpty
+              ? "voice"
+              : "text",
+
+          createdAt: (data["createdAt"] as Timestamp).toDate(),
+          createdBy: data["createdBy"],
+          createdById: data["createdById"],
           subtasks: List<String>.from(data["subtasks"] ?? []),
-          date: data["date"] != null
-              ? (data["date"] as Timestamp).toDate()
-              : null,
-          time: data["time"] != null
-              ? Duration(minutes: data["time"])
-              : null,
-          reminderOption: "No Reminder",
-          taskAssignedToName: "",
-          taskStatus: data["status"] ?? "completed", createdAt: DateTime.now(),
+
+          // ✅ USE COMPLETED DATE & TIME
+          date: completedDate,
+          time: completedTime,
+
+          reminderOption: data["reminderOption"] ?? "No Reminder",
+          taskAssignedToId: data["taskAssignedToId"],
+          taskAssignedToName: data["taskAssignedToName"],
+          taskStatus: data["taskStatus"],
         );
       }).toList();
 
