@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -65,8 +66,56 @@ class Taskdetailspage extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(right: 20),
                 child: TextButton(
-                  onPressed: () {
-                    // Show confirmation dialog
+                  onPressed: () async {
+                    // First, check the task status from Firestore
+                    final taskDoc = await FirebaseFirestore.instance
+                        .collection("Tasks")
+                        .doc(reminder.id)
+                        .get();
+
+                    final taskStatus = taskDoc.data()?['taskStatus'];
+
+                    if (taskStatus == "completed") {
+                      // Show "already finished" alert
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          title: const Text(
+                            'Task Already Finished',
+                            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
+                          ),
+                          content: const Text(
+                            'This task is already finished.',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                          actions: [
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor:Color(0xff0376FA),
+                                foregroundColor: Colors.black,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                                elevation: 6,
+                                shadowColor: Colors.black26,
+                              ),
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text(
+                                "OK",
+                                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14,color: Colors.white),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                      return; // Stop further execution
+                    }
+
+                    // If not completed, show confirmation dialog
                     showDialog(
                       context: context,
                       builder: (ctx) => AlertDialog(
@@ -104,14 +153,14 @@ class Taskdetailspage extends StatelessWidget {
                               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                             ),
                           ),
-                          SizedBox(width: 15,),
+                          const SizedBox(width: 15),
 
                           // Yes button
                           TextButton(
                             style: TextButton.styleFrom(
-                            backgroundColor: const Color(0xff0376FA),
-                            foregroundColor: Colors.white,
-                          ),
+                              backgroundColor: const Color(0xff0376FA),
+                              foregroundColor: Colors.white,
+                            ),
                             onPressed: () async {
                               Navigator.pop(ctx); // Close confirmation dialog
 
@@ -185,6 +234,7 @@ class Taskdetailspage extends StatelessWidget {
                   ),
                 ),
               ),
+
             ],
 
           ),
