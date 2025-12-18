@@ -9,7 +9,8 @@ class Taskdetailspage extends StatelessWidget {
   final Reminder reminder;
   final String? taskText;
   final String? taskVoice;
-    const Taskdetailspage({super.key,this.taskText,this.taskVoice,required this.reminder});
+  final int index;
+    const Taskdetailspage({super.key,this.taskText,this.taskVoice,required this.reminder,required this.index});
 
 
   @override
@@ -65,8 +66,57 @@ class Taskdetailspage extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(right: 20),
                 child: TextButton(
-                  onPressed: () {
-                    // Show confirmation dialog
+                  onPressed: () async {
+                    provider.fetchReminders();
+                    // First, check the task status from Firestore
+                    final taskDoc = await FirebaseFirestore.instance
+                        .collection("Tasks")
+                        .doc(reminder.id)
+                        .get();
+
+                    final taskStatus = taskDoc.data()?['taskStatus'];
+
+                    if (taskStatus == "completed") {
+                      // Show "already finished" alert
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          title: const Text(
+                            'Task Already Finished',
+                            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
+                          ),
+                          content: const Text(
+                            'This task is already finished.',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                          actions: [
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor:Color(0xff0376FA),
+                                foregroundColor: Colors.black,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                                elevation: 6,
+                                shadowColor: Colors.black26,
+                              ),
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text(
+                                "OK",
+                                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14,color: Colors.white),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                      return; // Stop further execution
+                    }
+
+                    // If not completed, show confirmation dialog
                     showDialog(
                       context: context,
                       builder: (ctx) => AlertDialog(
@@ -76,7 +126,7 @@ class Taskdetailspage extends StatelessWidget {
                         ),
                         title: const Text(
                           'Complete Task',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
                         ),
                         content: const Text(
                           'Do you want to complete this task?',
@@ -85,7 +135,6 @@ class Taskdetailspage extends StatelessWidget {
                             fontWeight: FontWeight.bold, // Increase font weight
                           ),
                         ),
-
                         actions: [
                           // No button
                           ElevatedButton(
@@ -113,45 +162,53 @@ class Taskdetailspage extends StatelessWidget {
                             foregroundColor: Colors.white,
                           ),
                             onPressed: () async {
-                              Navigator.pop(ctx); // Close confirmation dialog
-
-                              // Update task status in Firestore
-                              await provider.completeTask(reminder);
-
-                              // Show Task Completed dialog
+                              Navigator.pop(context); // Close "Complete Task" alert
+                              await provider.completeTask(reminder,index);
+provider.fetchReminders();
                               showDialog(
                                 context: context,
-                                builder: (ctx2) => Dialog(
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16)),
-                                  child: Container(
-                                    width: screenWidth,
-                                    height: screenHeight * 176 / 932,
-                                    decoration: BoxDecoration(
+                                barrierDismissible: false, // prevent manual dismissal
+                                builder: (ctx2) {
+                                  // Close dialog automatically after 2 seconds
+                                  Future.delayed( Duration(seconds: 1), () {
+                                    if (Navigator.canPop(ctx2)) Navigator.pop(ctx2);
+                                  });
+
+                                  return Dialog(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Container(
+                                      width: screenWidth,
+                                      height: screenHeight * 176 / 932,
+                                      decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(21),
-                                        color: Colors.white),
-                                    padding: const EdgeInsets.all(16),
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          CupertinoIcons.checkmark_alt_circle_fill,
-                                          size: 39,
-                                          color: const Color(0xFF00BA25),
-                                        ),
-                                        SizedBox(height: screenHeight * 16 / 932),
-                                        const Text(
-                                          'Task Completed',
-                                          style: TextStyle(
+                                        color: Colors.white,
+                                      ),
+                                      padding: const EdgeInsets.all(16),
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            CupertinoIcons.checkmark_alt_circle_fill,
+                                            size: 39,
+                                            color: const Color(0xFF00BA25),
+                                          ),
+                                          SizedBox(height: screenHeight * 16 / 932),
+                                          const Text(
+                                            'Task Completed',
+                                            style: TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.bold,
                                               color: Color(0xFF1F2937),
-                                              fontFamily: 'Intel'),
-                                        ),
-                                      ],
+                                              fontFamily: 'Intel',
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ),
+                                  );
+                                },
                               );
 
                               await Future.delayed(const Duration(seconds: 1));
@@ -185,12 +242,12 @@ class Taskdetailspage extends StatelessWidget {
                   ),
                 ),
               ),
+
             ],
 
           ),
         ),
       ),
-
         body: SafeArea(
         child: SingleChildScrollView(
         reverse: true,

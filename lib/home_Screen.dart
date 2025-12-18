@@ -318,18 +318,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final activeTasks = provider.reminders
         .where((r) => r.taskStatus != "completed")
         .toList();
+    // final reminders = provider.reminders;
 
-    final todayCount = reminders.where((r) {
+    final todayCount = provider.reminders.where((r) {
       final now = DateTime.now();
       final c = r.createdAt;
       return c.year == now.year && c.month == now.month && c.day == now.day;
     }).length;
 
     // Count all voice reminders in the current list
-    int totalVoiceCount = reminders.where((r) => r.taskVoice != null).length;
+    int totalVoiceCount = provider.reminders.where((r) => r.taskVoice != null).length;
 
     // Map each reminder to its voice number, if applicable
-    List<int> voiceNumbers = reminders.map((r) {
+    List<int> voiceNumbers = provider.reminders.map((r) {
       if (r.taskVoice != null) {
         return totalVoiceCount--;
       }
@@ -440,7 +441,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 _buildStatCard(
                   width,
                   height,
-                  count: reminders.length,
+                  count: provider.reminders.length,
                   label: 'Total',
                   assetPath: "assets/Frame5.png",
                   color: const Color(0xff00B9D6),
@@ -470,10 +471,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       ),
                     );
                     provider.fetchCompletedTasks();
-
-
                   },
-
                   child: Container(
                     height: width / 8,
                     width: width / 3.5,
@@ -508,68 +506,103 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     itemBuilder: (context, index) {
                       final reminder = activeTasks[index];
                       int voiceCount = voiceNumbers[index];
+            child:Consumer<MainProvider>(
+                  builder: (context,provider,child) {
+                    if (provider.reminders.isEmpty)
+                      {return
+                        Center(child: Text("No tasks found"));
 
-                      return InkWell(
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => Taskdetailspage(
-                              reminder: reminder,
-                              taskText: reminder.taskText,
-                              taskVoice: reminder.taskVoice,
-                            ),
-                          ),
-                        ),
-                        child: Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: width / 10,
-                                height: height / 20,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFFFE7DD),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Icon(
-                                  reminder.taskVoice != null
-                                      ? Icons.mic_none_outlined
-                                      : Icons.checklist,
-                                  size: 24,
-                                  color: const Color(0xFFFE6B2C),
+                      }
+                    return ListView.builder(
+                        padding: EdgeInsets.symmetric(horizontal: width / 19),
+                        itemCount: provider.reminders.length,
+                        itemBuilder: (context, index) {
+                          final reminder = provider.reminders[index];
+                          int voiceCount = voiceNumbers[index];
+
+                          return InkWell(
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Taskdetailspage(
+                                  reminder: reminder,
+                                  taskText: reminder.taskText,
+                                  taskVoice: reminder.taskVoice,
+                                  index: index,
                                 ),
                               ),
-                              SizedBox(width: width / 25),
-                              Expanded(
-                                child: reminder.taskVoice != null
-                                    ? Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            "Voice - $voiceCount",
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w700,
-                                              color: Color(0xFF4B5563),
+                            ),
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: width / 10,
+                                    height: height / 20,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFE7DD),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Icon(
+                                      reminder.taskVoice != null
+                                          ? Icons.mic_none_outlined
+                                          : Icons.checklist,
+                                      size: 24,
+                                      color: const Color(0xFFFE6B2C),
+                                    ),
+                                  ),
+                                  SizedBox(width: width / 25),
+                                  Expanded(
+                                    child: reminder.taskVoice != null
+                                        ? Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "Voice - ${reminder.voiceCount}",
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w700,
+                                            color: Color(0xFF4B5563),
+                                          ),
+                                        ),
+                                        if (reminder.taskStatus == "completed")
+                                          const Text(
+                                            "Completed",
+                                            style: TextStyle(
+                                              color: Colors.black38,
+                                              fontSize: 14,
                                             ),
                                           ),
-                                        ],
-                                      )
-                                    : Text(
-                                        reminder.taskText ?? "",
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w700,
-                                          color: Color(0xFF4B5563),
+                                      ],
+                                    )
+                                        : Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          reminder.taskText ?? "",
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w700,
+                                            color: Color(0xFF4B5563),
+                                          ),
                                         ),
-                                      ),
-                              ),
+                                        if (reminder.taskStatus == "completed")
+                                          const Text(
+                                            "Completed",
+                                            style: TextStyle(
+                                              color: Colors.black38,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+
 
                               // Play button for voice reminders
                               if (reminder.taskVoice != null)
@@ -805,10 +838,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                       child: const Text("Replace"),
                                                                     ),
 
-                                                                  ],
+                                                                      ],
+                                                                    );
+                                                                  },
                                                                 );
-                                                              },
-                                                            );
 
                                                             return; // stop here
                                                           }

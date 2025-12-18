@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -116,29 +114,57 @@ class _HistoryScreenState extends State<HistoryScreen> {
           "History",
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
         ),
+
+        actions: [
+          Padding(
+            padding: EdgeInsets.only(right: 18),
+            child: Container(
+              height: height / 22,
+              width: width / 3,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10),
+                child: Row(
+                  children: [
+                    const Text(
+                      "Date",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                    const Spacer(),
+                    const Icon(Icons.calendar_month_outlined),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
+
       body: Consumer<MainProvider>(
         builder: (context, provider, child) {
           return ListView.builder(
             padding: EdgeInsets.symmetric(horizontal: width / 19),
             itemCount: provider.completedTasks.length,
             itemBuilder: (context, index) {
-              final task = tasks[index];
-              final voiceCount = voiceNumbers[index];
+              final task = provider.completedTasks[index];
 
-
-
-
+              //date And Time continer
               return Container(
                 margin: EdgeInsets.only(bottom: height / 40),
                 decoration: BoxDecoration(
-                  color: const Color(0xffF2F2F2),
+                  color: Color(0xffF2F2F2),
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 15,
-                      offset: const Offset(0, 5),
+                      color: Colors.black.withOpacity(0.08), // soft shadow
+                      blurRadius: 15, // spread radius
+                      offset: Offset(0, 5), // vertical offset
                     ),
                   ],
                 ),
@@ -161,19 +187,42 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                 color: const Color(0xFFFFE7DD),
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: Icon(
-                                task.taskType == 'voice'
-                                    ? Icons.mic_none_outlined
-                                    : Icons.checklist,
-                                color: const Color(0xFFFF894D),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  if (task.taskType == 'voice')
+                                  Icon(
+                                    Icons.mic_none_outlined,
+                                    color: const Color(0xFFFF894D),
+                                  ),
+
+                                  const SizedBox(width: 6),
+                                  if (task.taskType == 'text')
+                                    Icon(
+                                      Icons.checklist,
+                                      color: const Color(0xFFFF894D),
+                                    ),
+
+
+                                  // ▶️ Play icon (only for voice)
+                                ],
                               ),
                             ),
+
                             SizedBox(width: width / 30),
+
                             Expanded(
-                              child: Text(
-                                task.taskVoice != null
-                                    ? "Voice - ${task.voiceNumber}"
-                                    : task.taskText ?? "",
+                              child: task.taskType == 'voice'
+                                  ? Text(
+                                "Voice - ${task.voiceCount}",
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF4B5563),
+                                ),
+                              )
+                                  : Text(
+                                task.taskText ?? "",
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
