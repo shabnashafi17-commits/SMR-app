@@ -46,8 +46,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => _initAudio());
+
+    Future.microtask(() {
+      _initAudio();
+
+      // ✅ FETCH REMINDERS HERE
+      Provider.of<MainProvider>(context, listen: false).fetchReminders();
+    });
   }
+
 
   Future<void> _initAudio() async {
     // Request permissions (best-effort)
@@ -316,7 +323,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final reminders = provider.reminders;
     // Get only tasks that are not completed
     final activeTasks = provider.reminders
-        .where((r) => r.taskStatus != "completed")
+        .where((r) => r.taskStatus != "Completed")
         .toList();
     // final reminders = provider.reminders;
 
@@ -497,30 +504,41 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           SizedBox(height: height / 40),
 
           // Reminder list
-          Expanded(
-            child: reminders.isEmpty
-                ? const Center(child: Text("No tasks found"))
-                : ListView.builder(
-                    padding: EdgeInsets.symmetric(horizontal: width / 19),
-              itemCount: activeTasks.length,
-                    itemBuilder: (context, index) {
-                      final reminder = activeTasks[index];
-                      int voiceCount = voiceNumbers[index];
-            child:Consumer<MainProvider>(
-                  builder: (context,provider,child) {
-                    if (provider.reminders.isEmpty)
-                      {return
-                        Center(child: Text("No tasks found"));
+        Expanded(
+        child: Consumer<MainProvider>(
+        builder: (context, provider, child) {
+    final activeTasks = provider.reminders
+        .where((r) => r.taskStatus == "start")
+        .toList();
+    if (activeTasks.isEmpty) {
+      return const Center(child: Text("No tasks found"));
+    }
 
-                      }
-                    return ListView.builder(
-                        padding: EdgeInsets.symmetric(horizontal: width / 19),
-                        itemCount: provider.reminders.length,
-                        itemBuilder: (context, index) {
-                          final reminder = provider.reminders[index];
-                          int voiceCount = voiceNumbers[index];
+    int totalVoiceCount =
+        activeTasks.where((r) => r.taskVoice != null).length;
 
-                          return InkWell(
+    List<int> voiceNumbers = activeTasks.map((r) {
+      if (r.taskVoice != null) {
+        return totalVoiceCount--;
+      }
+      return 0;
+    }).toList();
+
+    if (activeTasks.isEmpty) {
+    return const Center(
+    child: Text("No tasks found"),
+    );
+    }
+
+
+      return ListView.builder(
+        padding: EdgeInsets.symmetric(horizontal: width / 19),
+        itemCount: activeTasks.length,
+        itemBuilder: (context, index) {
+          final reminder = activeTasks[index];
+          final int voiceCount = voiceNumbers[index];
+
+                        return InkWell(
                             onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -563,13 +581,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          "Voice - ${reminder.voiceCount}",
+                                          "Voice - $voiceCount",
                                           style: const TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.w700,
                                             color: Color(0xFF4B5563),
                                           ),
                                         ),
+
                                         if (reminder.taskStatus == "completed")
                                           const Text(
                                             "Completed",
@@ -1136,9 +1155,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ),
                       );
                     },
-                  ),
-          ),
-        ],
+                  );
+    })
+
+            ),
+
+        ]
       ),
 
       // Bottom input bar

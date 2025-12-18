@@ -253,7 +253,7 @@ class MainProvider extends ChangeNotifier {
     // Update task in Firestore
     await Db.collection("Tasks").doc(taskId).update({
       "Completed_date": DateTime.now(),
-      "taskStatus": "completed",
+      "taskStatus": "Completed",
     });
     reminders.removeAt(index);
     reminder.taskStatus = "Completed";
@@ -267,7 +267,7 @@ class MainProvider extends ChangeNotifier {
     try {
       final snapshot = await FirebaseFirestore.instance
           .collection("Tasks")
-          .where("taskStatus", isEqualTo: "completed")
+          .where("taskStatus", isEqualTo: "Completed")
           .get();
 
       completedTasks = snapshot.docs.map((doc) {
