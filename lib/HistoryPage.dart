@@ -25,6 +25,8 @@ class HistoryScreen extends StatelessWidget {
       "Task 10",
     ];
 
+
+
     return Scaffold(
       backgroundColor: const Color(0xffF2F2F2),
 
@@ -147,28 +149,48 @@ class HistoryScreen extends StatelessWidget {
                             ),
 
                             SizedBox(width: width / 30),
+
                             Expanded(
-                              child: Text(
-                                task.taskText.toString(),
+                              child: task.taskType == 'voice'
+                                  ? Text(
+                                "Voice - ${task.voiceCount}",
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF4B5563),
+                                ),
+                              )
+                                  : Text(
+                                task.taskText ?? "",
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
-                            if (task.taskType == 'voice')
-                              IconButton(
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
-                                icon: const Icon(
-                                  Icons.play_arrow,
 
-                                  color: Color(0xff0376FA),
+                            if (task.taskType == 'voice' &&
+                                task.taskVoice != null &&
+                                task.taskVoice!.isNotEmpty)
+                              IconButton(
+                                iconSize: 32,
+                                icon: Icon(
+                                  provider.currentAudio == task.taskVoice && provider.isPlaying
+                                      ? Icons.stop
+                                      : Icons.play_arrow,
+                                  color: const Color(0xff0376FA),
                                 ),
                                 onPressed: () {
-                                  // playVoice(task.taskVoice!);
+                                  if (provider.currentAudio == task.taskVoice &&
+                                      provider.isPlaying) {
+                                    provider.stopAudio();
+                                  } else {
+                                    provider.playAudio(task.taskVoice!);
+                                  }
                                 },
                               ),
+
+
                           ],
                         ),
                       ),
@@ -208,3 +230,5 @@ class HistoryScreen extends StatelessWidget {
     );
   }
 }
+
+

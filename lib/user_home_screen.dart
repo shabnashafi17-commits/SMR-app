@@ -362,6 +362,7 @@ class _HomeScreenState extends State<UserHomeScreen> with TickerProviderStateMix
                             reminder: reminder,
                             taskText: reminder.taskText,
                             taskVoice: reminder.taskVoice,
+                            index: index,
                           ),
                         ),
                       ),

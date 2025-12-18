@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'user_class.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class Reminder {
   String id;
@@ -14,10 +15,10 @@ class Reminder {
   DateTime? date;
   Duration? time;
   String reminderOption;
-  String? assignedContactId;
   String? taskAssignedToId;
   String? taskAssignedToName;
   String? taskStatus;
+  int voiceCount;
 
   // NOT Duration
 
@@ -36,7 +37,9 @@ class Reminder {
     this.taskAssignedToId,
     this.taskAssignedToName,
     this.taskStatus = "start",
+    required this.voiceCount,
   });
+
 
   Map<String, dynamic> toMap() {
     return {
@@ -54,6 +57,8 @@ class Reminder {
       'taskAssignedToId': taskAssignedToId,
       'taskAssignedToName': taskAssignedToName,
       'taskStatus': taskStatus,
+      'voiceCount': voiceCount,
+      
     };
   }
 
@@ -94,8 +99,13 @@ class Reminder {
       taskAssignedToId: map['taskAssignedToId'],
       taskAssignedToName: map['taskAssignedToName'],
       taskStatus: map['taskStatus'] ?? "start",
+
+      // ✅ READ from Firestore
+      voiceCount: map['voiceCount'] ?? 1,
     );
   }
+
+
 }
 
 class MainProvider extends ChangeNotifier {
@@ -104,22 +114,45 @@ class MainProvider extends ChangeNotifier {
   final CollectionReference ref = FirebaseFirestore.instance.collection(
     "Tasks",
   );
+  // 🔊 AUDIO STATE (GLOBAL)
+  String? currentAudio;
+  bool isPlaying = false;
+  final AudioPlayer audioPlayer = AudioPlayer();
+
 
   MainProvider() {
     fetchReminders();
+
+    audioPlayer.onPlayerComplete.listen((event) {
+      currentAudio = null;
+      isPlaying = false;
+      notifyListeners();
+    });
   }
+
 
   // ------------------ REMINDERS ------------------
 
   Future<void> fetchReminders() async {
-    final snap = await ref.orderBy("createdAt", descending: true).get();
-    reminders = snap.docs.map((e) {
-      final data = e.data() as Map<String, dynamic>;
-      data["id"] = e.id;
-      return Reminder.fromMap(data);
-    }).toList();
-    notifyListeners();
+    try {
+      // Fetch only tasks with status "start"
+      final snap = await ref
+          .where("taskStatus", isEqualTo: "start")
+          .orderBy("createdAt", descending: true)
+          .get();
+
+      reminders = snap.docs.map((e) {
+        final data = e.data() as Map<String, dynamic>;
+        data["id"] = e.id;
+        return Reminder.fromMap(data);
+      }).toList();
+
+      notifyListeners();
+    } catch (e) {
+      print("Error fetching active reminders: $e");
+    }
   }
+
 
   Future<void> addTextReminder(String text) async {
     final id = DateTime.now().millisecondsSinceEpoch.toString();
@@ -132,6 +165,9 @@ class MainProvider extends ChangeNotifier {
       createdAt: DateTime.now(),
       createdBy: "Admin",
       createdById: "USER_001",
+      voiceCount: 0,
+
+      
     );
     await ref.doc(id).set(newReminder.toMap());
     reminders.insert(0, newReminder);
@@ -149,6 +185,8 @@ class MainProvider extends ChangeNotifier {
       createdAt: DateTime.now(),
       createdBy: "Admin",
       createdById: "USER_001",
+      voiceCount: nextVoiceCount ,
+      
     );
     await ref.doc(id).set(newReminder.toMap());
     reminders.insert(0, newReminder);
@@ -209,7 +247,7 @@ class MainProvider extends ChangeNotifier {
     await ref.doc(id).update({'reminderOption': option});
   }
 
-  Future<void> completeTask(Reminder reminder) async {
+  Future<void> completeTask(Reminder reminder,int index) async {
     final taskId = reminder.id;
     notifyListeners();
     await Db.collection("Tasks").doc(reminder.id).update({
@@ -218,6 +256,7 @@ class MainProvider extends ChangeNotifier {
 
       "taskStatus": "completed",
     });
+    reminders.removeAt(index);
     reminder.taskStatus = "Completed";
     notifyListeners();
   }
@@ -270,6 +309,8 @@ class MainProvider extends ChangeNotifier {
           taskAssignedToId: data["taskAssignedToId"],
           taskAssignedToName: data["taskAssignedToName"],
           taskStatus: data["taskStatus"],
+          voiceCount: data['voiceCount'] ?? 1,
+
         );
       }).toList();
 
@@ -423,6 +464,8 @@ class MainProvider extends ChangeNotifier {
         taskAssignedToId: contactId,
         taskAssignedToName: "",
         taskStatus: "assignTask",
+        voiceCount:0,
+
       );
     }).toList();
 
@@ -492,4 +535,29 @@ class MainProvider extends ChangeNotifier {
 
     return true; // successfully replaced
   }
+  int get nextVoiceCount {
+    final voiceReminders =
+    reminders.where((r) => r.taskType == "voice").toList();
+    return voiceReminders.length + 1;
+  }
+  Future<void> playAudio(String path) async {
+    // Stop previous audio
+    await audioPlayer.stop();
+
+    currentAudio = path;
+    isPlaying = true;
+    notifyListeners();
+
+    await audioPlayer.play(DeviceFileSource(path));
+  }
+
+  Future<void> stopAudio() async {
+    await audioPlayer.stop();
+
+    currentAudio = null;
+    isPlaying = false;
+    notifyListeners();
+  }
+
+
 }

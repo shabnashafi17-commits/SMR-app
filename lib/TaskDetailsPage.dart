@@ -9,7 +9,8 @@ class Taskdetailspage extends StatelessWidget {
   final Reminder reminder;
   final String? taskText;
   final String? taskVoice;
-    const Taskdetailspage({super.key,this.taskText,this.taskVoice,required this.reminder});
+  final int index;
+    const Taskdetailspage({super.key,this.taskText,this.taskVoice,required this.reminder,required this.index});
 
 
   @override
@@ -66,6 +67,7 @@ class Taskdetailspage extends StatelessWidget {
                 padding: const EdgeInsets.only(right: 20),
                 child: TextButton(
                   onPressed: () async {
+                    provider.fetchReminders();
                     // First, check the task status from Firestore
                     final taskDoc = await FirebaseFirestore.instance
                         .collection("Tasks")
@@ -157,45 +159,53 @@ class Taskdetailspage extends StatelessWidget {
                               foregroundColor: Colors.white,
                             ),
                             onPressed: () async {
-                              Navigator.pop(ctx); // Close confirmation dialog
-
-                              // Update task status in Firestore
-                              await provider.completeTask(reminder);
-
-                              // Show Task Completed dialog
+                              Navigator.pop(context); // Close "Complete Task" alert
+                              await provider.completeTask(reminder,index);
+provider.fetchReminders();
                               showDialog(
                                 context: context,
-                                builder: (ctx2) => Dialog(
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16)),
-                                  child: Container(
-                                    width: screenWidth,
-                                    height: screenHeight * 176 / 932,
-                                    decoration: BoxDecoration(
+                                barrierDismissible: false, // prevent manual dismissal
+                                builder: (ctx2) {
+                                  // Close dialog automatically after 2 seconds
+                                  Future.delayed( Duration(seconds: 1), () {
+                                    if (Navigator.canPop(ctx2)) Navigator.pop(ctx2);
+                                  });
+
+                                  return Dialog(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Container(
+                                      width: screenWidth,
+                                      height: screenHeight * 176 / 932,
+                                      decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(21),
-                                        color: Colors.white),
-                                    padding: const EdgeInsets.all(16),
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          CupertinoIcons.checkmark_alt_circle_fill,
-                                          size: 39,
-                                          color: const Color(0xFF00BA25),
-                                        ),
-                                        SizedBox(height: screenHeight * 16 / 932),
-                                        const Text(
-                                          'Task Completed',
-                                          style: TextStyle(
+                                        color: Colors.white,
+                                      ),
+                                      padding: const EdgeInsets.all(16),
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            CupertinoIcons.checkmark_alt_circle_fill,
+                                            size: 39,
+                                            color: const Color(0xFF00BA25),
+                                          ),
+                                          SizedBox(height: screenHeight * 16 / 932),
+                                          const Text(
+                                            'Task Completed',
+                                            style: TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.w400,
                                               color: Color(0xFF1F2937),
-                                              fontFamily: 'Intel'),
-                                        ),
-                                      ],
+                                              fontFamily: 'Intel',
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ),
+                                  );
+                                },
                               );
                             },
                             child: const Text(
@@ -203,6 +213,7 @@ class Taskdetailspage extends StatelessWidget {
                               style: TextStyle(fontWeight: FontWeight.w500),
                             ),
                           ),
+
                         ],
                       ),
                     );

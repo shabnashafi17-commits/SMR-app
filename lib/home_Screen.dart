@@ -313,19 +313,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       context,
       listen: true,
     ); // listen to changes
-    final reminders = provider.reminders;
+    // final reminders = provider.reminders;
 
-    final todayCount = reminders.where((r) {
+    final todayCount = provider.reminders.where((r) {
       final now = DateTime.now();
       final c = r.createdAt;
       return c.year == now.year && c.month == now.month && c.day == now.day;
     }).length;
 
     // Count all voice reminders in the current list
-    int totalVoiceCount = reminders.where((r) => r.taskVoice != null).length;
+    int totalVoiceCount = provider.reminders.where((r) => r.taskVoice != null).length;
 
     // Map each reminder to its voice number, if applicable
-    List<int> voiceNumbers = reminders.map((r) {
+    List<int> voiceNumbers = provider.reminders.map((r) {
       if (r.taskVoice != null) {
         return totalVoiceCount--;
       }
@@ -436,7 +436,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 _buildStatCard(
                   width,
                   height,
-                  count: reminders.length,
+                  count: provider.reminders.length,
                   label: 'Total',
                   assetPath: "assets/Frame5.png",
                   color: const Color(0xff00B9D6),
@@ -466,10 +466,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       ),
                     );
                     provider.fetchCompletedTasks();
-
-
                   },
-
                   child: Container(
                     height: width / 8,
                     width: width / 3.5,
@@ -496,610 +493,639 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
           // Reminder list
           Expanded(
-            child: reminders.isEmpty
-                ? const Center(child: Text("No tasks found"))
-                : ListView.builder(
-                    padding: EdgeInsets.symmetric(horizontal: width / 19),
-                    itemCount: reminders.length,
-                    itemBuilder: (context, index) {
-                      final reminder = reminders[index];
-                      int voiceCount = voiceNumbers[index];
+            child:Consumer<MainProvider>(
+                  builder: (context,provider,child) {
+                    if (provider.reminders.isEmpty)
+                      {return
+                        Center(child: Text("No tasks found"));
 
-                      return InkWell(
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => Taskdetailspage(
-                              reminder: reminder,
-                              taskText: reminder.taskText,
-                              taskVoice: reminder.taskVoice,
-                            ),
-                          ),
-                        ),
-                        child: Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: width / 10,
-                                height: height / 20,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFFFE7DD),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Icon(
-                                  reminder.taskVoice != null
-                                      ? Icons.mic_none_outlined
-                                      : Icons.checklist,
-                                  size: 24,
-                                  color: const Color(0xFFFE6B2C),
+                      }
+                    return ListView.builder(
+                        padding: EdgeInsets.symmetric(horizontal: width / 19),
+                        itemCount: provider.reminders.length,
+                        itemBuilder: (context, index) {
+                          final reminder = provider.reminders[index];
+                          int voiceCount = voiceNumbers[index];
+
+                          return InkWell(
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Taskdetailspage(
+                                  reminder: reminder,
+                                  taskText: reminder.taskText,
+                                  taskVoice: reminder.taskVoice,
+                                  index: index,
                                 ),
                               ),
-                              SizedBox(width: width / 25),
-                              Expanded(
-                                child: reminder.taskVoice != null
-                                    ? Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            "Voice - $voiceCount",
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w700,
-                                              color: Color(0xFF4B5563),
+                            ),
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: width / 10,
+                                    height: height / 20,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFE7DD),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Icon(
+                                      reminder.taskVoice != null
+                                          ? Icons.mic_none_outlined
+                                          : Icons.checklist,
+                                      size: 24,
+                                      color: const Color(0xFFFE6B2C),
+                                    ),
+                                  ),
+                                  SizedBox(width: width / 25),
+                                  Expanded(
+                                    child: reminder.taskVoice != null
+                                        ? Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "Voice - ${reminder.voiceCount}",
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w700,
+                                            color: Color(0xFF4B5563),
+                                          ),
+                                        ),
+                                        if (reminder.taskStatus == "completed")
+                                          const Text(
+                                            "Completed",
+                                            style: TextStyle(
+                                              color: Colors.black38,
+                                              fontSize: 14,
                                             ),
                                           ),
-                                        ],
-                                      )
-                                    : Text(
-                                        reminder.taskText ?? "",
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w700,
-                                          color: Color(0xFF4B5563),
+                                      ],
+                                    )
+                                        : Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          reminder.taskText ?? "",
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w700,
+                                            color: Color(0xFF4B5563),
+                                          ),
                                         ),
-                                      ),
-                              ),
-
-                              // Play button for voice reminders
-                              if (reminder.taskVoice != null)
-                                IconButton(
-                                  iconSize: 32,
-                                  icon: Icon(
-                                    _currentAudio == reminder.taskVoice
-                                        ? Icons.stop
-                                        : Icons.play_arrow,
-                                    color: Color(0xff0376FA),
+                                        if (reminder.taskStatus == "completed")
+                                          const Text(
+                                            "Completed",
+                                            style: TextStyle(
+                                              color: Colors.black38,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
                                   ),
-                                  onPressed: () =>
-                                      _playAudio(reminder.taskVoice!),
-                                ),
 
-                              // Group add button (left as original)
-                              InkWell(
-                                onTap: () async {
-                                  await provider.fetchContacts();
-                                  // if (isCheckedList.length != Contactlist.length) {
-                                  //   isCheckedList = List.generate(Contactlist.length, (_) => false);
-                                  // }
-                                  showModalBottomSheet(
-                                    context: context,
-                                    backgroundColor: const Color(0xffF2F2F2),
-                                    builder: (BuildContext context) {
-                                      final double halfScreenHeight =
-                                          MediaQuery.of(context).size.height /
-                                          2;
-                                      return Container(
-                                        padding: EdgeInsets.only(
-                                          bottom: MediaQuery.of(
-                                            context,
-                                          ).viewInsets.bottom,
-                                        ),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: <Widget>[
-                                            Padding(
-                                              padding: EdgeInsets.only(
-                                                top: height / 22,
-                                                left: width / 30,
-                                                bottom: height / 35,
-                                              ),
-                                              child: Row(
-                                                children: [
-                                                  const Text(
-                                                    "Contact List",
-                                                    style: TextStyle(
-                                                      fontSize: 25,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
+
+                                  // Play button for voice reminders
+                                  if (reminder.taskVoice != null)
+                                    IconButton(
+                                      iconSize: 32,
+                                      icon: Icon(
+                                        _currentAudio == reminder.taskVoice
+                                            ? Icons.stop
+                                            : Icons.play_arrow,
+                                        color: Color(0xff0376FA),
+                                      ),
+                                      onPressed: () =>
+                                          _playAudio(reminder.taskVoice!),
+                                    ),
+
+                                  // Group add button (left as original)
+                                  InkWell(
+                                    onTap: () async {
+                                      await provider.fetchContacts();
+                                      // if (isCheckedList.length != Contactlist.length) {
+                                      //   isCheckedList = List.generate(Contactlist.length, (_) => false);
+                                      // }
+                                      showModalBottomSheet(
+                                        context: context,
+                                        backgroundColor: const Color(0xffF2F2F2),
+                                        builder: (BuildContext context) {
+                                          final double halfScreenHeight =
+                                              MediaQuery.of(context).size.height /
+                                              2;
+                                          return Container(
+                                            padding: EdgeInsets.only(
+                                              bottom: MediaQuery.of(
+                                                context,
+                                              ).viewInsets.bottom,
+                                            ),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: <Widget>[
+                                                Padding(
+                                                  padding: EdgeInsets.only(
+                                                    top: height / 22,
+                                                    left: width / 30,
+                                                    bottom: height / 35,
                                                   ),
-                                                  const Spacer(),
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                          right: 10,
+                                                  child: Row(
+                                                    children: [
+                                                      const Text(
+                                                        "Contact List",
+                                                        style: TextStyle(
+                                                          fontSize: 25,
+                                                          fontWeight:
+                                                              FontWeight.bold,
                                                         ),
-                                                    child: SizedBox(
-                                                      height: height / 25,
-                                                      width: width / 5,
-                                                      child: TextButton(
-                                                        style:
-                                                            TextButton.styleFrom(
-                                                              backgroundColor:
-                                                                  const Color(
-                                                                    0xff0376FA,
-                                                                  ),
-                                                              foregroundColor:
-                                                                  Colors.white,
+                                                      ),
+                                                      const Spacer(),
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets.only(
+                                                              right: 10,
                                                             ),
-                                                        child: const Text(
-                                                          "Add ",
-                                                          style: TextStyle(
-                                                            fontWeight:
-                                                                FontWeight.w600,
-                                                            fontSize: 14,
-                                                          ),
-                                                        ),
-                                                        onPressed: () async {
-                                                          final selected = provider.contactList[provider.tempCheckedList];
-                                                          final newContactId = selected.id;
-                                                          if (reminder.taskAssignedToId == newContactId) {
-                                                            provider.tempCheckedList = -1;
-                                                          showDialog(context: context,
-                                                              builder: (context) {
-                                                                return AlertDialog(
-                                                                  title: Text("",style: TextStyle(
-                                                                    fontWeight: FontWeight.w900,
-                                                                    color:Colors.red
-                                                                  ),),
-                                                                  content: Text("This task Is already Assigned to ${selected.username}",
-                                                                    style: TextStyle(
-                                                                      fontWeight: FontWeight.bold
-                                                                    ),
-                                                                  ),
-                                                                  actions: [
-                                                                    TextButton(onPressed: () {
-                                                                      Navigator.pop(context);
-                                                                    },
-                                                                        child: Text("OK",style:
-                                                                          TextStyle(
-                                                                            color: Color(0xff0376FA),
-                                                                            fontWeight: FontWeight.bold
-                                                                          ),))
-                                                                  ],
-                                                                );
-                                                              },);
-                                                            return;
-                                                          }
-                                                          // Check if task already assigned to someone else
-                                                          if (reminder.taskAssignedToId !=
-                                                                  null &&
-                                                              reminder
-                                                                  .taskAssignedToId!
-                                                                  .isNotEmpty &&
-                                                              reminder.taskAssignedToId !=
-                                                                  selected.id) {
-                                                            // 🔥 Show replace dialog right here
-                                                            showDialog(
-                                                              context: context,
-                                                              builder: (context) {
-                                                                return AlertDialog(
+                                                        child: SizedBox(
+                                                          height: height / 25,
+                                                          width: width / 5,
+                                                          child: TextButton(
+                                                            style:
+                                                                TextButton.styleFrom(
                                                                   backgroundColor:
-                                                                      Colors
-                                                                          .white,
-                                                                  content: Text(
-                                                                    "This task is already assigned to ${reminder.taskAssignedToName}.Do you want to replace?",
-                                                                    style: const TextStyle(
-                                                                      fontSize:
-                                                                          16,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w600,
-                                                                    ),
-                                                                  ),
-                                                                  actions: [
-                                                                    // Cancel
-                                                                    ElevatedButton(
-                                                                      style: ElevatedButton.styleFrom(
-                                                                        backgroundColor:
-                                                                            Colors.white,
-                                                                        foregroundColor:
-                                                                            Colors.black,
-                                                                        shape: RoundedRectangleBorder(
-                                                                          borderRadius: BorderRadius.circular(
-                                                                            30,
-                                                                          ),
-                                                                        ),
-                                                                        elevation:
-                                                                            6,
+                                                                      const Color(
+                                                                        0xff0376FA,
                                                                       ),
-                                                                      onPressed: () =>
-                                                                          Navigator.pop(
-                                                                            context,
-                                                                          ),
-                                                                      child: const Text(
-                                                                        "Cancel",
-                                                                      ),
-                                                                    ),
-
-                                                                    const SizedBox(
-                                                                      width: 16,
-                                                                    ),
-
-                                                                    // Replace
-                                                                    TextButton(
-                                                                      style: TextButton.styleFrom(
-                                                                        backgroundColor: Color(0xff0376FA),
-                                                                        foregroundColor: Colors.white,
-                                                                      ),
-                                                                      onPressed: () async {
-                                                                        // Perform replace operation
-                                                                        await provider.replaceAssignedTask(
-                                                                          reminder,
-                                                                          selected.id,
-                                                                          selected.username,
-
-                                                                        );
-                                                                         Navigator.pop(context);
-                                                                         Navigator.pop(context);
-
-                                                                        ScaffoldMessenger.of(context).showSnackBar(
-                                                                          SnackBar(
-                                                                            behavior: SnackBarBehavior.floating,
-                                                                            backgroundColor: Colors.transparent,
-                                                                            elevation: 0,
-                                                                            content: Container(
-                                                                              padding: const EdgeInsets.all(16),
-                                                                              decoration: BoxDecoration(
-                                                                                color: Colors.white,
-                                                                                borderRadius: BorderRadius.circular(16),
-                                                                                boxShadow: [
-                                                                                  BoxShadow(
-                                                                                    color: Colors.black.withOpacity(0.1),
-                                                                                    blurRadius: 10,
-                                                                                    offset: Offset(0, 5),
-                                                                                  ),
-                                                                                ],
-                                                                              ),
-                                                                              child: Column(
-                                                                                mainAxisSize: MainAxisSize.min,
-                                                                                children: [
-                                                                                  Icon(
-                                                                                    CupertinoIcons.checkmark_alt_circle_fill,
-                                                                                    size: 39,
-                                                                                    color: Color(0xFF00BA25),
-                                                                                  ),
-                                                                                  SizedBox(height: 16),
-                                                                                  const Text(
-                                                                                    'Contact Replaced Successfully',
-                                                                                    style: TextStyle(
-                                                                                      fontSize: 16,
-                                                                                      fontWeight: FontWeight.w900,
-                                                                                      color: Color(0xFF1F2937),
-                                                                                      fontFamily: 'Intel',
-                                                                                    ),
-                                                                                  ),
-                                                                                ],
-                                                                              ),
-                                                                            ),
-
-                                                                            duration: Duration(seconds: 2),
-                                                                          ),
-                                                                        );
-                                                                        provider.tempCheckedList = -1;
-
-                                                                      },
-                                                                      child: const Text("Replace"),
-                                                                    ),
-
-                                                                  ],
-                                                                );
-                                                              },
-                                                            );
-
-                                                            return; // stop here
-                                                          }
-                                                          showDialog(
-                                                            context: context,
-                                                            builder: (context) {
-                                                              return AlertDialog(
-                                                                backgroundColor:
-                                                                    Colors
-                                                                        .white,
-                                                                content: Text(
-                                                                  "Are you sure? Do you want to add this task, ${selected.username}?",
-
-                                                                  style: const TextStyle(
-                                                                    fontSize:
-                                                                        16,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w600,
-                                                                  ),
+                                                                  foregroundColor:
+                                                                      Colors.white,
                                                                 ),
-                                                                actions: [
-                                                                  // Cancel
-                                                                  ElevatedButton(
-                                                                    style: ElevatedButton.styleFrom(
+                                                            child: const Text(
+                                                              "Add ",
+                                                              style: TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight.w600,
+                                                                fontSize: 14,
+                                                              ),
+                                                            ),
+                                                            onPressed: () async {
+                                                              final selected = provider.contactList[provider.tempCheckedList];
+                                                              final newContactId = selected.id;
+                                                              if (reminder.taskAssignedToId == newContactId) {
+                                                                provider.tempCheckedList = -1;
+                                                              showDialog(context: context,
+                                                                  builder: (context) {
+                                                                    return AlertDialog(
+                                                                      title: Text("",style: TextStyle(
+                                                                        fontWeight: FontWeight.w900,
+                                                                        color:Colors.red
+                                                                      ),),
+                                                                      content: Text("This task Is already Assigned to ${selected.username}",
+                                                                        style: TextStyle(
+                                                                          fontWeight: FontWeight.bold
+                                                                        ),
+                                                                      ),
+                                                                      actions: [
+                                                                        TextButton(onPressed: () {
+                                                                          Navigator.pop(context);
+                                                                        },
+                                                                            child: Text("OK",style:
+                                                                              TextStyle(
+                                                                                color: Color(0xff0376FA),
+                                                                                fontWeight: FontWeight.bold
+                                                                              ),))
+                                                                      ],
+                                                                    );
+                                                                  },);
+                                                                return;
+                                                              }
+                                                              // Check if task already assigned to someone else
+                                                              if (reminder.taskAssignedToId !=
+                                                                      null &&
+                                                                  reminder
+                                                                      .taskAssignedToId!
+                                                                      .isNotEmpty &&
+                                                                  reminder.taskAssignedToId !=
+                                                                      selected.id) {
+                                                                // 🔥 Show replace dialog right here
+                                                                showDialog(
+                                                                  context: context,
+                                                                  builder: (context) {
+                                                                    return AlertDialog(
                                                                       backgroundColor:
                                                                           Colors
                                                                               .white,
-                                                                      foregroundColor:
-                                                                          Colors
-                                                                              .black,
-                                                                      shape: RoundedRectangleBorder(
-                                                                        borderRadius:
-                                                                            BorderRadius.circular(
-                                                                              30,
+                                                                      content: Text(
+                                                                        "This task is already assigned to ${reminder.taskAssignedToName}.Do you want to replace?",
+                                                                        style: const TextStyle(
+                                                                          fontSize:
+                                                                              16,
+                                                                          fontWeight:
+                                                                              FontWeight
+                                                                                  .w600,
+                                                                        ),
+                                                                      ),
+                                                                      actions: [
+                                                                        // Cancel
+                                                                        ElevatedButton(
+                                                                          style: ElevatedButton.styleFrom(
+                                                                            backgroundColor:
+                                                                                Colors.white,
+                                                                            foregroundColor:
+                                                                                Colors.black,
+                                                                            shape: RoundedRectangleBorder(
+                                                                              borderRadius: BorderRadius.circular(
+                                                                                30,
+                                                                              ),
+                                                                            ),
+                                                                            elevation:
+                                                                                6,
+                                                                          ),
+                                                                          onPressed: () =>
+                                                                              Navigator.pop(
+                                                                                context,
+                                                                              ),
+                                                                          child: const Text(
+                                                                            "Cancel",
+                                                                          ),
+                                                                        ),
+
+                                                                        const SizedBox(
+                                                                          width: 16,
+                                                                        ),
+
+                                                                        // Replace
+                                                                        TextButton(
+                                                                          style: TextButton.styleFrom(
+                                                                            backgroundColor: Color(0xff0376FA),
+                                                                            foregroundColor: Colors.white,
+                                                                          ),
+                                                                          onPressed: () async {
+                                                                            // Perform replace operation
+                                                                            await provider.replaceAssignedTask(
+                                                                              reminder,
+                                                                              selected.id,
+                                                                              selected.username,
+
+                                                                            );
+                                                                             Navigator.pop(context);
+                                                                             Navigator.pop(context);
+
+                                                                            ScaffoldMessenger.of(context).showSnackBar(
+                                                                              SnackBar(
+                                                                                behavior: SnackBarBehavior.floating,
+                                                                                backgroundColor: Colors.transparent,
+                                                                                elevation: 0,
+                                                                                content: Container(
+                                                                                  padding: const EdgeInsets.all(16),
+                                                                                  decoration: BoxDecoration(
+                                                                                    color: Colors.white,
+                                                                                    borderRadius: BorderRadius.circular(16),
+                                                                                    boxShadow: [
+                                                                                      BoxShadow(
+                                                                                        color: Colors.black.withOpacity(0.1),
+                                                                                        blurRadius: 10,
+                                                                                        offset: Offset(0, 5),
+                                                                                      ),
+                                                                                    ],
+                                                                                  ),
+                                                                                  child: Column(
+                                                                                    mainAxisSize: MainAxisSize.min,
+                                                                                    children: [
+                                                                                      Icon(
+                                                                                        CupertinoIcons.checkmark_alt_circle_fill,
+                                                                                        size: 39,
+                                                                                        color: Color(0xFF00BA25),
+                                                                                      ),
+                                                                                      SizedBox(height: 16),
+                                                                                      const Text(
+                                                                                        'Contact Replaced Successfully',
+                                                                                        style: TextStyle(
+                                                                                          fontSize: 16,
+                                                                                          fontWeight: FontWeight.w900,
+                                                                                          color: Color(0xFF1F2937),
+                                                                                          fontFamily: 'Intel',
+                                                                                        ),
+                                                                                      ),
+                                                                                    ],
+                                                                                  ),
+                                                                                ),
+
+                                                                                duration: Duration(seconds: 2),
+                                                                              ),
+                                                                            );
+                                                                            provider.tempCheckedList = -1;
+
+                                                                          },
+                                                                          child: const Text("Replace"),
+                                                                        ),
+
+                                                                      ],
+                                                                    );
+                                                                  },
+                                                                );
+
+                                                                return; // stop here
+                                                              }
+                                                              showDialog(
+                                                                context: context,
+                                                                builder: (context) {
+                                                                  return AlertDialog(
+                                                                    backgroundColor:
+                                                                        Colors
+                                                                            .white,
+                                                                    content: Text(
+                                                                      "Are you sure? Do you want to add this task, ${selected.username}?",
+
+                                                                      style: const TextStyle(
+                                                                        fontSize:
+                                                                            16,
+                                                                        fontWeight:
+                                                                            FontWeight
+                                                                                .w600,
+                                                                      ),
+                                                                    ),
+                                                                    actions: [
+                                                                      // Cancel
+                                                                      ElevatedButton(
+                                                                        style: ElevatedButton.styleFrom(
+                                                                          backgroundColor:
+                                                                              Colors
+                                                                                  .white,
+                                                                          foregroundColor:
+                                                                              Colors
+                                                                                  .black,
+                                                                          shape: RoundedRectangleBorder(
+                                                                            borderRadius:
+                                                                                BorderRadius.circular(
+                                                                                  30,
+                                                                                ),
+                                                                          ),
+                                                                          elevation:
+                                                                              6,
+                                                                        ),
+                                                                        onPressed: () =>
+                                                                            Navigator.pop(
+                                                                              context,
+                                                                            ),
+                                                                        child: const Text(
+                                                                          "Cancel",
+                                                                        ),
+                                                                      ),
+
+                                                                      const SizedBox(
+                                                                        width: 16,
+                                                                      ),
+
+                                                                      // Replace
+                                                                      TextButton(
+                                                                        style: TextButton.styleFrom(
+                                                                          backgroundColor:
+                                                                              Color(
+                                                                                0xff0376FA,
+                                                                              ),
+                                                                          foregroundColor:
+                                                                              Colors
+                                                                                  .white,
+                                                                        ),
+                                                                        onPressed: () async {
+                                                                          await provider
+                                                                              .assignTask(
+                                                                                reminder,
+                                                                              );
+
+                                                                          // Close both dialogs
+                                                                          Navigator.pop(
+                                                                            context,
+                                                                          );
+                                                                          Navigator.pop(
+                                                                            context,
+                                                                          );
+
+                                                                          // ✅ SHOW CUSTOM SUCCESS SNACK
+                                                                          ScaffoldMessenger.of(
+                                                                            context,
+                                                                          ).showSnackBar(
+                                                                            SnackBar(
+                                                                              behavior:
+                                                                                  SnackBarBehavior.floating,
+                                                                              backgroundColor:
+                                                                                  Colors.transparent,
+                                                                              elevation:
+                                                                                  0,
+                                                                              content: Container(
+                                                                                padding: const EdgeInsets.all(
+                                                                                  16,
+                                                                                ),
+                                                                                decoration: BoxDecoration(
+                                                                                  color: Colors.white,
+                                                                                  borderRadius: BorderRadius.circular(
+                                                                                    16,
+                                                                                  ),
+                                                                                  boxShadow: [
+                                                                                    BoxShadow(
+                                                                                      color: Colors.black.withOpacity(
+                                                                                        0.1,
+                                                                                      ),
+                                                                                      blurRadius: 10,
+                                                                                      offset: Offset(
+                                                                                        0,
+                                                                                        5,
+                                                                                      ),
+                                                                                    ),
+                                                                                  ],
+                                                                                ),
+                                                                                child: Column(
+                                                                                  mainAxisSize: MainAxisSize.min,
+                                                                                  children: [
+                                                                                    Icon(
+                                                                                      CupertinoIcons.checkmark_alt_circle_fill,
+                                                                                      size: 39,
+                                                                                      color: Color(
+                                                                                        0xFF00BA25,
+                                                                                      ),
+                                                                                    ),
+                                                                                    SizedBox(
+                                                                                      height: 16,
+                                                                                    ),
+                                                                                    const Text(
+                                                                                      'Task Added Successfully',
+                                                                                      style: TextStyle(
+                                                                                        fontSize: 16,
+                                                                                        fontWeight: FontWeight.w900,
+                                                                                        color: Color(
+                                                                                          0xFF1F2937,
+                                                                                        ),
+                                                                                        fontFamily: 'Intel',
+                                                                                      ),
+                                                                                    ),
+                                                                                  ],
+                                                                                ),
+                                                                              ),
+                                                                              duration: Duration(
+                                                                                seconds:
+                                                                                    2,
+                                                                              ),
+                                                                            ),
+                                                                          );
+                                                                          provider.tempCheckedList = -1;
+                                                                        },
+
+                                                                        child:
+                                                                            const Text(
+                                                                              "Add",
                                                                             ),
                                                                       ),
-                                                                      elevation:
-                                                                          6,
-                                                                    ),
-                                                                    onPressed: () =>
-                                                                        Navigator.pop(
-                                                                          context,
-                                                                        ),
-                                                                    child: const Text(
-                                                                      "Cancel",
+                                                                    ],
+                                                                  );
+                                                                },
+                                                              );
+                                                            },
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                SizedBox(
+                                                  height: halfScreenHeight - 50,
+                                                  child: Consumer<MainProvider>(
+                                                    builder: (context, provider, child) {
+                                                      return ListView.builder(
+                                                        itemCount: provider
+                                                            .contactList
+                                                            .length,
+                                                        itemBuilder: (context, index) {
+                                                          final contact = provider
+                                                              .contactList[index];
+                                                          // final isAssigned = provider.isContactAlreadyAssigned(contact.id);
+
+                                                          return Container(
+                                                            decoration: BoxDecoration(
+                                                              borderRadius:
+                                                                  BorderRadius.circular(
+                                                                    12,
+                                                                  ),
+                                                              color: Colors.white,
+                                                            ),
+                                                            margin:
+                                                                const EdgeInsets.all(
+                                                                  8,
+                                                                ),
+                                                            child: Padding(
+                                                              padding:
+                                                                  const EdgeInsets.all(
+                                                                    12.0,
+                                                                  ),
+                                                              child: Row(
+                                                                children: [
+                                                                  SizedBox(
+                                                                    width:
+                                                                        width / 15,
+                                                                    height:
+                                                                        height / 15,
+                                                                    child: Image(
+                                                                      image: AssetImage(
+                                                                        "assets/Frame6.png",
+                                                                      ),
                                                                     ),
                                                                   ),
-
-                                                                  const SizedBox(
+                                                                  SizedBox(
                                                                     width: 16,
                                                                   ),
 
-                                                                  // Replace
-                                                                  TextButton(
-                                                                    style: TextButton.styleFrom(
-                                                                      backgroundColor:
-                                                                          Color(
-                                                                            0xff0376FA,
-                                                                          ),
-                                                                      foregroundColor:
-                                                                          Colors
-                                                                              .white,
-                                                                    ),
-                                                                    onPressed: () async {
-                                                                      await provider
-                                                                          .assignTask(
-                                                                            reminder,
-                                                                          );
-
-                                                                      // Close both dialogs
-                                                                      Navigator.pop(
-                                                                        context,
-                                                                      );
-                                                                      Navigator.pop(
-                                                                        context,
-                                                                      );
-
-                                                                      // ✅ SHOW CUSTOM SUCCESS SNACK
-                                                                      ScaffoldMessenger.of(
-                                                                        context,
-                                                                      ).showSnackBar(
-                                                                        SnackBar(
-                                                                          behavior:
-                                                                              SnackBarBehavior.floating,
-                                                                          backgroundColor:
-                                                                              Colors.transparent,
-                                                                          elevation:
-                                                                              0,
-                                                                          content: Container(
-                                                                            padding: const EdgeInsets.all(
-                                                                              16,
-                                                                            ),
-                                                                            decoration: BoxDecoration(
-                                                                              color: Colors.white,
-                                                                              borderRadius: BorderRadius.circular(
+                                                                  Expanded(
+                                                                    child: Column(
+                                                                      crossAxisAlignment:
+                                                                          CrossAxisAlignment
+                                                                              .start,
+                                                                      children: [
+                                                                        Text(
+                                                                          contact
+                                                                              .username,
+                                                                          style: TextStyle(
+                                                                            fontWeight:
+                                                                                FontWeight.bold,
+                                                                            fontSize:
                                                                                 16,
-                                                                              ),
-                                                                              boxShadow: [
-                                                                                BoxShadow(
-                                                                                  color: Colors.black.withOpacity(
-                                                                                    0.1,
-                                                                                  ),
-                                                                                  blurRadius: 10,
-                                                                                  offset: Offset(
-                                                                                    0,
-                                                                                    5,
-                                                                                  ),
-                                                                                ),
-                                                                              ],
-                                                                            ),
-                                                                            child: Column(
-                                                                              mainAxisSize: MainAxisSize.min,
-                                                                              children: [
-                                                                                Icon(
-                                                                                  CupertinoIcons.checkmark_alt_circle_fill,
-                                                                                  size: 39,
-                                                                                  color: Color(
-                                                                                    0xFF00BA25,
-                                                                                  ),
-                                                                                ),
-                                                                                SizedBox(
-                                                                                  height: 16,
-                                                                                ),
-                                                                                const Text(
-                                                                                  'Task Added Successfully',
-                                                                                  style: TextStyle(
-                                                                                    fontSize: 16,
-                                                                                    fontWeight: FontWeight.w900,
-                                                                                    color: Color(
-                                                                                      0xFF1F2937,
-                                                                                    ),
-                                                                                    fontFamily: 'Intel',
-                                                                                  ),
-                                                                                ),
-                                                                              ],
-                                                                            ),
                                                                           ),
-                                                                          duration: Duration(
-                                                                            seconds:
-                                                                                2,
-                                                                          ),
+                                                                          overflow:
+                                                                              TextOverflow
+                                                                                  .ellipsis,
                                                                         ),
-                                                                      );
-                                                                      provider.tempCheckedList = -1;
-                                                                    },
+                                                                        SizedBox(
+                                                                          height: 4,
+                                                                        ),
+                                                                        Text(
+                                                                          contact
+                                                                              .userContactNumber,
+                                                                          overflow:
+                                                                              TextOverflow
+                                                                                  .ellipsis,
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  ),
 
-                                                                    child:
-                                                                        const Text(
-                                                                          "Add",
-                                                                        ),
+                                                                  InkWell(
+                                                                    onTap: () {
+                                                                      provider
+                                                                          .changeAddContact(
+                                                                            index,
+                                                                          );
+                                                                    },
+                                                                    child: Icon(
+                                                                      provider.tempCheckedList ==
+                                                                              index
+                                                                          ? Icons
+                                                                                .check_box_outlined
+                                                                          : Icons
+                                                                                .check_box_outline_blank,
+                                                                      color: Colors
+                                                                          .black,
+                                                                    ),
                                                                   ),
                                                                 ],
-                                                              );
-                                                            },
+                                                              ),
+                                                            ),
                                                           );
                                                         },
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            SizedBox(
-                                              height: halfScreenHeight - 50,
-                                              child: Consumer<MainProvider>(
-                                                builder: (context, provider, child) {
-                                                  return ListView.builder(
-                                                    itemCount: provider
-                                                        .contactList
-                                                        .length,
-                                                    itemBuilder: (context, index) {
-                                                      final contact = provider
-                                                          .contactList[index];
-                                                      // final isAssigned = provider.isContactAlreadyAssigned(contact.id);
-
-                                                      return Container(
-                                                        decoration: BoxDecoration(
-                                                          borderRadius:
-                                                              BorderRadius.circular(
-                                                                12,
-                                                              ),
-                                                          color: Colors.white,
-                                                        ),
-                                                        margin:
-                                                            const EdgeInsets.all(
-                                                              8,
-                                                            ),
-                                                        child: Padding(
-                                                          padding:
-                                                              const EdgeInsets.all(
-                                                                12.0,
-                                                              ),
-                                                          child: Row(
-                                                            children: [
-                                                              SizedBox(
-                                                                width:
-                                                                    width / 15,
-                                                                height:
-                                                                    height / 15,
-                                                                child: Image(
-                                                                  image: AssetImage(
-                                                                    "assets/Frame6.png",
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                              SizedBox(
-                                                                width: 16,
-                                                              ),
-
-                                                              Expanded(
-                                                                child: Column(
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .start,
-                                                                  children: [
-                                                                    Text(
-                                                                      contact
-                                                                          .username,
-                                                                      style: TextStyle(
-                                                                        fontWeight:
-                                                                            FontWeight.bold,
-                                                                        fontSize:
-                                                                            16,
-                                                                      ),
-                                                                      overflow:
-                                                                          TextOverflow
-                                                                              .ellipsis,
-                                                                    ),
-                                                                    SizedBox(
-                                                                      height: 4,
-                                                                    ),
-                                                                    Text(
-                                                                      contact
-                                                                          .userContactNumber,
-                                                                      overflow:
-                                                                          TextOverflow
-                                                                              .ellipsis,
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ),
-
-                                                              InkWell(
-                                                                onTap: () {
-                                                                  provider
-                                                                      .changeAddContact(
-                                                                        index,
-                                                                      );
-                                                                },
-                                                                child: Icon(
-                                                                  provider.tempCheckedList ==
-                                                                          index
-                                                                      ? Icons
-                                                                            .check_box_outlined
-                                                                      : Icons
-                                                                            .check_box_outline_blank,
-                                                                  color: Colors
-                                                                      .black,
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
                                                       );
                                                     },
-                                                  );
-                                                },
-                                              ),
+                                                  ),
+                                                ),
+                                              ],
                                             ),
-                                          ],
-                                        ),
+                                          );
+                                        },
                                       );
                                     },
-                                  );
-                                },
-                                child: Container(
-                                  width: width / 10,
-                                  height: height / 20,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(20),
-                                    color: Color(0xff0376FA),
+                                    child: Container(
+                                      width: width / 10,
+                                      height: height / 20,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(20),
+                                        color: Color(0xff0376FA),
+                                      ),
+                                      child: const Icon(
+                                        Icons.group_add_outlined,
+                                        color: Colors.white,
+                                      ),
+                                    ),
                                   ),
-                                  child: const Icon(
-                                    Icons.group_add_outlined,
-                                    color: Colors.white,
-                                  ),
-                                ),
+                                ],
                               ),
-                            ],
-                          ),
-                        ),
+                            ),
+                          );
+                        },
                       );
-                    },
-                  ),
+                  }
+                ),
           ),
         ],
       ),
