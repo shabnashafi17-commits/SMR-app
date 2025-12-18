@@ -172,7 +172,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             Expanded(
                               child: Text(
                                 task.taskVoice != null
-                                    ? "Voice - $voiceCount"
+                                    ? "Voice - ${task.voiceNumber}"
                                     : task.taskText ?? "",
                                 style: const TextStyle(
                                   fontSize: 16,
