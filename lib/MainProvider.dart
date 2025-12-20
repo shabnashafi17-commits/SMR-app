@@ -247,79 +247,6 @@ class MainProvider extends ChangeNotifier {
     await ref.doc(id).update({'reminderOption': option});
   }
 
-  Future<void> completeTask(Reminder reminder,int index) async {
-    final taskId = reminder.id;
-
-    // Update task in Firestore
-    await Db.collection("Tasks").doc(taskId).update({
-      "Completed_date": DateTime.now(),
-      "taskStatus": "Completed",
-    });
-    reminders.removeAt(index);
-    reminder.taskStatus = "Completed";
-    notifyListeners();
-  }
-
-
-  List<Reminder> completedTasks = [];
-
-  Future<void> fetchCompletedTasks() async {
-    try {
-      final snapshot = await FirebaseFirestore.instance
-          .collection("Tasks")
-          .where("taskStatus", isEqualTo: "Completed")
-          .get();
-
-      completedTasks = snapshot.docs.map((doc) {
-        final data = doc.data();
-
-        DateTime? completedDate;
-        Duration? completedTime;
-        
-
-        if (data["Completed_date"] != null) {
-          completedDate =
-              (data["Completed_date"] as Timestamp).toDate();
-
-          completedTime = Duration(
-            hours: completedDate.hour,
-            minutes: completedDate.minute,
-          );
-        }
-
-        return Reminder(
-          id: doc.id,
-          taskText: data["taskText"],
-          taskVoice: data["taskVoice"],
-          taskType: data["taskVoice"] != null &&
-              data["taskVoice"].toString().isNotEmpty
-              ? "voice"
-              : "text",
-
-          createdAt: (data["createdAt"] as Timestamp).toDate(),
-          createdBy: data["createdBy"],
-          createdById: data["createdById"],
-          subtasks: List<String>.from(data["subtasks"] ?? []),
-
-          // ✅ USE COMPLETED DATE & TIME
-          date: completedDate,
-          time: completedTime,
-
-          reminderOption: data["reminderOption"] ?? "No Reminder",
-          taskAssignedToId: data["taskAssignedToId"],
-          taskAssignedToName: data["taskAssignedToName"],
-          taskStatus: data["taskStatus"],
-          voiceCount: data['voiceCount'] ?? 1,
-
-        );
-      }).toList();
-
-      notifyListeners();
-    } catch (e) {
-      debugPrint("Error fetching completed tasks: $e");
-    }
-  }
-
 
   // Nihal
   TextEditingController usernameControler = TextEditingController();
@@ -557,6 +484,75 @@ class MainProvider extends ChangeNotifier {
     currentAudio = null;
     isPlaying = false;
     notifyListeners();
+  }
+  Future<void> completeTask(Reminder reminder,int index) async {
+    final taskId = reminder.id;
+
+    // Update task in Firestore
+    await Db.collection("Tasks").doc(taskId).update({
+      "Completed_date": DateTime.now(),
+      "taskStatus": "Completed",
+    });
+    fetchReminders();
+    notifyListeners();
+  }
+  List<Reminder> completedTasks = [];
+
+  Future<void> fetchCompletedTasks() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection("Tasks")
+          .where("taskStatus", isEqualTo: "Completed")
+          .get();
+
+      completedTasks = snapshot.docs.map((doc) {
+        final data = doc.data();
+
+        DateTime? completedDate;
+        Duration? completedTime;
+
+
+        if (data["Completed_date"] != null) {
+          completedDate =
+              (data["Completed_date"] as Timestamp).toDate();
+
+          completedTime = Duration(
+            hours: completedDate.hour,
+            minutes: completedDate.minute,
+          );
+        }
+
+        return Reminder(
+          id: doc.id,
+          taskText: data["taskText"],
+          taskVoice: data["taskVoice"],
+          taskType: data["taskVoice"] != null &&
+              data["taskVoice"].toString().isNotEmpty
+              ? "voice"
+              : "text",
+
+          createdAt: (data["createdAt"] as Timestamp).toDate(),
+          createdBy: data["createdBy"],
+          createdById: data["createdById"],
+          subtasks: List<String>.from(data["subtasks"] ?? []),
+
+          // ✅ USE COMPLETED DATE & TIME
+          date: completedDate,
+          time: completedTime,
+
+          reminderOption: data["reminderOption"] ?? "No Reminder",
+          taskAssignedToId: data["taskAssignedToId"],
+          taskAssignedToName: data["taskAssignedToName"],
+          taskStatus: data["taskStatus"],
+          voiceCount: data['voiceCount'] ?? 1,
+
+        );
+      }).toList();
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint("Error fetching completed tasks: $e");
+    }
   }
 
 

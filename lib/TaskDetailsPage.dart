@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import 'package:smr_app/MainProvider.dart';
 import 'package:smr_app/home_Screen.dart' show HomeScreen;
 import 'package:table_calendar/table_calendar.dart';
+import 'package:collection/collection.dart';
+
 
 class Taskdetailspage extends StatelessWidget {
   final Reminder reminder;
@@ -74,50 +76,7 @@ class Taskdetailspage extends StatelessWidget {
                         .collection("Tasks")
                         .doc(reminder.id)
                         .get();
-
                     final taskStatus = taskDoc.data()?['taskStatus'];
-
-                    if (taskStatus == "completed") {
-                      // Show "already finished" alert
-                      showDialog(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          backgroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          title: const Text(
-                            'Task Already Finished',
-                            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
-                          ),
-                          content: const Text(
-                            'This task is already finished.',
-                            style: TextStyle(fontSize: 16),
-                          ),
-                          actions: [
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor:Color(0xff0376FA),
-                                foregroundColor: Colors.black,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                                elevation: 6,
-                                shadowColor: Colors.black26,
-                              ),
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text(
-                                "OK",
-                                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14,color: Colors.white),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                      return; // Stop further execution
-                    }
-
-                    // If not completed, show confirmation dialog
                     showDialog(
                       context: context,
                       builder: (ctx) => AlertDialog(
@@ -163,18 +122,18 @@ class Taskdetailspage extends StatelessWidget {
                             foregroundColor: Colors.white,
                           ),
                             onPressed: () async {
-                              Navigator.pop(context); // Close "Complete Task" alert
-                              await provider.completeTask(reminder,index);
-provider.fetchReminders();
+                              // Close "Complete Task" alert FIRST
+                              Navigator.pop(context);
+
+                              // ✅ Complete task BEFORE navigation
+                               provider.completeTask(reminder, index);
+                               // await provider.fetchReminders();
+                              //
+                              // Show success dialog (same UI as before)
                               showDialog(
                                 context: context,
-                                barrierDismissible: false, // prevent manual dismissal
+                                barrierDismissible: false,
                                 builder: (ctx2) {
-                                  // Close dialog automatically after 2 seconds
-                                  Future.delayed( Duration(seconds: 1), () {
-                                    if (Navigator.canPop(ctx2)) Navigator.pop(ctx2);
-                                  });
-
                                   return Dialog(
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(16),
@@ -212,14 +171,11 @@ provider.fetchReminders();
                                 },
                               );
 
+                              // Navigate AFTER everything finishes
                               await Future.delayed(const Duration(seconds: 1));
-
-                              Navigator.of(context, rootNavigator: true).pop();
-
-                              Navigator.of(context).pushReplacement(
-                                MaterialPageRoute(builder: (_) => HomeScreen()),
-                              );
+                              Navigator.of(context).pop(); // close success dialog
                             },
+
                             child: const Text(
                               'Yes',
                               style: TextStyle(fontWeight: FontWeight.bold),
@@ -464,10 +420,36 @@ provider.fetchReminders();
                             padding: const EdgeInsets.only(left: 140),
                             child: Consumer<MainProvider>(
                               builder: (context, provider, child) {
-                                final current = provider.reminders.firstWhere(
+                                // If reminder is null, show "Task Completed"
+                                if (reminder == null) {
+                                  return Text(
+                                    "Task Completed",
+                                    style: TextStyle(
+                                      fontFamily: 'Inter',
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF4B5563),
+                                    ),
+                                  );
+                                }
+
+                                // Find the current reminder safely
+                                final current = provider.reminders.firstWhereOrNull(
                                       (r) => r.id == reminder.id,
                                 );
 
+                                if (current == null) {
+                                  return Text(
+                                    "Task Completed",
+                                    style: TextStyle(
+                                      fontFamily: 'Inter',
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF4B5563),
+                                    ),
+                                  );
+                                }
+                                // Default display text
                                 String displayText = "Not Scheduled";
 
                                 if (current.date != null && current.time != null) {
@@ -504,10 +486,8 @@ provider.fetchReminders();
                                 );
                               },
                             ),
-
-
-
                           ),
+
                         ],
                       ),
                     ),
@@ -515,8 +495,8 @@ provider.fetchReminders();
                   // --------- SMALL VOICE TASK CONTAINER ---------
                   if (taskVoice != null)
                     Container(
-                      height: 60,
-                      width: screenWidth * 361 / 430,
+                      height: screenHeight * 110 / 932, // same height as text task
+                      width: screenWidth * 384 / 430,   // same width as text task
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(18),
@@ -528,59 +508,160 @@ provider.fetchReminders();
                           ),
                         ],
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      child: Column(
                         children: [
-                          // Mic Icon
-                          Container(
-                            height: 35,
-                            width: 36,
-                            margin: EdgeInsets.only(left: 10),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
-                              color: Color(0xFFFFE7DD),
-                            ),
-                            child: Icon(
-                              Icons.mic_none_outlined,
-                              size: 24,
-                              color: Color(0xFFFE6B2C),
-                            ),
-                          ),
-                          // Voice Label
-                          Expanded(
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 15),
-                              child: Text(
-                                "Voice - $voiceCount",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF4B5563),
-                                ),
-                              ),
-                            ),
-                          ),
-                          // Blue Circle Icon
-                          Container(
-                            height: 40,
-                            width: 40,
-                            margin: EdgeInsets.only(right: 10),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Color(0xFF0376FA),
-                            ),
-                            child: IconButton(
-                              onPressed: () {},
-                              icon: Icon(
-                                Icons.group_add_outlined,
-                                size: 24,
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8, right: 5, left: 5),
+                            child: Container(
+                              height: screenHeight * 60 / 932,
+                              width: screenWidth * 360 / 430,
+                              decoration: BoxDecoration(
                                 color: Colors.white,
+                                borderRadius: BorderRadius.circular(18),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Color(0x15000000),
+                                    blurRadius: 4,
+                                    offset: Offset(0, 4),
+                                  ),
+                                ],
                               ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  // Mic Icon
+                                  Container(
+                                    height: 35,
+                                    width: 36,
+                                    margin: EdgeInsets.only(left: 10),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
+                                      color: Color(0xFFFFE7DD),
+                                    ),
+                                    child: Icon(
+                                      Icons.mic_none_outlined,
+                                      size: 24,
+                                      color: Color(0xFFFE6B2C),
+                                    ),
+                                  ),
+
+                                  // Voice Label
+                                  Expanded(
+                                    child: Padding(
+                                      padding: EdgeInsets.symmetric(horizontal: 15),
+                                      child: Text(
+                                        "Voice - $voiceCount",
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          color: Color(0xFF4B5563),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+
+                                  // Blue Circle Icon
+                                  Container(
+                                    height: 40,
+                                    width: 40,
+                                    margin: EdgeInsets.only(right: 10),
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Color(0xFF0376FA),
+                                    ),
+                                    child: IconButton(
+                                      onPressed: () {
+                                        // Add your contact sheet logic here
+                                      },
+                                      icon: Icon(
+                                        Icons.group_add_outlined,
+                                        size: 24,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: screenHeight * 10 / 932),
+
+                          // DATE / TIME or Task Completed
+                          Padding(
+                            padding: const EdgeInsets.only(left: 140),
+                            child: Consumer<MainProvider>(
+                              builder: (context, provider, child) {
+                                if (reminder == null) {
+                                  return Text(
+                                    "Task Completed",
+                                    style: TextStyle(
+                                      fontFamily: 'Inter',
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF4B5563),
+                                    ),
+                                  );
+                                }
+
+                                final current = provider.reminders.firstWhereOrNull(
+                                      (r) => r.id == reminder.id,
+                                );
+
+                                if (current == null) {
+                                  return Text(
+                                    "Task Completed",
+                                    style: TextStyle(
+                                      fontFamily: 'Inter',
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF4B5563),
+                                    ),
+                                  );
+                                }
+
+                                String displayText = "Not Scheduled";
+                                if (current.date != null && current.time != null) {
+                                  final combined = DateTime(
+                                    current.date!.year,
+                                    current.date!.month,
+                                    current.date!.day,
+                                    current.time!.inHours,
+                                    current.time!.inMinutes.remainder(60),
+                                  );
+
+                                  int hour = combined.hour;
+                                  final minute = combined.minute.toString().padLeft(2, '0');
+                                  final ampm = hour >= 12 ? "PM" : "AM";
+                                  if (hour == 0) hour = 12;
+                                  if (hour > 12) hour -= 12;
+
+                                  displayText =
+                                  "${combined.day.toString().padLeft(2, '0')}/"
+                                      "${combined.month.toString().padLeft(2, '0')}/"
+                                      "${combined.year}  "
+                                      "${hour.toString().padLeft(2, '0')}:$minute $ampm";
+                                }
+
+                                return Text(
+                                  displayText,
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF4B5563),
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ],
                       ),
                     ),
+
+
+
                 ],
               ),
 
@@ -1104,9 +1185,18 @@ class _SubtaskListContainerState extends State<SubtaskListContainer> {
 
      return Consumer<MainProvider>(
         builder: (context, provider, child) {
-          final reminder = provider.reminders.firstWhere(
-                  (r) => r.id == widget.reminderId
+          final Reminder? reminder = provider.reminders.firstWhereOrNull(
+                (r) => r.id == widget.reminderId,
           );
+
+          if (reminder == null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              // Navigator.of(context).pop(); // Back to HomeScreen
+            });
+            return const SizedBox();
+          }
+
+
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,

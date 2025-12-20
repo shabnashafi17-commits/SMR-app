@@ -506,59 +506,63 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           // Reminder list
         Expanded(
         child: Consumer<MainProvider>(
-        builder: (context, provider, child) {
-    final activeTasks = provider.reminders
-        .where((r) => r.taskStatus == "start")
-        .toList();
-    if (activeTasks.isEmpty) {
-      return const Center(child: Text("No tasks found"));
-    }
+            builder: (context, provider, child) {
+              final List reminders = provider.reminders;
 
-    int totalVoiceCount =
-        activeTasks.where((r) => r.taskVoice != null).length;
+              final activeTasks = reminders
+                  .where((r) => r.taskStatus == "start")
+                  .toList();
 
-    List<int> voiceNumbers = activeTasks.map((r) {
-      if (r.taskVoice != null) {
-        return totalVoiceCount--;
-      }
-      return 0;
-    }).toList();
+              if (activeTasks.isEmpty) {
+                return const Center(
+                  child: Text("No tasks found"),
+                );
+              }
 
-    if (activeTasks.isEmpty) {
-    return const Center(
-    child: Text("No tasks found"),
-    );
-    }
+              int totalVoiceCount =
+                  activeTasks.where((r) => r.taskVoice != null).length;
 
+              final List<int> voiceNumbers = activeTasks.map((r) {
+                if (r.taskVoice != null) {
+                  return totalVoiceCount--;
+                }
+                return 0;
+              }).toList();
 
-      return ListView.builder(
-        padding: EdgeInsets.symmetric(horizontal: width / 19),
-        itemCount: activeTasks.length,
-        itemBuilder: (context, index) {
-          final reminder = activeTasks[index];
-          final int voiceCount = voiceNumbers[index];
+              return ListView.builder(
+                padding: EdgeInsets.symmetric(horizontal: width / 19),
+                itemCount: provider.reminders.length,
+                itemBuilder: (context, index) {
+                  final reminder = activeTasks[index];
+                  final int voiceCount = voiceNumbers[index];
 
-                        return InkWell(
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => Taskdetailspage(
-                                  reminder: reminder,
-                                  taskText: reminder.taskText,
-                                  taskVoice: reminder.taskVoice,
-                                  index: index,
-                                ),
-                              ),
-                            ),
-                            child: Container(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Row(
-                                children: [
+                  return InkWell(
+                    onTap: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Taskdetailspage(
+                            reminder: reminder,
+                            taskText: reminder.taskText,
+                            taskVoice: reminder.taskVoice,
+                            index: index,
+                          ),
+                        ),
+                      );
+
+                      // 🔥 REFRESH when coming back
+                      // provider.fetchReminders();
+                    },
+
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        children: [
                                   Container(
                                     width: width / 10,
                                     height: height / 20,

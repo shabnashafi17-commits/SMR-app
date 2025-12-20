@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:smr_app/MainProvider.dart';
 import 'package:smr_app/home_Screen.dart';
 
 class Loginpage extends StatefulWidget {
@@ -277,29 +279,31 @@ class _LoginpageState extends State<Loginpage> {
                   SizedBox(
                     width: 320,
                     height: 50,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        if (otpController.text.trim().length != 6) {
-                          setState(() {
-                            otpError = "Please enter a valid 6-digit OTP";
-                          });
-                          return; // stop here
-                        }
-
-
-                        // OTP correct -> navigate
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => HomeScreen()),
+                    child: Consumer<MainProvider>(
+                      builder: (context,provider,child) {
+                        return ElevatedButton(
+                          onPressed: () async{
+                            if (otpController.text.trim().length != 6) {
+                              setState(() {
+                                otpError = "Please enter a valid 6-digit OTP";
+                              });
+                              return; // stop here
+                            }
+                           await provider.fetchReminders();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => HomeScreen()),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xff074899),
+                          ),
+                          child: Text(
+                            "Verify OTP",
+                            style: TextStyle(fontSize: 18, color: Colors.white),
+                          ),
                         );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xff074899),
-                      ),
-                      child: Text(
-                        "Verify OTP",
-                        style: TextStyle(fontSize: 18, color: Colors.white),
-                      ),
+                      }
                     ),
                   ),
 
