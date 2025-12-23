@@ -33,7 +33,10 @@ android {
     }
 
     buildTypes {
-        release {
+        getByName("release") {
+            // This tells the release build to use the auto-generated debug key
+            signingConfig = signingConfigs.getByName("debug")
+
             isMinifyEnabled = false
             isShrinkResources = false
         }

@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:smr_app/LoginPage.dart';
 
-import 'home_Screen.dart';
+import 'ADMIN SIDE/home_Screen.dart';
 
 class Splash_Screen extends StatefulWidget {
   const Splash_Screen({super.key});

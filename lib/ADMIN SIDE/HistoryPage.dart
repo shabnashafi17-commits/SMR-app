@@ -5,7 +5,7 @@ import 'package:flutter_sound/flutter_sound.dart';
 import 'dart:io';
 
 
-import 'MainProvider.dart';
+import '../MainProvider.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});

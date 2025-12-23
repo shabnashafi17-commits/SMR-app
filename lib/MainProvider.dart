@@ -130,14 +130,10 @@ class MainProvider extends ChangeNotifier {
     });
   }
 
-
-  // ------------------ REMINDERS ------------------
-
   Future<void> fetchReminders() async {
     try {
-      // Fetch only tasks with status "start"
       final snap = await ref
-          .where("taskStatus", isEqualTo: "start")
+          .where("taskStatus", whereIn: ["start", "assignedTask"])
           .orderBy("createdAt", descending: true)
           .get();
 
@@ -152,6 +148,7 @@ class MainProvider extends ChangeNotifier {
       print("Error fetching active reminders: $e");
     }
   }
+
 
 
   Future<void> addTextReminder(String text) async {
@@ -351,7 +348,7 @@ class MainProvider extends ChangeNotifier {
       "taskAssignedToId": contactId,
       "taskAssignedToName": username,
       "assignedTime": DateTime.now(),
-      "taskStatus": "assignTask",
+      "taskStatus": "assignedTask",
     });
 
     // Update local object

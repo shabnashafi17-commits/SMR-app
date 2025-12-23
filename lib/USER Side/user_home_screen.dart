@@ -5,19 +5,21 @@ import 'package:flutter_sound/flutter_sound.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
-import 'package:smr_app/HistoryPage.dart';
+import 'package:smr_app/ADMIN%20SIDE/HistoryPage.dart';
 import 'package:smr_app/MainProvider.dart';
-import 'package:smr_app/TaskDetailsPage.dart';
 import 'package:lottie/lottie.dart';
-import 'Splash_Screen.dart';
+import 'package:smr_app/USER%20Side/userTaskDetailse.dart';
+import '../Splash_Screen.dart';
 
-import 'contact_asign.dart';
+import '../ADMIN SIDE/contact_asign.dart';
 
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({super.key});
 
+
   @override
   State<UserHomeScreen> createState() => _HomeScreenState();
+
 }
 
 class _HomeScreenState extends State<UserHomeScreen> with TickerProviderStateMixin {
@@ -35,6 +37,22 @@ class _HomeScreenState extends State<UserHomeScreen> with TickerProviderStateMix
     {"name": "Nihal", "number": 6534546},
     {"name": "Ameen", "number": 9876543},
   ];
+  @override
+  void initState() {
+    super.initState();
+
+    Future.microtask(() async {
+      final provider = context.read<MainProvider>();
+
+      provider.isAssignedMode = true;
+
+      await provider.fetchAssignedTasks("1766469803731");
+      super.initState();
+      Future.microtask(() => _initAudio());
+
+      provider.notifyListeners();
+    });
+  }
 
   // Audio - recorder & player
   final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
@@ -44,11 +62,6 @@ class _HomeScreenState extends State<UserHomeScreen> with TickerProviderStateMix
   String? _currentAudio; // which audio path is currently playing
   String? _filePath; // last recorded file path
 
-  @override
-  void initState() {
-    super.initState();
-    Future.microtask(() => _initAudio());
-  }
 
   Future<void> _initAudio() async {
     // Request permissions (best-effort)
@@ -116,7 +129,6 @@ class _HomeScreenState extends State<UserHomeScreen> with TickerProviderStateMix
     await provider.addTextReminder(text);
     _controller.clear();
   }
-
   @override
   void dispose() {
     _recorder.closeRecorder();
@@ -125,6 +137,7 @@ class _HomeScreenState extends State<UserHomeScreen> with TickerProviderStateMix
     _focusNode.dispose();
     super.dispose();
   }
+  @override
 
   Widget _buildStatCard(
       double width,
@@ -241,13 +254,8 @@ class _HomeScreenState extends State<UserHomeScreen> with TickerProviderStateMix
                 const Text(
                   "Hi, Nihal ",
                   style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                TextButton(onPressed:
-                    () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => Splash_Screen(),));
-                    },
-                    child: Text("back to admin"))
-              ],
+                ),]
+
             ),
 
           ),
@@ -288,24 +296,9 @@ class _HomeScreenState extends State<UserHomeScreen> with TickerProviderStateMix
                   "Tasks",
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 28),
                 ),
-                TextButton(
-                  onPressed: () async {
-                    await provider.fetchAssignedTasks("1765262835115");
-                    provider.isAssignedMode = true;     // ← IMPORTANT
-                    provider.notifyListeners();
-                  },
-                  child: Text("Fetch Assigned"),
-                ),
-
                  Spacer(),
                 GestureDetector(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const HistoryScreen(),
-                      ),
-                    );
                   },
                   child: Container(
                     height: width / 8,
@@ -337,9 +330,8 @@ class _HomeScreenState extends State<UserHomeScreen> with TickerProviderStateMix
             child: Consumer<MainProvider>(
               builder: (context, provider, child) {
 
-                final list = provider.isAssignedMode
-                    ? provider.userAssignedTasks
-                    : provider.reminders;
+                final list = provider.userAssignedTasks;
+
 
                 return list.isEmpty
                     ? const Center(child: Text("No tasks found"))
@@ -358,7 +350,7 @@ class _HomeScreenState extends State<UserHomeScreen> with TickerProviderStateMix
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => Taskdetailspage(
+                          builder: (context) => UserTaskdetailspage(
                             reminder: reminder,
                             taskText: reminder.taskText,
                             taskVoice: reminder.taskVoice,

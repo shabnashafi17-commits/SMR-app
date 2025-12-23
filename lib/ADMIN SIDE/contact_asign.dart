@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-import 'MainProvider.dart';
+import '../MainProvider.dart';
 import 'home_Screen.dart';
 
 class ContactAsign extends StatelessWidget {

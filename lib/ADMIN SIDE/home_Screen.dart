@@ -5,11 +5,11 @@ import 'package:flutter_sound/flutter_sound.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
-import 'package:smr_app/HistoryPage.dart';
+import 'package:smr_app/ADMIN%20SIDE/HistoryPage.dart';
 import 'package:smr_app/MainProvider.dart';
-import 'package:smr_app/TaskDetailsPage.dart';
 import 'package:lottie/lottie.dart';
-import 'package:smr_app/user_home_screen.dart';
+import 'package:smr_app/USER%20Side/user_home_screen.dart';
+import 'TaskDetailsPage.dart';
 import 'contact_asign.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -507,12 +507,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         Expanded(
         child: Consumer<MainProvider>(
             builder: (context, provider, child) {
-              final List reminders = provider.reminders;
-
-              final activeTasks = reminders
-                  .where((r) => r.taskStatus == "start")
-                  .toList();
-
               if (activeTasks.isEmpty) {
                 return const Center(
                   child: Text("No tasks found"),
@@ -531,7 +525,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
               return ListView.builder(
                 padding: EdgeInsets.symmetric(horizontal: width / 19),
-                itemCount: provider.reminders.length,
+                itemCount: activeTasks.length,
                 itemBuilder: (context, index) {
                   final reminder = activeTasks[index];
                   final int voiceCount = voiceNumbers[index];
@@ -550,8 +544,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ),
                       );
 
-                      // 🔥 REFRESH when coming back
-                      // provider.fetchReminders();
                     },
 
                     child: Container(
@@ -593,14 +585,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                           ),
                                         ),
 
-                                        if (reminder.taskStatus == "completed")
+                                        if (reminder.taskStatus == "assignedTask")
                                           const Text(
-                                            "Completed",
+                                            "Started",
                                             style: TextStyle(
-                                              color: Colors.black38,
                                               fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.green,
                                             ),
                                           ),
+
                                       ],
                                     )
                                         : Column(
@@ -614,19 +608,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                             color: Color(0xFF4B5563),
                                           ),
                                         ),
-                                        if (reminder.taskStatus == "completed")
+                                        if (reminder.taskStatus == "assignedTask")
                                           const Text(
-                                            "Completed",
+                                            "Started",
                                             style: TextStyle(
-                                              color: Colors.black38,
                                               fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.green,
                                             ),
                                           ),
                                       ],
                                     ),
                                   ),
-
-
                               // Play button for voice reminders
                               if (reminder.taskVoice != null)
                                 IconButton(
@@ -645,9 +638,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               InkWell(
                                 onTap: () async {
                                   await provider.fetchContacts();
-                                  // if (isCheckedList.length != Contactlist.length) {
-                                  //   isCheckedList = List.generate(Contactlist.length, (_) => false);
-                                  // }
                                   showModalBottomSheet(
                                     context: context,
                                     backgroundColor: const Color(0xffF2F2F2),
