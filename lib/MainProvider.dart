@@ -551,6 +551,4 @@ class MainProvider extends ChangeNotifier {
       debugPrint("Error fetching completed tasks: $e");
     }
   }
-
-
 }
