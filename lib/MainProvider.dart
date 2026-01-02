@@ -551,4 +551,31 @@ class MainProvider extends ChangeNotifier {
       debugPrint("Error fetching completed tasks: $e");
     }
   }
+  List<Reminder> userReminders = [];
+// In your MainProvider
+  Future<void> fetchUserReminders(String userId) async {
+    try {
+      // Note: Ensure you have created the composite index for these 3 fields
+      final snap = await ref
+          .where("taskAssignedToId", isEqualTo: userId)
+          .where("taskStatus", whereIn: ["start", "assignedTask"])
+          .orderBy("createdAt", descending: true)
+          .get();
+
+      if (snap.docs.isEmpty) {
+        print("No documents found for user: $userId");
+      }
+
+      userReminders = snap.docs.map((e) {
+        final data = e.data() as Map<String, dynamic>;
+        data["id"] = e.id;
+        return Reminder.fromMap(data);
+      }).toList();
+
+      notifyListeners();
+    } catch (e) {
+      // THIS WILL PRINT THE INDEX URL IF MISSING
+      print("Error fetching user reminders: $e");
+    }
+  }
 }
